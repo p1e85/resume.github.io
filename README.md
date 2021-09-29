@@ -1,2 +1,2 @@
-# resume.github.io
-my professional resume
+# Patrick DeQuattro
+My Professional Resume
