@@ -1,6 +1,6 @@
 body {
     background-color: #111;
-    color: #4a90e2; /* MAIN TEXT COLOR */
+    color: #4a90e2; /* Blue text color */
     font-family: 'Courier New', Courier, monospace;
     font-size: 1.2rem;
     display: flex;
@@ -12,13 +12,18 @@ body {
 
 #game-container {
     width: 90%;
-    max-width: 800px;
-    border: 2px solid #4a90e2; /*  border color */
+    max-width: 900px; /* Increased max-width */
+    min-height: 500px; /* Added a minimum height */
+    border: 2px solid #4a90e2; /* Blue border color */
     padding: 20px;
+    display: flex; /* Using flexbox to manage layout */
+    flex-direction: column;
 }
 
 #game-text {
     white-space: pre-wrap;
+    flex-grow: 1; /* Allows this element to fill available space */
+    overflow-y: auto; /* Adds a scrollbar if content overflows */
     margin-bottom: 20px;
 }
 
@@ -30,7 +35,7 @@ body {
     flex-grow: 1;
     background-color: transparent;
     border: none;
-    color: #4a90e2; /* INPUT FIELD'S TEXT */
+    color: #4a90e2; /* Blue input text color */
     font-family: inherit;
     font-size: inherit;
 }
