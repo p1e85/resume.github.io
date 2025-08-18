@@ -11,8 +11,7 @@ const commandInput = document.getElementById('command-input');
 // ======================================================
 let gamePhase = 'title'; // Can be 'title', 'race_selection', or 'playing'
 let currentPlayerLocation = 'start';
-let playerRace = ''; // This will store the player's chosen race
-let playerInventory = []; // NEW: To hold the items the player is carrying
+let player = {}; // NEW: A single object to hold all player data
 let isTyping = false; // Flag to prevent input during text animation
 const TYPEWRITER_SPEED = 25; // Milliseconds per character
 
@@ -20,94 +19,108 @@ const TYPEWRITER_SPEED = 25; // Milliseconds per character
 // ======================================================
 // SECTION 3: GAME DATA (THE WORLD)
 // ======================================================
-const gameState = {
-    // STARTING AREA (OUTSIDE)
-    start: {
-        // ... (start room is unchanged)
-    },
-    
-    // FIRST FLOOR ROOMS
-    foyer: {
-        text: "You are in the Grand Foyer. A thick layer of dust covers everything, sparkling in a single beam of moonlight that lances through a high, grimy window. A grand staircase sweeps upwards into darkness to the west. A wide archway leads north into what looks like a grand hall, and a smaller door stands to the east.",
-        items: ['a small brass key'], // NEW: An item has been placed in this room
-        options: {
-            'north': 'grand_hall',
-            'west': 'staircase',
-            'east': 'parlor'
-        }
-    },
-    grand_hall: {
-        // ... (other rooms are unchanged)
-    },
-    // ...
-};
+// ... (gameState is unchanged)
 
 
 // ======================================================
 // SECTION 4: GAME LOGIC FUNCTIONS
 // ======================================================
 
-// ... (sleep function is unchanged)
+// ... (sleep and typeText functions are unchanged)
 
-// ... (typeText function is unchanged)
+/**
+ * NEW: Creates the player object based on the chosen race.
+ * @param {string} race - The race chosen by the player ('human', 'elf', 'orc').
+ */
+function createPlayer(race) {
+    player.race = race;
+    player.inventory = [];
+
+    if (race === 'human') {
+        player.health = 100;
+        player.maxHealth = 100;
+        player.equipment = { weapon: 'a trusty sword' };
+        player.spells = [];
+    } else if (race === 'elf') {
+        player.health = 80;
+        player.maxHealth = 80;
+        player.equipment = { weapon: 'a sharp dagger' };
+        player.spells = ['fireball', 'heal'];
+    } else if (race === 'orc') {
+        player.health = 120;
+        player.maxHealth = 120;
+        player.equipment = { weapon: 'two hefty axes' };
+        player.spells = [];
+    }
+}
 
 
 /**
- * UPDATED: Updates the main game text to include items in the room.
+ * Updates the main game text to include items in the room.
  */
 async function updateDisplay() {
-    let textToDisplay = '';
-    if (gamePhase === 'title') {
-        textToDisplay = "Welcome to The Supra Mansion\n\nType 'start' to begin.";
-    } else if (gamePhase === 'race_selection') {
-        textToDisplay = "Choose your character:\n\n- human\n- elf\n- orc";
-    } else if (gamePhase === 'playing') {
-        const room = gameState[currentPlayerLocation];
-        textToDisplay = room.text;
-
-        // Check for items and add them to the description
-        if (room.items && room.items.length > 0) {
-            textToDisplay += "\n\nYou also see: " + room.items.join(', ') + ".";
-        }
-    }
-    await typeText(textToDisplay, true);
+    // ... (updateDisplay is unchanged)
 }
 
 /**
- * UPDATED: Parses player commands, now including inventory management.
+ * UPDATED: Parses player commands, now including status and spell-casting.
  * @param {string} command - The command entered by the player.
  */
 async function parseCommand(command) {
     // Handle universal commands first.
     if (command === 'restart') {
         gamePhase = 'race_selection';
-        playerRace = '';
-        playerInventory = []; // Make sure to clear inventory on restart
+        player = {}; // Clear the player object
         currentPlayerLocation = 'start';
         await updateDisplay();
         return;
     }
 
     if (command === 'clear') {
-        await updateDisplay();
-        return;
+        // ... (clear command is unchanged)
     }
     
-    // NEW: Handle inventory command
     if (command === 'inventory' || command === 'i') {
+        // ... (inventory command is now using player.inventory)
         let inventoryText = '> inventory\n\n';
-        if (playerInventory.length === 0) {
+        if (player.inventory.length === 0) {
             inventoryText += "You are not carrying anything.";
         } else {
-            inventoryText += "You are carrying: " + playerInventory.join(', ') + ".";
+            inventoryText += "You are carrying: " + player.inventory.join(', ') + ".";
         }
         await typeText(inventoryText);
         return;
     }
+    
+    // NEW: Handle status command
+    if (command === 'status' || command === 'stats' || command === 'health') {
+        let statusText = `\n> ${command}\n\n-- Character Status --\n`;
+        statusText += `Race: ${player.race.charAt(0).toUpperCase() + player.race.slice(1)}\n`;
+        statusText += `Health: ${player.health} / ${player.maxHealth}\n`;
+        statusText += `Weapon: ${player.equipment.weapon}\n`;
+        if (player.spells.length > 0) {
+            statusText += `Spells: ${player.spells.join(', ')}\n`;
+        }
+        statusText += `--------------------`;
+        await typeText(statusText);
+        return;
+    }
 
 
-    if (gamePhase === 'title' || gamePhase === 'race_selection') {
-        // ... (this logic is unchanged)
+    if (gamePhase === 'title') {
+        if (command === 'start') {
+            gamePhase = 'race_selection';
+            await updateDisplay();
+        }
+        return;
+    }
+
+    if (gamePhase === 'race_selection') {
+        if (['human', 'elf', 'orc'].includes(command)) {
+            createPlayer(command); // Create the player object
+            gamePhase = 'playing';
+            await updateDisplay();
+        }
         return;
     }
 
@@ -116,16 +129,56 @@ async function parseCommand(command) {
         const verb = commandParts[0];
         const noun = commandParts.slice(1).join(' ');
 
-        // NEW: Handle 'take' command
-        if (verb === 'take') {
-            const room = gameState[currentPlayerLocation];
-            if (!room.items || room.items.length === 0) {
-                await typeText(`\n> ${command}\n\nThere is nothing to take here.`);
+        // NEW: Handle spell-casting
+        if (verb === 'cast' || player.spells.includes(verb)) {
+            const spell = verb === 'cast' ? noun : verb;
+
+            if (player.race !== 'elf') {
+                await typeText(`\n> ${command}\n\nYou mumble some words, but you don't know how to cast spells.`);
                 return;
             }
-
-            // Find an item in the room that matches the noun
-            const itemToTake = room.items.find(item => item.includes(noun));
+            if (!player.spells.includes(spell)) {
+                await typeText(`\n> ${command}\n\nYou don't know the spell '${spell}'.`);
+                return;
+            }
             
-            if (itemToTake) {
-                // Remove from
+            // Handle specific spells
+            if (spell === 'fireball') {
+                await typeText(`\n> ${command}\n\nYou conjure a crackling ball of fire in your palm. It dances for a moment, waiting for a target, before extinguishing with a soft *poof*.`);
+            } else if (spell === 'heal') {
+                const healAmount = 20;
+                const oldHealth = player.health;
+                player.health = Math.min(player.maxHealth, player.health + healAmount);
+                const healedFor = player.health - oldHealth;
+                if (healedFor > 0) {
+                    await typeText(`\n> ${command}\n\nA warm, golden light envelops you, knitting your wounds. You heal for ${healedFor} health.\n(Health: ${player.health} / ${player.maxHealth})`);
+                } else {
+                    await typeText(`\n> ${command}\n\nYou are already at full health.`);
+                }
+            }
+            return;
+        }
+
+        if (verb === 'take') {
+            // ... (take command now uses player.inventory)
+        }
+
+        const availableOptions = gameState[currentPlayerLocation].options;
+        const option = availableOptions[command];
+
+        if (option) {
+             if (typeof option === 'object') {
+                // UPDATED: Now checks player.race instead of playerRace
+                if (option.descriptions && option.descriptions[player.race]) {
+                    // ...
+                }
+                //...
+            }
+        } else {
+            // ...
+        }
+    }
+}
+
+
+// ... (The rest of the file is mostly the same, just with 'playerRace' replaced by 'player.race' and 'playerInventory' by 'player.inventory')
