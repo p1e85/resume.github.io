@@ -1,6 +1,5 @@
 // ======================================================
 // SECTION 1: DOM ELEMENTS
-// Get references to the HTML elements we'll be using.
 // ======================================================
 const gameTextElement = document.getElementById('game-text');
 const commandForm = document.getElementById('command-form');
@@ -9,17 +8,15 @@ const commandInput = document.getElementById('command-input');
 
 // ======================================================
 // SECTION 2: GAME STATE VARIABLES
-// All the variables that track the state of our game.
 // ======================================================
-let gameHasStarted = false;
+// UPDATED: We now use a 'phase' to track game state
+let gamePhase = 'title'; // Can be 'title', 'race_selection', or 'playing'
 let currentPlayerLocation = 'start';
-// let playerInventory = []; // We can add this back later
+let playerRace = ''; // This will store the player's chosen race
 
 
 // ======================================================
 // SECTION 3: GAME DATA (THE WORLD)
-// This object contains all the rooms, descriptions, and items.
-// When you want to expand your world, you'll add to this object.
 // ======================================================
 const gameState = {
     start: {
@@ -27,45 +24,41 @@ const gameState = {
         options: { 'north': 'hallway' }
     },
     hallway: {
-        text: "You are in a long hallway. The door you came from is to the south. You see a faint light to the east.",
-        options: { 'south': 'start', 'east': 'treasure_room' }
+        text: "You are in a long hallway. The door you came from is to the south. You see faint light to the east and an inscription on the wall.",
+        options: {
+            'south': 'start',
+            'east': 'treasure_room',
+            // This is an example of a race-specific action
+            'read inscription': {
+                // The text to show if the check fails
+                failText: "The inscription is written in a language you don't understand.",
+                // The text to show if the check succeeds
+                successText: "The elven script reads: 'Only the patient will find the prize.'",
+                // The requirement to succeed
+                requires: 'elf'
+            }
+        }
     },
     treasure_room: {
         text: "You've found the treasure room! Congratulations, you win! 🏆 \n\nType 'restart' to begin a new adventure.",
-        options: { 'restart': 'start' }
+        options: { 'restart': 'title' } // 'restart' now goes to the title screen
     }
 };
 
 
 // ======================================================
 // SECTION 4: GAME LOGIC FUNCTIONS
-// These functions control the main logic of the game.
 // ======================================================
 
 /**
- * Starts the game, moving from the title screen to the first room.
- */
-function startGame() {
-    gameHasStarted = true;
-    updateDisplay();
-}
-
-/**
- * Restarts the game, returning to the title screen.
- */
-function restartGame() {
-    gameHasStarted = false;
-    currentPlayerLocation = 'start';
-    updateDisplay();
-}
-
-/**
- * Updates the main game text element based on the current game state.
+ * Updates the main game text element based on the current game phase.
  */
 function updateDisplay() {
-    if (!gameHasStarted) {
+    if (gamePhase === 'title') {
         gameTextElement.innerText = "Welcome to The Supra Mansion\n\nType 'start' to begin.";
-    } else {
+    } else if (gamePhase === 'race_selection') {
+        gameTextElement.innerText = "Choose your character:\n\n- human\n- elf\n- orc";
+    } else if (gamePhase === 'playing') {
         gameTextElement.innerText = gameState[currentPlayerLocation].text;
     }
 }
@@ -75,50 +68,70 @@ function updateDisplay() {
  * @param {string} command - The command entered by the player.
  */
 function parseCommand(command) {
-    if (!gameHasStarted) {
+    if (gamePhase === 'title') {
         if (command === 'start') {
-            startGame();
+            gamePhase = 'race_selection';
+            updateDisplay();
         }
         return;
     }
 
-    // --- In-Game Commands ---
-    const availableOptions = gameState[currentPlayerLocation].options;
-
-    if (command in availableOptions) {
-        const nextLocation = availableOptions[command];
-        
-        if (command === 'restart') {
-            restartGame();
-        } else {
-            currentPlayerLocation = nextLocation;
+    if (gamePhase === 'race_selection') {
+        if (command === 'human' || command === 'elf' || command === 'orc') {
+            playerRace = command;
+            gamePhase = 'playing';
             updateDisplay();
         }
-    } else {
-        // Append text for an invalid command
-        gameTextElement.innerText += "\n\nThat's not a valid command here.";
+        return;
+    }
+
+    if (gamePhase === 'playing') {
+        const availableOptions = gameState[currentPlayerLocation].options;
+        const option = availableOptions[command];
+
+        if (option) {
+            // Handle simple movement (option is a string)
+            if (typeof option === 'string') {
+                if (command === 'restart') {
+                    gamePhase = 'title';
+                    playerRace = '';
+                    currentPlayerLocation = 'start';
+                } else {
+                    currentPlayerLocation = option;
+                }
+                updateDisplay();
+            // Handle complex actions (option is an object)
+            } else if (typeof option === 'object') {
+                if (option.requires && option.requires === playerRace) {
+                    gameTextElement.innerText += `\n\n${option.successText}`;
+                } else {
+                    gameTextElement.innerText += `\n\n${option.failText}`;
+                }
+            }
+        } else {
+            gameTextElement.innerText += "\n\nThat's not a valid command here.";
+        }
     }
 }
 
 
 // ======================================================
 // SECTION 5: MAIN GAME LOOP (EVENT LISTENER)
-// This is the entry point that kicks everything off.
 // ======================================================
 commandForm.addEventListener('submit', function(event) {
     event.preventDefault();
     const command = commandInput.value.trim().toLowerCase();
     
-    if (command) { // Only process if the command isn't empty
+    if (command) {
         parseCommand(command);
     }
     
-    commandInput.value = ''; // Clear the input field
+    commandInput.value = '';
+    commandInput.focus(); // Keep the input field focused
 });
 
 
 // ======================================================
 // SECTION 6: INITIALIZATION
-// This runs once when the page loads to show the title screen.
 // ======================================================
 updateDisplay();
