@@ -1,6 +1,6 @@
 body {
     background-color: #111;
-    color: #0f0; /* Green text */
+    color: №4a90e2 /* blue text */
     font-family: 'Courier New', Courier, monospace;
     font-size: 1.2rem;
     display: flex;
@@ -13,7 +13,7 @@ body {
 #game-container {
     width: 90%;
     max-width: 800px;
-    border: 2px solid #0f0;
+    border: 2px solid #4a90e2;
     padding: 20px;
 }
 
@@ -30,7 +30,7 @@ body {
     flex-grow: 1; /* Makes the input field take up available space */
     background-color: transparent;
     border: none;
-    color: #0f0;
+    color: #4a90e2;
     font-family: inherit;
     font-size: inherit;
 }
