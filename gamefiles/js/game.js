@@ -73,12 +73,12 @@ async function typeText(text, clearFirst = false) {
 
     for (const char of text) {
         p.textContent += char;
-        // UPDATED: Scroll the entire window, not just the text box
-        window.scrollTo(0, document.body.scrollHeight);
         await sleep(TYPEWRITER_SPEED);
+        // REMOVED: The aggressive auto-scrolling from inside the loop.
     }
     
     gameTextElement.innerHTML += '<br>';
+    // MOVED: Scroll the window to the bottom ONCE, after typing is complete.
     window.scrollTo(0, document.body.scrollHeight);
     isTyping = false;
 }
@@ -103,7 +103,7 @@ async function updateDisplay() {
  * @param {string} command - The command entered by the player.
  */
 async function parseCommand(command) {
-    // NEW: Handle universal commands first.
+    // Handle universal commands first.
     if (command === 'restart') {
         gamePhase = 'race_selection';
         playerRace = '';
@@ -142,7 +142,6 @@ async function parseCommand(command) {
 
         if (option) {
             if (typeof option === 'string') {
-                // REMOVED: Old restart logic from here.
                 currentPlayerLocation = option;
                 await updateDisplay();
             } else if (typeof option === 'object') {
@@ -185,4 +184,3 @@ commandForm.addEventListener('submit', async function(event) {
 // SECTION 6: INITIALIZATION
 // ======================================================
 updateDisplay();
-
