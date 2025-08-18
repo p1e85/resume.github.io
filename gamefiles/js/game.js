@@ -1,80 +1,124 @@
-// Get references to the HTML elements we'll be using
+// ======================================================
+// SECTION 1: DOM ELEMENTS
+// Get references to the HTML elements we'll be using.
+// ======================================================
 const gameTextElement = document.getElementById('game-text');
 const commandForm = document.getElementById('command-form');
 const commandInput = document.getElementById('command-input');
 
-// --- NEW ---
-// A variable to track if the game has started
-let gameHasStarted = false;
 
-// Define the game world and its states
+// ======================================================
+// SECTION 2: GAME STATE VARIABLES
+// All the variables that track the state of our game.
+// ======================================================
+let gameHasStarted = false;
+let currentPlayerLocation = 'start';
+// let playerInventory = []; // We can add this back later
+
+
+// ======================================================
+// SECTION 3: GAME DATA (THE WORLD)
+// This object contains all the rooms, descriptions, and items.
+// When you want to expand your world, you'll add to this object.
+// ======================================================
 const gameState = {
     start: {
         text: "You are in a dark room. There is a heavy wooden door to the north.",
-        options: {
-            'north': 'hallway'
-        }
+        options: { 'north': 'hallway' }
     },
     hallway: {
         text: "You are in a long hallway. The door you came from is to the south. You see a faint light to the east.",
-        options: {
-            'south': 'start',
-            'east': 'treasure_room'
-        }
+        options: { 'south': 'start', 'east': 'treasure_room' }
     },
     treasure_room: {
-        text: "You've found the treasure room! A large chest sits in the middle. Congratulations, you win! 🏆 \n\nType 'restart' to play again.",
-        options: {
-            'restart': 'start'
-        }
+        text: "You've found the treasure room! Congratulations, you win! 🏆 \n\nType 'restart' to begin a new adventure.",
+        options: { 'restart': 'start' }
     }
 };
 
-// Set the player's starting location
-let currentPlayerLocation = 'start';
 
-// Function to update the display
+// ======================================================
+// SECTION 4: GAME LOGIC FUNCTIONS
+// These functions control the main logic of the game.
+// ======================================================
+
+/**
+ * Starts the game, moving from the title screen to the first room.
+ */
+function startGame() {
+    gameHasStarted = true;
+    updateDisplay();
+}
+
+/**
+ * Restarts the game, returning to the title screen.
+ */
+function restartGame() {
+    gameHasStarted = false;
+    currentPlayerLocation = 'start';
+    updateDisplay();
+}
+
+/**
+ * Updates the main game text element based on the current game state.
+ */
 function updateDisplay() {
-    // --- UPDATED ---
-    // If the game hasn't started, show the title screen.
     if (!gameHasStarted) {
         gameTextElement.innerText = "Welcome to The Supra Mansion\n\nType 'start' to begin.";
     } else {
-        // Otherwise, show the current room's text.
         gameTextElement.innerText = gameState[currentPlayerLocation].text;
     }
 }
 
-// Event listener for when the player submits a command
+/**
+ * Parses the player's command and calls the appropriate game logic.
+ * @param {string} command - The command entered by the player.
+ */
+function parseCommand(command) {
+    if (!gameHasStarted) {
+        if (command === 'start') {
+            startGame();
+        }
+        return;
+    }
+
+    // --- In-Game Commands ---
+    const availableOptions = gameState[currentPlayerLocation].options;
+
+    if (command in availableOptions) {
+        const nextLocation = availableOptions[command];
+        
+        if (command === 'restart') {
+            restartGame();
+        } else {
+            currentPlayerLocation = nextLocation;
+            updateDisplay();
+        }
+    } else {
+        // Append text for an invalid command
+        gameTextElement.innerText += "\n\nThat's not a valid command here.";
+    }
+}
+
+
+// ======================================================
+// SECTION 5: MAIN GAME LOOP (EVENT LISTENER)
+// This is the entry point that kicks everything off.
+// ======================================================
 commandForm.addEventListener('submit', function(event) {
     event.preventDefault();
     const command = commandInput.value.trim().toLowerCase();
-    commandInput.value = '';
-
-    // --- UPDATED LOGIC ---
-    if (!gameHasStarted) {
-        // If the game hasn't started, we only listen for the 'start' command.
-        if (command === 'start') {
-            gameHasStarted = true;
-            updateDisplay(); // Now show the first room
-        }
-    } else {
-        // If the game HAS started, run the normal game logic.
-        const nextLocation = gameState[currentPlayerLocation].options[command];
-        
-        if (nextLocation) {
-            currentPlayerLocation = nextLocation;
-            // A special case to reset the game if 'restart' is chosen
-            if (nextLocation === 'start' && command === 'restart') {
-                gameHasStarted = false; 
-            }
-        } else {
-            gameTextElement.innerText += "\n\nThat's not a valid command here.";
-            return; 
-        }
-        updateDisplay();
+    
+    if (command) { // Only process if the command isn't empty
+        parseCommand(command);
     }
+    
+    commandInput.value = ''; // Clear the input field
 });
 
-// Initial display update to show the title screen when the page loads
+
+// ======================================================
+// SECTION 6: INITIALIZATION
+// This runs once when the page loads to show the title screen.
+// ======================================================
 updateDisplay();
