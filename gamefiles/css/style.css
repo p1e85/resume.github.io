@@ -5,26 +5,24 @@ body {
     font-size: 1.2rem;
     display: flex;
     justify-content: center;
-    align-items: center;
-    height: 100vh;
+    align-items: flex-start; /* Align to the top */
+    min-height: 100vh; /* Ensure body takes full height */
     margin: 0;
+    padding: 20px 0; /* Add some padding to the top and bottom */
 }
 
 #game-container {
     width: 90%;
-    max-width: 900px; /* Increased max-width */
-    min-height: 500px; /* Added a minimum height */
+    max-width: 900px;
     border: 2px solid #4a90e2; /* Blue border color */
     padding: 20px;
-    display: flex; /* Using flexbox to manage layout */
-    flex-direction: column;
+    /* REMOVED: min-height, display: flex, flex-direction. The box will now grow naturally. */
 }
 
 #game-text {
     white-space: pre-wrap;
-    flex-grow: 1; /* Allows this element to fill available space */
-    overflow-y: auto; /* Adds a scrollbar if content overflows */
     margin-bottom: 20px;
+    /* REMOVED: flex-grow, overflow-y. These are no longer needed. */
 }
 
 #command-form {
