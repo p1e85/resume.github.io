@@ -76,7 +76,7 @@ const gameState = {
     closet: {
         text: "You slip into a small, cramped closet. It smells of mothballs and decay. The door clicks shut behind you!",
         options: {}
-    }, // **FIXED:** A comma was missing here, which broke the entire object.
+    },
     grand_hall: {
         text: "This is the Grand Hall. The sheer size of the room is breathtaking, though it's empty and desolate. [This room is under construction]",
         options: {
@@ -161,6 +161,8 @@ async function updateDisplay() {
 }
 
 async function parseCommand(command) {
+    if (!command) return; // Do nothing if command is empty
+
     if (command === 'restart') {
         gamePhase = 'race_selection';
         player = {};
@@ -173,8 +175,8 @@ async function parseCommand(command) {
     if (command === 'clear') {
         const room = gameState[currentPlayerLocation];
         let roomText = room.text;
-         if (room.items && room.items.length > 0) {
-            roomText += "\n\nYou also see: " + room.items.join(', ') + ".";
+         if (room.objects && Object.keys(room.objects).length > 0) { // Check for objects, not items
+            roomText += "\n\nType 'look around' to see more detail.";
         }
         await typeText(roomText, true);
         return;
@@ -209,7 +211,7 @@ async function parseCommand(command) {
     }
 
     if (gamePhase === 'title') {
-        if (command === 'start') {
+        if (command.startsWith('start')) {
             gamePhase = 'race_selection';
             await updateDisplay();
         }
@@ -217,8 +219,9 @@ async function parseCommand(command) {
     }
 
     if (gamePhase === 'race_selection') {
-        if (['human', 'elf', 'orc'].includes(command)) {
-            createPlayer(command);
+        if (['human', 'elf', 'orc'].find(r => r.startsWith(command))) {
+            const race = ['human', 'elf', 'orc'].find(r => r.startsWith(command));
+            createPlayer(race);
             gamePhase = 'playing';
             await typeText(gameState[currentPlayerLocation].text, true);
         }
@@ -226,7 +229,9 @@ async function parseCommand(command) {
     }
     
     if (gamePhase === 'event') {
-        if (command === 'use door' || command === 'use key') {
+        const fullCommand = ['use door', 'use key', 'flee north', 'flee west', 'flee east'].find(c => c.startsWith(command));
+
+        if (fullCommand && (fullCommand.startsWith('use door') || fullCommand.startsWith('use key'))) {
             const doorObject = gameState.foyer.objects['small door'];
             if (doorObject.items.length > 0) {
                 player.inventory.push(doorObject.items.pop());
@@ -247,90 +252,3 @@ async function parseCommand(command) {
     }
 
     if (gamePhase === 'playing') {
-        const commandParts = command.split(' ');
-        const verb = commandParts[0];
-        const noun = commandParts.slice(1).join(' ');
-        const room = gameState[currentPlayerLocation];
-
-        if (command === 'look around' || command === 'look') {
-            let lookText = "\nYou scan the room and notice a few things of interest:\n";
-            const objectKeys = Object.keys(room.objects || {});
-            if (objectKeys.length > 0) {
-                objectKeys.forEach(obj => { lookText += `- ${obj}\n`; });
-            } else {
-                lookText = "\nYou look around, but see nothing of particular interest.";
-            }
-            await typeText(lookText);
-
-            if (currentPlayerLocation === 'foyer' && !foyerLooked) {
-                foyerLooked = true;
-                setTimeout(async () => {
-                    if (currentPlayerLocation === 'foyer' && gamePhase === 'playing') {
-                        gamePhase = 'event';
-                        await typeText("\n**Suddenly, you hear a heavy scraping sound from the floor above, followed by slow, deliberate footsteps. Something is coming.**\n\nYou need to act quickly!\n\n- **use door** with the key\n- **flee** (e.g., 'flee north')");
-                    }
-                }, 7000);
-            }
-            return;
-        }
-
-        if (verb === 'search') {
-            const objectToSearch = Object.keys(room.objects || {}).find(obj => obj.includes(noun));
-            if (objectToSearch) {
-                const objData = room.objects[objectToSearch];
-                let searchText = `\n> ${command}\n\n${objData.description}`;
-                if (objData.items && objData.items.length > 0) {
-                    const foundItem = objData.items[0];
-                    searchText += `\nYou find: ${foundItem}.`;
-                    player.inventory.push(objData.items.pop());
-                }
-                await typeText(searchText);
-            } else {
-                await typeText(`\n> ${command}\n\nYou can't find a '${noun}' to search.`);
-            }
-            return;
-        }
-        
-        const availableOptions = room.options;
-        const option = availableOptions[command];
-
-        if (option) {
-            if (typeof option === 'string') {
-                currentPlayerLocation = option;
-                await updateDisplay();
-            } else if (typeof option === 'object') {
-                let message = '';
-                if (option.descriptions && option.descriptions[player.race]) {
-                    message = option.descriptions[player.race];
-                }
-                if (message) { await typeText(`\n> ${command}\n\n${message}`); }
-                if (option.destination) {
-                    currentPlayerLocation = option.destination;
-                    await sleep(500);
-                    await updateDisplay();
-                }
-            }
-        } else {
-            await typeText(`\n> ${command}\n\nThat's not a valid command here.`);
-        }
-    }
-}
-
-
-// ======================================================
-// SECTION 5: MAIN GAME LOOP (EVENT LISTENER)
-// ======================================================
-commandForm.addEventListener('submit', async function(event) {
-    event.preventDefault();
-    if (isTyping) return;
-    const command = commandInput.value.trim().toLowerCase();
-    commandInput.value = '';
-    if (command) { await parseCommand(command); }
-    commandInput.focus();
-});
-
-
-// ======================================================
-// SECTION 6: INITIALIZATION
-// ======================================================
-updateDisplay();
