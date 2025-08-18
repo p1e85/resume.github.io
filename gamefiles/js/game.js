@@ -161,12 +161,12 @@ async function updateDisplay() {
 }
 
 async function parseCommand(command) {
-    if (!command) return; // Do nothing if command is empty
+    if (!command) return;
 
     if (command === 'restart') {
         gamePhase = 'race_selection';
         player = {};
-        foyerLooked = false; // Reset event tracker
+        foyerLooked = false;
         currentPlayerLocation = 'start';
         await typeText("Choose your character:\n\n- human\n- elf\n- orc", true);
         return;
@@ -175,7 +175,8 @@ async function parseCommand(command) {
     if (command === 'clear') {
         const room = gameState[currentPlayerLocation];
         let roomText = room.text;
-         if (room.objects && Object.keys(room.objects).length > 0) { // Check for objects, not items
+         if (room.objects && Object.keys(room.objects).length > 0) {
+            roomText = roomText.replace("\n\nType 'look around' to see more detail.", ""); // Clean up old prompt
             roomText += "\n\nType 'look around' to see more detail.";
         }
         await typeText(roomText, true);
@@ -219,9 +220,9 @@ async function parseCommand(command) {
     }
 
     if (gamePhase === 'race_selection') {
-        if (['human', 'elf', 'orc'].find(r => r.startsWith(command))) {
-            const race = ['human', 'elf', 'orc'].find(r => r.startsWith(command));
-            createPlayer(race);
+        const raceChoice = ['human', 'elf', 'orc'].find(r => r.startsWith(command));
+        if (raceChoice) {
+            createPlayer(raceChoice);
             gamePhase = 'playing';
             await typeText(gameState[currentPlayerLocation].text, true);
         }
@@ -229,7 +230,7 @@ async function parseCommand(command) {
     }
     
     if (gamePhase === 'event') {
-        const fullCommand = ['use door', 'use key', 'flee north', 'flee west', 'flee east'].find(c => c.startsWith(command));
+        const fullCommand = ['use door', 'use key', 'go north', 'go west', 'go east', 'flee'].find(c => command.startsWith(c.split(' ')[0]));
 
         if (fullCommand && (fullCommand.startsWith('use door') || fullCommand.startsWith('use key'))) {
             const doorObject = gameState.foyer.objects['small door'];
@@ -241,8 +242,8 @@ async function parseCommand(command) {
             await sleep(500);
             await updateDisplay();
         } else {
-            const fleeCommand = Object.keys(gameState.foyer.options).find(opt => command.includes(opt.split(' ')[1]));
-            currentPlayerLocation = fleeCommand ? gameState.foyer.options[fleeCommand] : 'grand_hall';
+            const fleeOption = Object.keys(gameState.foyer.options).find(opt => command.includes(opt.split(' ')[1])) || 'go north';
+            currentPlayerLocation = gameState.foyer.options[fleeOption];
             await typeText("\n> You don't waste a second and bolt through the nearest exit.", true);
             await sleep(500);
             await updateDisplay();
@@ -252,3 +253,99 @@ async function parseCommand(command) {
     }
 
     if (gamePhase === 'playing') {
+        const room = gameState[currentPlayerLocation];
+        const commandParts = command.split(' ');
+        const verb = commandParts[0];
+        const noun = commandParts.slice(1).join(' ');
+
+        // Check for specific verb-based commands first
+        if (['look', 'search', 'cast', 'take'].includes(verb) || (player.spells && player.spells.includes(verb))) {
+            if (verb === 'look') {
+                let lookText = "\nYou scan the room and notice a few things of interest:\n";
+                const objectKeys = Object.keys(room.objects || {});
+                if (objectKeys.length > 0) {
+                    objectKeys.forEach(obj => { lookText += `- ${obj}\n`; });
+                } else {
+                    lookText = "\nYou look around, but see nothing of particular interest.";
+                }
+                await typeText(lookText);
+
+                if (currentPlayerLocation === 'foyer' && !foyerLooked) {
+                    foyerLooked = true;
+                    setTimeout(async () => {
+                        if (currentPlayerLocation === 'foyer' && gamePhase === 'playing') {
+                            gamePhase = 'event';
+                            await typeText("\n**Suddenly, you hear a heavy scraping sound from the floor above, followed by slow, deliberate footsteps. Something is coming.**\n\nYou need to act quickly!\n\n- **use door** with the key\n- **flee** (e.g., 'flee north')");
+                        }
+                    }, 7000);
+                }
+                return;
+            }
+
+            if (verb === 'search') {
+                const objectKeys = Object.keys(room.objects || {});
+                const objectToSearch = objectKeys.find(obj => obj.startsWith(noun));
+                if (objectToSearch) {
+                    const objData = room.objects[objectToSearch];
+                    let searchText = `\n> search ${objectToSearch}\n\n${objData.description}`;
+                    if (objData.items && objData.items.length > 0) {
+                        const foundItem = objData.items[0];
+                        searchText += `\nYou find: ${foundItem}.`;
+                        player.inventory.push(objData.items.pop());
+                    }
+                    await typeText(searchText);
+                } else {
+                    await typeText(`\n> search ${noun}\n\nYou can't find a '${noun}' to search.`);
+                }
+                return;
+            }
+            // Add other verb-based commands like 'cast' and 'take' here if needed.
+        }
+        
+        // **FIXED LOGIC:** If it's not a verb-based command, check for a full command match.
+        const availableOptions = room.options || {};
+        const allCommandKeys = Object.keys(availableOptions);
+        const matchedCommand = allCommandKeys.find(c => c.startsWith(command));
+
+        if (matchedCommand) {
+            const option = availableOptions[matchedCommand];
+            if (typeof option === 'string') {
+                currentPlayerLocation = option;
+                await typeText(`\n> ${matchedCommand}\n`);
+                await updateDisplay();
+            } else if (typeof option === 'object') {
+                let message = '';
+                if (option.descriptions && option.descriptions[player.race]) {
+                    message = option.descriptions[player.race];
+                }
+                if (message) { await typeText(`\n> ${matchedCommand}\n\n${message}`); }
+                if (option.destination) {
+                    currentPlayerLocation = option.destination;
+                    await sleep(500);
+                    await updateDisplay();
+                }
+            }
+        } else {
+            await typeText(`\n> ${command}\n\nThat's not a valid command here.`);
+        }
+    }
+}
+
+
+// ======================================================
+// SECTION 5: MAIN GAME LOOP (EVENT LISTENER)
+// ======================================================
+commandForm.addEventListener('submit', async function(event) {
+    event.preventDefault();
+    if (isTyping) return;
+    const command = commandInput.value.trim().toLowerCase();
+    commandInput.value = '';
+    if (command) { await parseCommand(command); }
+    commandInput.focus();
+});
+
+
+// ======================================================
+// SECTION 6: INITIALIZATION
+// ======================================================
+updateDisplay();
