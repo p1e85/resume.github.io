@@ -3,6 +3,10 @@ const gameTextElement = document.getElementById('game-text');
 const commandForm = document.getElementById('command-form');
 const commandInput = document.getElementById('command-input');
 
+// --- NEW ---
+// A variable to track if the game has started
+let gameHasStarted = false;
+
 // Define the game world and its states
 const gameState = {
     start: {
@@ -29,40 +33,48 @@ const gameState = {
 // Set the player's starting location
 let currentPlayerLocation = 'start';
 
-// Function to update the display with the current room's text
+// Function to update the display
 function updateDisplay() {
-    gameTextElement.innerText = gameState[currentPlayerLocation].text;
+    // --- UPDATED ---
+    // If the game hasn't started, show the title screen.
+    if (!gameHasStarted) {
+        gameTextElement.innerText = "Welcome to The Supra Mansion\n\nType 'start' to begin.";
+    } else {
+        // Otherwise, show the current room's text.
+        gameTextElement.innerText = gameState[currentPlayerLocation].text;
+    }
 }
 
 // Event listener for when the player submits a command
 commandForm.addEventListener('submit', function(event) {
-    // Prevent the form from reloading the page
     event.preventDefault();
-
-    // Get the player's command, trim whitespace, and convert to lowercase
     const command = commandInput.value.trim().toLowerCase();
-
-    // Clear the input field for the next command
     commandInput.value = '';
 
-    // If the current location has options
-    if (gameState[currentPlayerLocation].options) {
+    // --- UPDATED LOGIC ---
+    if (!gameHasStarted) {
+        // If the game hasn't started, we only listen for the 'start' command.
+        if (command === 'start') {
+            gameHasStarted = true;
+            updateDisplay(); // Now show the first room
+        }
+    } else {
+        // If the game HAS started, run the normal game logic.
         const nextLocation = gameState[currentPlayerLocation].options[command];
         
-        // If the command is a valid option, move the player
         if (nextLocation) {
             currentPlayerLocation = nextLocation;
+            // A special case to reset the game if 'restart' is chosen
+            if (nextLocation === 'start' && command === 'restart') {
+                gameHasStarted = false; 
+            }
         } else {
-            // If the command is invalid
             gameTextElement.innerText += "\n\nThat's not a valid command here.";
-            return; // Stop the function here
+            return; 
         }
+        updateDisplay();
     }
-    
-    // Update the screen with the new location's text
-    updateDisplay();
 });
 
-
-// Initial display update to show the starting text
+// Initial display update to show the title screen when the page loads
 updateDisplay();
