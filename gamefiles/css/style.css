@@ -1,6 +1,6 @@
 body {
     background-color: #111;
-    color: #4a90e2; /* blue text */
+    color: #4a90e2; /* MAIN TEXT COLOR */
     font-family: 'Courier New', Courier, monospace;
     font-size: 1.2rem;
     display: flex;
@@ -13,12 +13,12 @@ body {
 #game-container {
     width: 90%;
     max-width: 800px;
-    border: 2px solid #4a90e2;
+    border: 2px solid #4a90e2; /*  border color */
     padding: 20px;
 }
 
 #game-text {
-    white-space: pre-wrap; /* Preserves line breaks and spacing */
+    white-space: pre-wrap;
     margin-bottom: 20px;
 }
 
@@ -27,16 +27,16 @@ body {
 }
 
 #command-input {
-    flex-grow: 1; /* Makes the input field take up available space */
+    flex-grow: 1;
     background-color: transparent;
     border: none;
-    color: #4a90e2;
+    color: #4a90e2; /* INPUT FIELD'S TEXT */
     font-family: inherit;
     font-size: inherit;
 }
 
 #command-input:focus {
-    outline: none; /* Removes the border when typing */
+    outline: none;
 }
 
 label {
