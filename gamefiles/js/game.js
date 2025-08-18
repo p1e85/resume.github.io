@@ -9,10 +9,11 @@ const commandInput = document.getElementById('command-input');
 // ======================================================
 // SECTION 2: GAME STATE VARIABLES
 // ======================================================
-// UPDATED: We now use a 'phase' to track game state
 let gamePhase = 'title'; // Can be 'title', 'race_selection', or 'playing'
 let currentPlayerLocation = 'start';
 let playerRace = ''; // This will store the player's chosen race
+let isTyping = false; // Flag to prevent input during text animation
+const TYPEWRITER_SPEED = 25; // Milliseconds per character
 
 
 // ======================================================
@@ -28,20 +29,16 @@ const gameState = {
         options: {
             'south': 'start',
             'east': 'treasure_room',
-            // This is an example of a race-specific action
             'read inscription': {
-                // The text to show if the check fails
                 failText: "The inscription is written in a language you don't understand.",
-                // The text to show if the check succeeds
                 successText: "The elven script reads: 'Only the patient will find the prize.'",
-                // The requirement to succeed
                 requires: 'elf'
             }
         }
     },
     treasure_room: {
         text: "You've found the treasure room! Congratulations, you win! 🏆 \n\nType 'restart' to begin a new adventure.",
-        options: { 'restart': 'title' } // 'restart' now goes to the title screen
+        options: { 'restart': 'title' }
     }
 };
 
@@ -51,27 +48,71 @@ const gameState = {
 // ======================================================
 
 /**
+ * A helper function to create a delay.
+ * @param {number} ms - Milliseconds to wait.
+ * @returns {Promise}
+ */
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Animates text being typed out, character by character.
+ * @param {string} text - The text to display.
+ * @param {boolean} clearFirst - If true, clears the game text before typing.
+ */
+async function typeText(text, clearFirst = false) {
+    isTyping = true;
+    if (clearFirst) {
+        gameTextElement.innerHTML = '';
+    }
+
+    // Add a paragraph for the new text block
+    const p = document.createElement('p');
+    gameTextElement.appendChild(p);
+
+    for (const char of text) {
+        p.textContent += char;
+        gameTextElement.scrollTop = gameTextElement.scrollHeight; // Auto-scroll
+        await sleep(TYPEWRITER_SPEED);
+    }
+    
+    // Add an extra line break for spacing between commands
+    gameTextElement.innerHTML += '<br>';
+    gameTextElement.scrollTop = gameTextElement.scrollHeight;
+    isTyping = false;
+}
+
+/**
  * Updates the main game text element based on the current game phase.
  */
-function updateDisplay() {
+async function updateDisplay() {
+    let textToDisplay = '';
     if (gamePhase === 'title') {
-        gameTextElement.innerText = "Welcome to The Supra Mansion\n\nType 'start' to begin.";
+        textToDisplay = "Welcome to The Supra Mansion\n\nType 'start' to begin.";
     } else if (gamePhase === 'race_selection') {
-        gameTextElement.innerText = "Choose your character:\n\n- human\n- elf\n- orc";
+        textToDisplay = "Choose your character:\n\n- human\n- elf\n- orc";
     } else if (gamePhase === 'playing') {
-        gameTextElement.innerText = gameState[currentPlayerLocation].text;
+        textToDisplay = gameState[currentPlayerLocation].text;
     }
+    await typeText(textToDisplay, true); // Clear screen and type new prompt
 }
 
 /**
  * Parses the player's command and calls the appropriate game logic.
  * @param {string} command - The command entered by the player.
  */
-function parseCommand(command) {
+async function parseCommand(command) {
+    // Handle the 'clear' command first, as it's a special UI command
+    if (command === 'clear') {
+        await updateDisplay(); // This redraws the current prompt, effectively clearing history
+        return;
+    }
+
     if (gamePhase === 'title') {
         if (command === 'start') {
             gamePhase = 'race_selection';
-            updateDisplay();
+            await updateDisplay();
         }
         return;
     }
@@ -80,7 +121,7 @@ function parseCommand(command) {
         if (command === 'human' || command === 'elf' || command === 'orc') {
             playerRace = command;
             gamePhase = 'playing';
-            updateDisplay();
+            await updateDisplay();
         }
         return;
     }
@@ -90,26 +131,25 @@ function parseCommand(command) {
         const option = availableOptions[command];
 
         if (option) {
-            // Handle simple movement (option is a string)
             if (typeof option === 'string') {
                 if (command === 'restart') {
                     gamePhase = 'title';
                     playerRace = '';
                     currentPlayerLocation = 'start';
+                    await updateDisplay();
                 } else {
                     currentPlayerLocation = option;
+                    await updateDisplay();
                 }
-                updateDisplay();
-            // Handle complex actions (option is an object)
             } else if (typeof option === 'object') {
                 if (option.requires && option.requires === playerRace) {
-                    gameTextElement.innerText += `\n\n${option.successText}`;
+                    await typeText(`\n> ${command}\n\n${option.successText}`);
                 } else {
-                    gameTextElement.innerText += `\n\n${option.failText}`;
+                    await typeText(`\n> ${command}\n\n${option.failText}`);
                 }
             }
         } else {
-            gameTextElement.innerText += "\n\nThat's not a valid command here.";
+            await typeText(`\n> ${command}\n\nThat's not a valid command here.`);
         }
     }
 }
@@ -118,16 +158,18 @@ function parseCommand(command) {
 // ======================================================
 // SECTION 5: MAIN GAME LOOP (EVENT LISTENER)
 // ======================================================
-commandForm.addEventListener('submit', function(event) {
+commandForm.addEventListener('submit', async function(event) {
     event.preventDefault();
+    if (isTyping) return; // Prevent input while text is animating
+
     const command = commandInput.value.trim().toLowerCase();
-    
+    commandInput.value = '';
+
     if (command) {
-        parseCommand(command);
+        await parseCommand(command);
     }
     
-    commandInput.value = '';
-    commandInput.focus(); // Keep the input field focused
+    commandInput.focus();
 });
 
 
