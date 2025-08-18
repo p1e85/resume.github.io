@@ -113,7 +113,8 @@ async function typeText(text, clearFirst = false) {
     }
     
     gameTextElement.innerHTML += '<br>';
-    window.scrollTo(0, document.body.scrollHeight);
+    // CHANGED: Implemented smooth scrolling instead of an instant snap.
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     isTyping = false;
 }
 
@@ -161,7 +162,8 @@ async function updateDisplay() {
             textToDisplay += "\n\nYou also see: " + room.items.join(', ') + ".";
         }
     }
-    await typeText(textToDisplay, true);
+    // CHANGED: We no longer clear the screen on every room change.
+    await typeText(textToDisplay, false);
 }
 
 /**
@@ -174,12 +176,19 @@ async function parseCommand(command) {
         gamePhase = 'race_selection';
         player = {};
         currentPlayerLocation = 'start';
-        await updateDisplay();
+        // CHANGED: Now explicitly clears the screen before showing the race selection.
+        await typeText("Choose your character:\n\n- human\n- elf\n- orc", true);
         return;
     }
 
     if (command === 'clear') {
-        await updateDisplay();
+        // CHANGED: Now clears the screen and reprints the current room description.
+        const room = gameState[currentPlayerLocation];
+        let roomText = room.text;
+         if (room.items && room.items.length > 0) {
+            roomText += "\n\nYou also see: " + room.items.join(', ') + ".";
+        }
+        await typeText(roomText, true);
         return;
     }
     
@@ -224,7 +233,8 @@ async function parseCommand(command) {
         if (['human', 'elf', 'orc'].includes(command)) {
             createPlayer(command);
             gamePhase = 'playing';
-            await updateDisplay();
+            // CHANGED: Clears the race selection text before starting the game.
+            await typeText(gameState[currentPlayerLocation].text, true);
         }
         return;
     }
@@ -335,4 +345,3 @@ commandForm.addEventListener('submit', async function(event) {
 // SECTION 6: INITIALIZATION
 // ======================================================
 updateDisplay();
-
