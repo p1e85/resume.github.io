@@ -20,27 +20,29 @@ const TYPEWRITER_SPEED = 25; // Milliseconds per character
 // SECTION 3: GAME DATA (THE WORLD)
 // ======================================================
 const gameState = {
+    // In the gameState constant...
     start: {
-        text: "You are in a dark room. There is a heavy wooden door to the north.",
-        options: { 'north': 'hallway' }
-    },
-    hallway: {
-        text: "You are in a long hallway. The door you came from is to the south. You see faint light to the east and an inscription on the wall.",
+        text: "The last light of dusk fails as you finally break through the oppressive woods. Before you looms the Supra Mansion, a silhouette of spires and gables against a bruised purple sky.\n\nA chill wind cuts across the clearing, carrying the scent of rain and old stone. Massive oak doors, bound in dark, pitted iron, stand before you.\n\nWhat is your approach?\n\n- knock loudly\n- ring the bell\n- try the door",
         options: {
-            'south': 'start',
-            'east': 'treasure_room',
-            'read inscription': {
-                failText: "The inscription is written in a language you don't understand.",
-                successText: "The elven script reads: 'Only the patient will find the prize.'",
-                requires: 'elf'
+            'knock loudly': {
+                human: "You rap your knuckles sharply on the ancient wood. The sound is solid and definitive, yet it's swallowed by the immense silence of the place. No answer comes.",
+                elf: "With a light but firm touch, you tap a rhythmic pattern on the door. The sound seems to echo deep within the mansion's halls, a clear and pleasant tone. Still, the door remains shut.",
+                orc: "You hammer a heavy fist against the door. A deep BOOM echoes across the clearing, and the iron fittings rattle in protest. If anything is alive in there, it knows you're here. The door does not open."
+            },
+            'ring the bell': {
+                human: "You find a simple iron pull-cord. You give it a firm tug, and a faint, tinny jangling can be heard somewhere in the mansion's depths before falling silent.",
+                elf: "Your keen eyes spot a delicate silver chain nearly hidden by ivy. A gentle pull produces a series of beautiful, resonant chimes that seem to hang in the air for a moment too long. No one answers the call.",
+                orc: "You see a thick, greasy rope attached to a large bell. You yank it with all your might. A deafening, discordant CLANG shatters the quiet, startling birds from the trees a mile away. The rope comes off in your hand. The door remains closed."
+            },
+            'try the door': {
+                human: "You grip the large, cold iron ring and pull. The door is immensely heavy but feels… unlatched. It scrapes open just enough for you to slip inside.",
+                elf: "You place your slender fingers on the door's edge and push. With a surprising lack of resistance, it swings inward on silent hinges, opening a path into the darkness.",
+                orc: "You put your shoulder to the door and heave. With a groan of protesting wood, it shudders open, revealing the dark interior of the mansion."
             }
         }
     },
-    treasure_room: {
-        text: "You've found the treasure room! Congratulations, you win! 🏆 \n\nType 'restart' to begin a new adventure.",
-        options: { 'restart': 'title' }
-    }
-};
+// ... the rest of gameState remains the same
+
 
 
 // ======================================================
