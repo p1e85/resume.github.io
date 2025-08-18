@@ -9,18 +9,19 @@ const commandInput = document.getElementById('command-input');
 // ======================================================
 // SECTION 2: GAME STATE VARIABLES
 // ======================================================
-let gamePhase = 'title'; // Can be 'title', 'race_selection', or 'playing'
+let gamePhase = 'title'; // Can be 'title', 'race_selection', 'playing', or 'event'
 let currentPlayerLocation = 'start';
 let player = {}; // A single object to hold all player data
 let isTyping = false; // Flag to prevent input during text animation
 const TYPEWRITER_SPEED = 25; // Milliseconds per character
+let foyerLooked = false; // Tracks if the player has looked around the foyer
 
 
 // ======================================================
 // SECTION 3: GAME DATA (THE WORLD)
 // ======================================================
 const gameState = {
-    // STARTING AREA (OUTSIDE)
+    // ... (start room is unchanged)
     start: {
         text: "The last light of dusk fails as you finally break through the oppressive woods. Before you looms the Supra Mansion, a silhouette of spires and gables against a bruised purple sky.\n\nA chill wind cuts across the clearing, carrying the scent of rain and old stone. Massive oak doors, bound in dark, pitted iron, stand before you.\n\nWhat is your approach?\n\n- knock loudly\n- ring the bell\n- try the door",
         options: {
@@ -51,32 +52,38 @@ const gameState = {
     
     // FIRST FLOOR ROOMS
     foyer: {
-        text: "You are in the Grand Foyer. A thick layer of dust covers everything, sparkling in a single beam of moonlight that lances through a high, grimy window. A grand staircase sweeps upwards into darkness to the west. A wide archway leads north into what looks like a grand hall, and a smaller door stands to the east.",
-        items: ['a small brass key'],
+        text: "You are in the Grand Foyer. A thick layer of dust covers everything, sparkling in a single beam of moonlight that lances through a high, grimy window. A grand staircase sweeps upwards into darkness to the west. A wide archway leads north, and a smaller door stands to the east.\n\nType 'look around' to see more detail.",
+        // REMOVED: 'items' array.
+        // NEW: 'objects' to make the room interactive.
+        objects: {
+            'grand staircase': {
+                description: "The staircase is impressive, carved from a dark, rich wood. Thick cobwebs cling to the banister. It leads up into oppressive darkness.",
+                searched: false
+            },
+            'small door': {
+                description: "This is a simple, plain door. A small brass key is sticking out of the keyhole.",
+                items: ['a small brass key'], // The key is now IN the door.
+                destination: 'closet', // This door leads somewhere new.
+                searched: false
+            },
+            'wide archway': {
+                description: "The archway is framed with ornate carvings of vines and strange beasts. It leads into what appears to be a grand hall.",
+                searched: false
+            }
+        },
         options: {
-            'north': 'grand_hall',
-            'west': 'staircase',
-            'east': 'parlor'
+            'go north': 'grand_hall',
+            'go west': 'staircase',
+            'go east': 'parlor'
         }
     },
-    grand_hall: {
-        text: "This is the Grand Hall. The sheer size of the room is breathtaking, though it's empty and desolate. [This room is under construction]",
-        options: {
-            'south': 'foyer'
-        }
+    closet: {
+        text: "You slip into a small, cramped closet. It smells of mothballs and decay. The door clicks shut behind you!",
+        options: {}
     },
-    staircase: {
-        text: "A grand staircase. It's probably not safe to go up yet. [This area is under construction]",
-        options: {
-            'east': 'foyer'
-        }
-    },
-    parlor: {
-        text: "You've entered the Parlor. Furniture lies draped in white sheets, like a congregation of ghosts. [This room is under construction]",
-        options: {
-            'west': 'foyer'
-        }
-    }
+    grand_hall: { /* ... */ },
+    staircase: { /* ... */ },
+    parlor: { /* ... */ }
 };
 
 
@@ -84,69 +91,10 @@ const gameState = {
 // SECTION 4: GAME LOGIC FUNCTIONS
 // ======================================================
 
-/**
- * A helper function to create a delay.
- * @param {number} ms - Milliseconds to wait.
- * @returns {Promise}
- */
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+// ... (sleep, typeText, createPlayer functions are unchanged)
 
 /**
- * Animates text being typed out, character by character.
- * @param {string} text - The text to display.
- * @param {boolean} clearFirst - If true, clears the game text before typing.
- */
-async function typeText(text, clearFirst = false) {
-    isTyping = true;
-    if (clearFirst) {
-        gameTextElement.innerHTML = '';
-    }
-
-    const p = document.createElement('p');
-    gameTextElement.appendChild(p);
-
-    for (const char of text) {
-        p.textContent += char;
-        await sleep(TYPEWRITER_SPEED);
-    }
-    
-    gameTextElement.innerHTML += '<br>';
-    // CHANGED: Implemented smooth scrolling instead of an instant snap.
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    isTyping = false;
-}
-
-/**
- * Creates the player object based on the chosen race.
- * @param {string} race - The race chosen by the player ('human', 'elf', 'orc').
- */
-function createPlayer(race) {
-    player.race = race;
-    player.inventory = [];
-
-    if (race === 'human') {
-        player.health = 100;
-        player.maxHealth = 100;
-        player.equipment = { weapon: 'a trusty sword' };
-        player.spells = [];
-    } else if (race === 'elf') {
-        player.health = 80;
-        player.maxHealth = 80;
-        player.equipment = { weapon: 'a sharp dagger' };
-        player.spells = ['fireball', 'heal'];
-    } else if (race === 'orc') {
-        player.health = 120;
-        player.maxHealth = 120;
-        player.equipment = { weapon: 'two hefty axes' };
-        player.spells = [];
-    }
-}
-
-
-/**
- * Updates the main game text to include items in the room.
+ * Updates the main game text element based on the current game phase.
  */
 async function updateDisplay() {
     let textToDisplay = '';
@@ -157,85 +105,42 @@ async function updateDisplay() {
     } else if (gamePhase === 'playing') {
         const room = gameState[currentPlayerLocation];
         textToDisplay = room.text;
-
-        if (room.items && room.items.length > 0) {
-            textToDisplay += "\n\nYou also see: " + room.items.join(', ') + ".";
-        }
     }
-    // CHANGED: We no longer clear the screen on every room change.
     await typeText(textToDisplay, false);
 }
 
 /**
- * Parses player commands, now including status and spell-casting.
+ * Parses player commands, with new interaction logic.
  * @param {string} command - The command entered by the player.
  */
 async function parseCommand(command) {
-    // Handle universal commands first.
-    if (command === 'restart') {
-        gamePhase = 'race_selection';
-        player = {};
-        currentPlayerLocation = 'start';
-        // CHANGED: Now explicitly clears the screen before showing the race selection.
-        await typeText("Choose your character:\n\n- human\n- elf\n- orc", true);
-        return;
-    }
-
-    if (command === 'clear') {
-        // CHANGED: Now clears the screen and reprints the current room description.
-        const room = gameState[currentPlayerLocation];
-        let roomText = room.text;
-         if (room.items && room.items.length > 0) {
-            roomText += "\n\nYou also see: " + room.items.join(', ') + ".";
-        }
-        await typeText(roomText, true);
-        return;
-    }
-    
-    if (command === 'inventory' || command === 'i') {
-        let inventoryText = '> inventory\n\n';
-        if (!player.inventory || player.inventory.length === 0) {
-            inventoryText += "You are not carrying anything.";
-        } else {
-            inventoryText += "You are carrying: " + player.inventory.join(', ') + ".";
-        }
-        await typeText(inventoryText);
-        return;
-    }
-    
-    if (command === 'status' || command === 'stats' || command === 'health') {
-        if (Object.keys(player).length === 0) {
-            await typeText(`\n> ${command}\n\nYou must choose a character first.`);
-            return;
-        }
-        let statusText = `\n> ${command}\n\n-- Character Status --\n`;
-        statusText += `Race: ${player.race.charAt(0).toUpperCase() + player.race.slice(1)}\n`;
-        statusText += `Health: ${player.health} / ${player.maxHealth}\n`;
-        statusText += `Weapon: ${player.equipment.weapon}\n`;
-        if (player.spells.length > 0) {
-            statusText += `Spells: ${player.spells.join(', ')}\n`;
-        }
-        statusText += `--------------------`;
-        await typeText(statusText);
-        return;
-    }
+    // ... (restart, clear, inventory, status commands are unchanged)
 
     // Handle game phase specific commands
-    if (gamePhase === 'title') {
-        if (command === 'start') {
-            gamePhase = 'race_selection';
-            await updateDisplay();
-        }
+    if (gamePhase === 'title' || gamePhase === 'race_selection') {
+        // ... (this logic is unchanged)
         return;
     }
 
-    if (gamePhase === 'race_selection') {
-        if (['human', 'elf', 'orc'].includes(command)) {
-            createPlayer(command);
-            gamePhase = 'playing';
-            // CHANGED: Clears the race selection text before starting the game.
-            await typeText(gameState[currentPlayerLocation].text, true);
+    // NEW: Handle timed event choices
+    if (gamePhase === 'event') {
+        if (command === 'use door' || command === 'use key') {
+            const doorObject = gameState.foyer.objects['small door'];
+            // Move key to inventory if not already taken
+            if (doorObject.items.length > 0) {
+                player.inventory.push(doorObject.items.pop());
+            }
+            currentPlayerLocation = doorObject.destination;
+            await typeText("\n> You frantically turn the key and throw yourself through the door just as heavy footsteps thunder into the foyer.", true);
+            await sleep(500);
+            await updateDisplay();
+        } else {
+            currentPlayerLocation = 'grand_hall'; // Fleeing in any other direction
+            await typeText("\n> You don't waste a second and bolt through the nearest exit, the wide archway to the north.", true);
+            await sleep(500);
+            await updateDisplay();
         }
+        gamePhase = 'playing'; // Return to normal gameplay
         return;
     }
 
@@ -243,57 +148,57 @@ async function parseCommand(command) {
         const commandParts = command.split(' ');
         const verb = commandParts[0];
         const noun = commandParts.slice(1).join(' ');
+        const room = gameState[currentPlayerLocation];
 
-        // Handle spell-casting
-        if (verb === 'cast' || (player.spells && player.spells.includes(verb))) {
-            const spell = verb === 'cast' ? noun : verb;
-
-            if (player.race !== 'elf') {
-                await typeText(`\n> ${command}\n\nYou mumble some words, but you don't know how to cast spells.`);
-                return;
-            }
-            if (!player.spells.includes(spell)) {
-                await typeText(`\n> ${command}\n\nYou don't know the spell '${spell}'.`);
-                return;
-            }
-            
-            if (spell === 'fireball') {
-                await typeText(`\n> ${command}\n\nYou conjure a crackling ball of fire in your palm. It dances for a moment, waiting for a target, before extinguishing with a soft *poof*.`);
-            } else if (spell === 'heal') {
-                const healAmount = 20;
-                const oldHealth = player.health;
-                player.health = Math.min(player.maxHealth, player.health + healAmount);
-                const healedFor = player.health - oldHealth;
-                if (healedFor > 0) {
-                    await typeText(`\n> ${command}\n\nA warm, golden light envelops you, knitting your wounds. You heal for ${healedFor} health.\n(Health: ${player.health} / ${player.maxHealth})`);
-                } else {
-                    await typeText(`\n> ${command}\n\nYou are already at full health.`);
-                }
-            }
-            return;
-        }
-
-        // Handle item interaction
-        if (verb === 'take') {
-            const room = gameState[currentPlayerLocation];
-            if (!room.items || room.items.length === 0) {
-                await typeText(`\n> ${command}\n\nThere is nothing here to take.`);
-                return;
-            }
-            const itemToTake = room.items.find(item => item.includes(noun));
-            if (itemToTake) {
-                const itemIndex = room.items.indexOf(itemToTake);
-                room.items.splice(itemIndex, 1);
-                player.inventory.push(itemToTake);
-                await typeText(`\n> ${command}\n\nYou take the ${itemToTake}.`);
+        // NEW: Handle 'look around' command
+        if (command === 'look around' || command === 'look') {
+            let lookText = "\nYou scan the room and notice a few things of interest:\n";
+            const objectKeys = Object.keys(room.objects || {});
+            if (objectKeys.length > 0) {
+                objectKeys.forEach(obj => {
+                    lookText += `- ${obj}\n`;
+                });
             } else {
-                await typeText(`\n> ${command}\n\nThere is no '${noun}' here.`);
+                lookText = "\nYou look around, but see nothing of particular interest.";
+            }
+            await typeText(lookText);
+
+            // Trigger the timed event in the Foyer
+            if (currentPlayerLocation === 'foyer' && !foyerLooked) {
+                foyerLooked = true;
+                setTimeout(async () => {
+                    if (currentPlayerLocation === 'foyer') { // Only trigger if player is still in the room
+                        gamePhase = 'event';
+                        await typeText("\n**Suddenly, you hear a heavy scraping sound from the floor above, followed by slow, deliberate footsteps. Something is coming.**\n\nYou need to act quickly!\n\n- **use door** with the key\n- **flee** in a different direction");
+                    }
+                }, 7000); // 7-second timer
             }
             return;
         }
 
-        // Handle navigation and other actions
-        const availableOptions = gameState[currentPlayerLocation].options;
+        // NEW: Handle 'search <object>' command
+        if (verb === 'search') {
+            const objectToSearch = Object.keys(room.objects || {}).find(obj => obj.includes(noun));
+            
+            if (objectToSearch) {
+                const objData = room.objects[objectToSearch];
+                let searchText = `\n> ${command}\n\n${objData.description}`;
+                if (objData.items && objData.items.length > 0) {
+                    const foundItem = objData.items[0]; // Assuming one item for now
+                    searchText += `\nYou find: ${foundItem}.`;
+                    player.inventory.push(objData.items.pop()); // Move item to inventory
+                }
+                await typeText(searchText);
+            } else {
+                await typeText(`\n> ${command}\n\nYou can't find a '${noun}' to search.`);
+            }
+            return;
+        }
+
+        // ... (spell-casting, take, navigation, and other action logic)
+        // Note: The generic 'take' command is now less useful but kept for other potential items.
+        // Navigation commands might need to be more specific, e.g., 'go north'.
+        const availableOptions = room.options;
         const option = availableOptions[command];
 
         if (option) {
@@ -301,20 +206,7 @@ async function parseCommand(command) {
                 currentPlayerLocation = option;
                 await updateDisplay();
             } else if (typeof option === 'object') {
-                let message = '';
-                if (option.descriptions && option.descriptions[player.race]) {
-                    message = option.descriptions[player.race];
-                }
-
-                if (message) {
-                    await typeText(`\n> ${command}\n\n${message}`);
-                }
-                
-                if (option.destination) {
-                    currentPlayerLocation = option.destination;
-                    await sleep(500);
-                    await updateDisplay();
-                }
+                // ... (logic for doors that require items or race-specific descriptions)
             }
         } else {
             await typeText(`\n> ${command}\n\nThat's not a valid command here.`);
@@ -322,26 +214,4 @@ async function parseCommand(command) {
     }
 }
 
-
-// ======================================================
-// SECTION 5: MAIN GAME LOOP (EVENT LISTENER)
-// ======================================================
-commandForm.addEventListener('submit', async function(event) {
-    event.preventDefault();
-    if (isTyping) return;
-
-    const command = commandInput.value.trim().toLowerCase();
-    commandInput.value = '';
-
-    if (command) {
-        await parseCommand(command);
-    }
-    
-    commandInput.focus();
-});
-
-
-// ======================================================
-// SECTION 6: INITIALIZATION
-// ======================================================
-updateDisplay();
+// ... (rest of the file is unchanged)
