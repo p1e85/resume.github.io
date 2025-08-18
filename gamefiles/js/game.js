@@ -20,7 +20,6 @@ const TYPEWRITER_SPEED = 25; // Milliseconds per character
 // SECTION 3: GAME DATA (THE WORLD)
 // ======================================================
 const gameState = {
-    // In the gameState constant...
     start: {
         text: "The last light of dusk fails as you finally break through the oppressive woods. Before you looms the Supra Mansion, a silhouette of spires and gables against a bruised purple sky.\n\nA chill wind cuts across the clearing, carrying the scent of rain and old stone. Massive oak doors, bound in dark, pitted iron, stand before you.\n\nWhat is your approach?\n\n- knock loudly\n- ring the bell\n- try the door",
         options: {
@@ -41,8 +40,8 @@ const gameState = {
             }
         }
     },
-// ... the rest of gameState remains the same
-
+    // ... rest of gameState is unchanged
+};
 
 
 // ======================================================
@@ -69,19 +68,18 @@ async function typeText(text, clearFirst = false) {
         gameTextElement.innerHTML = '';
     }
 
-    // Add a paragraph for the new text block
     const p = document.createElement('p');
     gameTextElement.appendChild(p);
 
     for (const char of text) {
         p.textContent += char;
-        gameTextElement.scrollTop = gameTextElement.scrollHeight; // Auto-scroll
+        // UPDATED: Scroll the entire window, not just the text box
+        window.scrollTo(0, document.body.scrollHeight);
         await sleep(TYPEWRITER_SPEED);
     }
     
-    // Add an extra line break for spacing between commands
     gameTextElement.innerHTML += '<br>';
-    gameTextElement.scrollTop = gameTextElement.scrollHeight;
+    window.scrollTo(0, document.body.scrollHeight);
     isTyping = false;
 }
 
@@ -97,7 +95,7 @@ async function updateDisplay() {
     } else if (gamePhase === 'playing') {
         textToDisplay = gameState[currentPlayerLocation].text;
     }
-    await typeText(textToDisplay, true); // Clear screen and type new prompt
+    await typeText(textToDisplay, true);
 }
 
 /**
@@ -105,11 +103,21 @@ async function updateDisplay() {
  * @param {string} command - The command entered by the player.
  */
 async function parseCommand(command) {
-    // Handle the 'clear' command first, as it's a special UI command
-    if (command === 'clear') {
-        await updateDisplay(); // This redraws the current prompt, effectively clearing history
+    // NEW: Handle universal commands first.
+    if (command === 'restart') {
+        gamePhase = 'race_selection';
+        playerRace = '';
+        currentPlayerLocation = 'start';
+        await updateDisplay();
         return;
     }
+
+    if (command === 'clear') {
+        await updateDisplay();
+        return;
+    }
+
+    // ... phase-specific logic below ...
 
     if (gamePhase === 'title') {
         if (command === 'start') {
@@ -134,17 +142,15 @@ async function parseCommand(command) {
 
         if (option) {
             if (typeof option === 'string') {
-                if (command === 'restart') {
-                    gamePhase = 'title';
-                    playerRace = '';
-                    currentPlayerLocation = 'start';
-                    await updateDisplay();
-                } else {
-                    currentPlayerLocation = option;
-                    await updateDisplay();
-                }
+                // REMOVED: Old restart logic from here.
+                currentPlayerLocation = option;
+                await updateDisplay();
             } else if (typeof option === 'object') {
-                if (option.requires && option.requires === playerRace) {
+                if (option[playerRace]) {
+                    const raceSpecificText = option[playerRace];
+                    await typeText(`\n> ${command}\n\n${raceSpecificText}`);
+                } 
+                else if (option.requires && option.requires === playerRace) {
                     await typeText(`\n> ${command}\n\n${option.successText}`);
                 } else {
                     await typeText(`\n> ${command}\n\n${option.failText}`);
@@ -162,7 +168,7 @@ async function parseCommand(command) {
 // ======================================================
 commandForm.addEventListener('submit', async function(event) {
     event.preventDefault();
-    if (isTyping) return; // Prevent input while text is animating
+    if (isTyping) return;
 
     const command = commandInput.value.trim().toLowerCase();
     commandInput.value = '';
@@ -179,3 +185,4 @@ commandForm.addEventListener('submit', async function(event) {
 // SECTION 6: INITIALIZATION
 // ======================================================
 updateDisplay();
+
