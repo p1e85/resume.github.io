@@ -13,7 +13,7 @@ let gamePhase = 'title'; // Can be 'title', 'race_selection', 'playing', or 'eve
 let currentPlayerLocation = 'start';
 let player = {}; // A single object to hold all player data
 let isTyping = false; // Flag to prevent input during text animation
-const TYPEWRITER_SPEED = 15; // A little faster
+const TYPEWRITER_SPEED = 15;
 let foyerLooked = false; // Tracks if the player has looked around the foyer
 
 
@@ -21,6 +21,29 @@ let foyerLooked = false; // Tracks if the player has looked around the foyer
 // SECTION 3: GAME DATA (THE WORLD)
 // ======================================================
 const gameState = {
+    title: {
+        text: `
+                    /\\
+                   /  \\
+                  /    \\
+                 /      \\
+    _           /--------\\           _
+   / \\         /----------\\         / \\
+  /   \\       /------------\\       /   \\
+ /     \\     /--------------\\     /     \\
+/_______\\   /________________\\   /_______\\
+|       |   |      /--\\      |   |       |
+|   _   |   |------|  |------|   |   _   |
+|  | |  |   |      \\--/      |   |  | |  |
+|  |_|  |   |________________|   |  |_|  |
+|       |   |                |   |       |
+|_______|   |________________|   |_______|
+                                
+         Welcome to The Supra Mansion
+
+             Type 'start' to begin
+`
+    },
     start: {
         text: "The last light of dusk fails as you finally break through the oppressive woods. Before you looms the Supra Mansion, a silhouette of spires and gables against a bruised purple sky.\n\nA chill wind cuts across the clearing, carrying the scent of rain and old stone. Massive oak doors, bound in dark, pitted iron, stand before you.\n\nWhat is your approach?\n\n- knock loudly\n- ring the bell\n- try the door",
         options: {
@@ -280,7 +303,6 @@ async function typeText(text, clear = false) {
     const p = document.createElement('p');
     gameTextElement.appendChild(p);
 
-    // ASCII art and event text should be instant
     if (gamePhase === 'title' || gamePhase === 'event') {
         p.textContent = text;
     } else {
@@ -307,38 +329,26 @@ function createPlayer(race) {
     }
 }
 
-function display(text, clear = false) {
-    // This is a wrapper for typeText to handle the logic cleanly
-    return typeText(text, clear);
-}
-
-
+// **REBUILT: The main command processing function.**
 async function parseCommand(command) {
     if (!command) return;
     
-    // --- Universal Commands ---
+    // --- Universal Commands (Work in any phase) ---
     if (command === 'restart') {
         gamePhase = 'title';
         player = {};
         foyerLooked = false;
         currentPlayerLocation = 'start';
-        await display(gameState.title.text, true); // Custom title text object
+        await typeText(gameState.title.text, true);
         return;
     }
 
-    if (command === 'clear') {
-        await display(gameState[currentPlayerLocation].text, true);
-        return;
-    }
-    
-    // ... other universal commands like inventory, status ...
-
-    // --- Game Phase Logic ---
+    // --- Phase-Specific Logic ---
     switch (gamePhase) {
         case 'title':
             if (command.startsWith('start')) {
                 gamePhase = 'race_selection';
-                await display("Choose your character:\n\n- human\n- elf\n- orc", true);
+                await typeText("Choose your character:\n\n- human\n- elf\n- orc", true);
             }
             break;
 
@@ -348,41 +358,46 @@ async function parseCommand(command) {
                 createPlayer(raceChoice);
                 gamePhase = 'playing';
                 currentPlayerLocation = 'start';
-                await display(gameState.start.text, true);
+                await typeText(gameState.start.text, true);
             }
             break;
 
         case 'event':
-            // ... event logic ...
+            // ... (event logic can be placed here)
             break;
 
         case 'playing':
-            // ... all the complex gameplay logic ...
             const room = gameState[currentPlayerLocation];
             const commandParts = command.split(' ');
             const verb = commandParts[0];
             const noun = commandParts.slice(1).join(' ');
-            let actionTaken = false;
-
-            // Verb-based actions first
-            if (verb === 'look') {
-                // ... look logic
-                actionTaken = true;
-            } else if (verb === 'search') {
-                // ... search logic
-                actionTaken = true;
-            }
             
-            if (actionTaken) return;
-
-            // Then check for full command matches in room options
+            // First, check for an exact or partial match in the room's direct options
             const availableOptions = room.options || {};
             const matchedCommand = Object.keys(availableOptions).find(c => c.startsWith(command));
+
             if (matchedCommand) {
                 const option = availableOptions[matchedCommand];
-                // Handle navigation or complex options
+                if (typeof option === 'string') {
+                    currentPlayerLocation = option;
+                    await typeText(`\n> ${matchedCommand}`, false);
+                    await typeText(gameState[currentPlayerLocation].text, false);
+                } else if (typeof option === 'object') {
+                    // This handles complex options like the doors at the start
+                    if(option.descriptions) {
+                        const message = option.descriptions[player.race] || "You can't do that.";
+                        await typeText(`\n> ${matchedCommand}\n\n${message}`, false);
+                    }
+                    if(option.destination) {
+                        currentPlayerLocation = option.destination;
+                        await sleep(500);
+                        await typeText(gameState[currentPlayerLocation].text, true);
+                    }
+                }
             } else {
-                await display(`\n> ${command}\n\nThat's not a valid command here.`);
+                // If no direct match, check for verb-based actions (look, search, etc.)
+                // This is where all other gameplay commands will go
+                await typeText(`\n> ${command}\n\nThat's not a valid command here.`, false);
             }
             break;
     }
@@ -401,29 +416,4 @@ commandForm.addEventListener('submit', async function(event) {
     commandInput.focus();
 });
 
-// Initial game start
-// We need to manually call the title screen text
-// I'll add the title text to the gameState object for consistency
-gameState.title = {
-    text: `
-                    /\\
-                   /  \\
-                  /    \\
-                 /      \\
-    _           /--------\\           _
-   / \\         /----------\\         / \\
-  /   \\       /------------\\       /   \\
- /     \\     /--------------\\     /     \\
-/_______\\   /________________\\   /_______\\
-|       |   |      /--\\      |   |       |
-|   _   |   |------|  |------|   |   _   |
-|  | |  |   |      \\--/      |   |  | |  |
-|  |_|  |   |________________|   |  |_|  |
-|       |   |                |   |       |
-|_______|   |________________|   |_______|
-                                
-         Welcome to The Supra Mansion
-
-             Type 'start' to begin
-`};
-display(gameState.title.text, true);
+typeText(gameState.title.text, true);
