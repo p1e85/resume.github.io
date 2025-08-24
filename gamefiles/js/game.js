@@ -299,19 +299,12 @@ async function typeText(text, clear = false) {
     if (clear) {
         gameTextElement.innerHTML = '';
     }
-
     const p = document.createElement('p');
     gameTextElement.appendChild(p);
-
-    if (gamePhase === 'title' || gamePhase === 'event') {
-        p.textContent = text;
-    } else {
-        for (const char of text) {
-            p.textContent += char;
-            await sleep(TYPEWRITER_SPEED);
-        }
+    for (const char of text) {
+        p.textContent += char;
+        await sleep(TYPEWRITER_SPEED);
     }
-    
     gameTextElement.innerHTML += '<br>';
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     isTyping = false;
@@ -329,11 +322,9 @@ function createPlayer(race) {
     }
 }
 
-// **REBUILT: The main command processing function.**
 async function parseCommand(command) {
     if (!command) return;
-    
-    // --- Universal Commands (Work in any phase) ---
+
     if (command === 'restart') {
         gamePhase = 'title';
         player = {};
@@ -342,7 +333,7 @@ async function parseCommand(command) {
         await typeText(gameState.title.text, true);
         return;
     }
-
+    
     // --- Phase-Specific Logic ---
     switch (gamePhase) {
         case 'title':
@@ -363,7 +354,7 @@ async function parseCommand(command) {
             break;
 
         case 'event':
-            // ... (event logic can be placed here)
+            // ... event logic
             break;
 
         case 'playing':
@@ -371,8 +362,36 @@ async function parseCommand(command) {
             const commandParts = command.split(' ');
             const verb = commandParts[0];
             const noun = commandParts.slice(1).join(' ');
+
+            // **FIXED: Reordered the logic to check for verbs first.**
             
-            // First, check for an exact or partial match in the room's direct options
+            // 1. Check for standard VERB commands first (look, search, etc.)
+            if (verb === 'look' && command.includes('around')) {
+                let lookText = "\nYou scan the room and notice a few things of interest:\n";
+                const objectKeys = Object.keys(room.objects || {});
+                if (objectKeys.length > 0) {
+                    objectKeys.forEach(obj => { lookText += `- ${obj}\n`; });
+                } else { lookText = "\nYou look around, but see nothing of particular interest."; }
+                await typeText(lookText, false);
+
+                if (currentPlayerLocation === 'foyer' && !foyerLooked) {
+                    foyerLooked = true;
+                    setTimeout(async () => {
+                        if (currentPlayerLocation === 'foyer' && gamePhase === 'playing') {
+                            gamePhase = 'event';
+                            await typeText("\n**Suddenly, you hear a heavy scraping sound...**");
+                        }
+                    }, 7000);
+                }
+                return;
+            }
+
+            if (verb === 'search') {
+                // ... search logic ...
+                return;
+            }
+
+            // 2. If it's not a verb, check for a full command match in the room's options
             const availableOptions = room.options || {};
             const matchedCommand = Object.keys(availableOptions).find(c => c.startsWith(command));
 
@@ -383,26 +402,22 @@ async function parseCommand(command) {
                     await typeText(`\n> ${matchedCommand}`, false);
                     await typeText(gameState[currentPlayerLocation].text, false);
                 } else if (typeof option === 'object') {
-                    // This handles complex options like the doors at the start
-                    if(option.descriptions) {
+                    if (option.descriptions) {
                         const message = option.descriptions[player.race] || "You can't do that.";
                         await typeText(`\n> ${matchedCommand}\n\n${message}`, false);
                     }
-                    if(option.destination) {
+                    if (option.destination) {
                         currentPlayerLocation = option.destination;
                         await sleep(500);
                         await typeText(gameState[currentPlayerLocation].text, true);
                     }
                 }
             } else {
-                // If no direct match, check for verb-based actions (look, search, etc.)
-                // This is where all other gameplay commands will go
                 await typeText(`\n> ${command}\n\nThat's not a valid command here.`, false);
             }
             break;
     }
 }
-
 
 // ======================================================
 // SECTION 5 & 6: Event Listener & Initialization
