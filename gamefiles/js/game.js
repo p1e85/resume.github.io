@@ -271,7 +271,6 @@ const gameState = {
 
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-// **FIXED: The typeText function is now corrected.**
 async function typeText(text, clearFirst = false) {
     isTyping = true;
     if (clearFirst) {
@@ -280,15 +279,11 @@ async function typeText(text, clearFirst = false) {
 
     const p = document.createElement('p');
     gameTextElement.appendChild(p);
-
-    // If it's the title screen, display instantly. Otherwise, use typewriter.
-    if (gamePhase === 'title') {
-        p.textContent = text;
-    } else {
-        for (const char of text) {
-            p.textContent += char;
-            await sleep(TYPEWRITER_SPEED);
-        }
+    
+    // Use the typewriter effect for all text now, as the ASCII art bug is fixed.
+    for (const char of text) {
+        p.textContent += char;
+        await sleep(TYPEWRITER_SPEED);
     }
     
     gameTextElement.innerHTML += '<br>';
@@ -310,6 +305,8 @@ function createPlayer(race) {
 
 async function updateDisplay() {
     let textToDisplay = '';
+    let shouldClear = true; // Most state transitions should clear the screen.
+    
     if (gamePhase === 'title') {
         textToDisplay = `
                     /\\
@@ -337,9 +334,8 @@ async function updateDisplay() {
     } else if (gamePhase === 'playing') {
         const room = gameState[currentPlayerLocation];
         textToDisplay = room.text;
+        shouldClear = false; // Don't clear screen when just moving between rooms
     }
-    // For title and race selection, we want to clear the screen.
-    const shouldClear = (gamePhase === 'title' || gamePhase === 'race_selection');
     await typeText(textToDisplay, shouldClear);
 }
 
@@ -364,6 +360,7 @@ async function parseCommand(command) {
     if (command.startsWith('inventory') || command === 'i') { /* ... */ }
     if (command.startsWith('status') || command.startsWith('stats') || command.startsWith('health')) { /* ... */ }
 
+    // **FIXED: Streamlined game phase logic**
     if (gamePhase === 'title') {
         if (command.startsWith('start')) {
             gamePhase = 'race_selection';
@@ -378,7 +375,7 @@ async function parseCommand(command) {
             createPlayer(raceChoice);
             gamePhase = 'playing';
             currentPlayerLocation = 'start';
-            await typeText(gameState.start.text, true);
+            await typeText(gameState.start.text, true); // Start the game with a clean screen
         }
         return;
     }
@@ -386,11 +383,11 @@ async function parseCommand(command) {
     if (gamePhase === 'event') { /* ... event logic ... */ return; }
 
     if (gamePhase === 'playing') {
+        // ... (The rest of the complex 'playing' logic is here)
         const room = gameState[currentPlayerLocation];
         const commandParts = command.split(' ');
         const verb = commandParts[0];
         const noun = commandParts.slice(1).join(' ');
-        
         let actionTaken = false;
 
         // Verb-based commands
@@ -401,7 +398,7 @@ async function parseCommand(command) {
                 if (objectKeys.length > 0) {
                     objectKeys.forEach(obj => { lookText += `- ${obj}\n`; });
                 } else { lookText = "\nYou look around, but see nothing of particular interest."; }
-                await typeText(lookText);
+                await typeText(lookText, false);
                 actionTaken = true;
 
                 if (currentPlayerLocation === 'foyer' && !foyerLooked) {
@@ -435,32 +432,30 @@ async function parseCommand(command) {
                         searchText += `\nYou find: ${foundItem}.`;
                         player.inventory.push(objData.items.pop());
                     }
-                    await typeText(searchText);
-                } else { await typeText(`\n> search ${noun}\n\nYou can't find a '${noun}' to search.`); }
+                    await typeText(searchText, false);
+                } else { await typeText(`\n> search ${noun}\n\nYou can't find a '${noun}' to search.`, false); }
                 actionTaken = true;
             }
-            // Other verb commands could be expanded here.
         }
         
-        // Non-verb based special commands (e.g., item interactions)
+        // Non-verb based special commands
         if (!actionTaken && room.objects) {
              for (const objKey of Object.keys(room.objects)) {
                 const objData = room.objects[objKey];
-                // Brazier puzzle
+                const fullCommand = command;
                 if (command.startsWith('light') && objKey.startsWith(command.substring(6))) {
                     const resultText = objData.race_specific[player.race] || objData.race_specific.default;
-                    await typeText(`\n> ${command}\n\n${resultText}`);
+                    await typeText(`\n> ${command}\n\n${resultText}`, false);
                     if (objData.item && objData.race_specific[player.race]) {
                         if (!player.inventory.includes(objData.item)) player.inventory.push(objData.item);
-                        await typeText("\nCongratulations! You have found the Gem of Life and completed your quest!");
+                        await typeText("\nCongratulations! You have found the Gem of Life and completed your quest!", false);
                         gamePhase = 'title';
                         setTimeout(() => updateDisplay(), 2000);
                     }
                     actionTaken = true; break;
                 }
-                // Other unique actions
-                if (objData.action && objData.action.command.some(c => c.startsWith(command))) {
-                    await typeText(`\n> ${command}\n\n${objData.action.text}`);
+                if (objData.action && objData.action.command.some(c => c.startsWith(fullCommand))) {
+                    await typeText(`\n> ${fullCommand}\n\n${objData.action.text}`, false);
                     if (objData.action.item && !player.inventory.includes(objData.action.item)) {
                         player.inventory.push(objData.action.item);
                     }
@@ -476,10 +471,12 @@ async function parseCommand(command) {
         const matchedCommand = Object.keys(availableOptions).find(c => c.startsWith(command));
         if (matchedCommand) {
             currentPlayerLocation = availableOptions[matchedCommand];
-            await typeText(`\n> ${matchedCommand}\n`);
-            await typeText(gameState[currentPlayerLocation].text, false);
+            await typeText(`\n> ${matchedCommand}\n`, false);
+            await updateDisplay();
         } else {
-            await typeText(`\n> ${command}\n\nThat's not a valid command here.`);
+            if (!actionTaken) {
+                await typeText(`\n> ${command}\n\nThat's not a valid command here.`, false);
+            }
         }
     }
 }
