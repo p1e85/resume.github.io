@@ -353,8 +353,26 @@ async function parseCommand(command) {
             }
             break;
 
+        // **FIXED: The logic for the timed event is now robust.**
         case 'event':
-            // ... event logic
+            if (command.startsWith('use')) {
+                const doorObject = gameState.foyer.objects['small door'];
+                if (doorObject.items.length > 0) {
+                    player.inventory.push(doorObject.items.pop());
+                }
+                currentPlayerLocation = doorObject.destination;
+                await typeText("\n> You frantically turn the key and throw yourself through the door just as heavy footsteps thunder into the foyer.", true);
+                await sleep(500);
+                gamePhase = 'playing';
+                await typeText(gameState[currentPlayerLocation].text, false);
+            } else { // Any other command is treated as fleeing
+                const fleeOption = Object.keys(gameState.foyer.options).find(opt => command.includes(opt.split(' ')[1])) || 'go north';
+                currentPlayerLocation = gameState.foyer.options[fleeOption];
+                await typeText("\n> You don't waste a second and bolt through the nearest exit.", true);
+                await sleep(500);
+                gamePhase = 'playing';
+                await typeText(gameState[currentPlayerLocation].text, false);
+            }
             break;
 
         case 'playing':
@@ -363,10 +381,8 @@ async function parseCommand(command) {
             const verb = commandParts[0];
             const noun = commandParts.slice(1).join(' ');
 
-            // **FIXED: Reordered the logic to check for verbs first.**
-            
-            // 1. Check for standard VERB commands first (look, search, etc.)
-            if (verb === 'look' && command.includes('around')) {
+            // Verb-based actions first
+            if (verb === 'look') {
                 let lookText = "\nYou scan the room and notice a few things of interest:\n";
                 const objectKeys = Object.keys(room.objects || {});
                 if (objectKeys.length > 0) {
@@ -379,19 +395,14 @@ async function parseCommand(command) {
                     setTimeout(async () => {
                         if (currentPlayerLocation === 'foyer' && gamePhase === 'playing') {
                             gamePhase = 'event';
-                            await typeText("\n**Suddenly, you hear a heavy scraping sound...**");
+                            await typeText("\n**Suddenly, you hear a heavy scraping sound from the floor above, followed by slow, deliberate footsteps. Something is coming.**\n\nYou need to act quickly!\n\n- **use door** with the key\n- **flee** (e.g., 'flee north')");
                         }
                     }, 7000);
                 }
                 return;
             }
-
-            if (verb === 'search') {
-                // ... search logic ...
-                return;
-            }
-
-            // 2. If it's not a verb, check for a full command match in the room's options
+            
+            // Then check for full command matches in room options
             const availableOptions = room.options || {};
             const matchedCommand = Object.keys(availableOptions).find(c => c.startsWith(command));
 
