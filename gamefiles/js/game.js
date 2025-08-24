@@ -271,14 +271,19 @@ const gameState = {
 
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
+// **FIXED: The typeText function is now corrected.**
 async function typeText(text, clearFirst = false) {
     isTyping = true;
-    if (clearFirst) { gameTextElement.innerHTML = ''; }
+    if (clearFirst) {
+        gameTextElement.innerHTML = '';
+    }
+
     const p = document.createElement('p');
     gameTextElement.appendChild(p);
 
+    // If it's the title screen, display instantly. Otherwise, use typewriter.
     if (gamePhase === 'title') {
-        p.textContent = text; // Render ASCII art instantly
+        p.textContent = text;
     } else {
         for (const char of text) {
             p.textContent += char;
@@ -333,14 +338,16 @@ async function updateDisplay() {
         const room = gameState[currentPlayerLocation];
         textToDisplay = room.text;
     }
-    await typeText(textToDisplay, true);
+    // For title and race selection, we want to clear the screen.
+    const shouldClear = (gamePhase === 'title' || gamePhase === 'race_selection');
+    await typeText(textToDisplay, shouldClear);
 }
 
 async function parseCommand(command) {
     if (!command) return;
 
     if (command === 'restart') {
-        gamePhase = 'title'; // Restart to title screen
+        gamePhase = 'title';
         player = {};
         foyerLooked = false;
         currentPlayerLocation = 'start';
@@ -348,14 +355,19 @@ async function parseCommand(command) {
         return;
     }
 
-    if (command === 'clear') { /* ... */ }
+    if (command === 'clear') {
+        const room = gameState[currentPlayerLocation];
+        await typeText(room.text, true);
+        return;
+    }
+    
     if (command.startsWith('inventory') || command === 'i') { /* ... */ }
     if (command.startsWith('status') || command.startsWith('stats') || command.startsWith('health')) { /* ... */ }
 
     if (gamePhase === 'title') {
         if (command.startsWith('start')) {
             gamePhase = 'race_selection';
-            await typeText("Choose your character:\n\n- human\n- elf\n- orc", true);
+            await updateDisplay();
         }
         return;
     }
@@ -365,8 +377,8 @@ async function parseCommand(command) {
         if (raceChoice) {
             createPlayer(raceChoice);
             gamePhase = 'playing';
-            await typeText(gameState.start.text, true); // Start at the beginning
             currentPlayerLocation = 'start';
+            await typeText(gameState.start.text, true);
         }
         return;
     }
@@ -378,71 +390,66 @@ async function parseCommand(command) {
         const commandParts = command.split(' ');
         const verb = commandParts[0];
         const noun = commandParts.slice(1).join(' ');
-
-        if (command.startsWith('look')) { /* ... look logic ... */ return; }
-
-        if (verb === 'search') {
-            const objectKeys = Object.keys(room.objects || {});
-            const objectToSearch = objectKeys.find(obj => obj.startsWith(noun));
-            if (objectToSearch) {
-                const objData = room.objects[objectToSearch];
-                let searchText = `\n> search ${objectToSearch}\n\n`;
-                if (objData.race_specific && objData.race_specific[player.race]) {
-                    searchText += objData.race_specific[player.race];
-                    if (objData.item) {
-                         if (!player.inventory.includes(objData.item)) player.inventory.push(objData.item);
-                    }
-                } else if (objData.race_specific && objData.race_specific.default) {
-                    searchText += objData.race_specific.default;
-                } else {
-                    searchText += objData.description;
-                }
-                
-                if (objData.items) {
-                    const foundItem = objData.items[0];
-                    searchText += `\nYou find: ${foundItem}.`;
-                    player.inventory.push(objData.items.pop());
-                }
-                await typeText(searchText);
-            } else { await typeText(`\n> search ${noun}\n\nYou can't find a '${noun}' to search.`); }
-            return;
-        }
         
         let actionTaken = false;
-        if (room.objects) {
-            for (const objKey of Object.keys(room.objects)) {
-                const objData = room.objects[objKey];
-                const fullCommand = command;
 
-                if (objData.action && objData.action.command.some(c => c.startsWith(fullCommand))) {
-                    await typeText(`\n> ${fullCommand}\n\n${objData.action.text}`);
-                    if (objData.action.item && !player.inventory.includes(objData.action.item)) {
-                        player.inventory.push(objData.action.item);
-                    }
-                    actionTaken = true; break;
-                }
-                
-                if (objData.requires && fullCommand.includes(objData.requires.split(" ")[1])) {
-                     if (player.inventory.includes(objData.requires)) {
-                        if(objData.destination) {
-                            currentPlayerLocation = objData.destination;
-                            await typeText(`\n> ${fullCommand}\n\nYou use the ${objData.requires}. The way is open.`);
-                            await updateDisplay();
-                        } else if (objData.action_text) {
-                           await typeText(`\n> ${fullCommand}\n\n${objData.action_text}`);
-                           if (objData.item && !player.inventory.includes(objData.item)) player.inventory.push(objData.item);
-                           if (objData.unlocks && !room.options['go up to attic']) {
-                               room.options['go up to attic'] = objData.unlocks;
-                               await typeText("A hidden passage to the attic has been revealed!");
-                           }
+        // Verb-based commands
+        if (['look', 'search', 'light', 'press', 'pull', 'use', 'open'].includes(verb)) {
+            if (command.startsWith('look')) {
+                let lookText = "\nYou scan the room and notice a few things of interest:\n";
+                const objectKeys = Object.keys(room.objects || {});
+                if (objectKeys.length > 0) {
+                    objectKeys.forEach(obj => { lookText += `- ${obj}\n`; });
+                } else { lookText = "\nYou look around, but see nothing of particular interest."; }
+                await typeText(lookText);
+                actionTaken = true;
+
+                if (currentPlayerLocation === 'foyer' && !foyerLooked) {
+                    foyerLooked = true;
+                    setTimeout(async () => {
+                        if (currentPlayerLocation === 'foyer' && gamePhase === 'playing') {
+                            gamePhase = 'event';
+                            await typeText("\n**Suddenly, you hear a heavy scraping sound...**");
                         }
-                     } else { await typeText(`\n> ${fullCommand}\n\nYou don't have the required item.`); }
-                     actionTaken = true; break;
+                    }, 7000);
                 }
-
-                if (verb === 'light' && objKey.startsWith(noun)) {
+            }
+            else if (verb === 'search') {
+                const objectKeys = Object.keys(room.objects || {});
+                const objectToSearch = objectKeys.find(obj => obj.startsWith(noun));
+                if (objectToSearch) {
+                    const objData = room.objects[objectToSearch];
+                    let searchText = `\n> search ${objectToSearch}\n\n`;
+                    if (objData.race_specific && objData.race_specific[player.race]) {
+                        searchText += objData.race_specific[player.race];
+                        if (objData.item && !player.inventory.includes(objData.item)) {
+                             player.inventory.push(objData.item);
+                        }
+                    } else if (objData.race_specific && objData.race_specific.default) {
+                        searchText += objData.race_specific.default;
+                    } else {
+                        searchText += objData.description;
+                    }
+                    if (objData.items && objData.items.length > 0) {
+                        const foundItem = objData.items[0];
+                        searchText += `\nYou find: ${foundItem}.`;
+                        player.inventory.push(objData.items.pop());
+                    }
+                    await typeText(searchText);
+                } else { await typeText(`\n> search ${noun}\n\nYou can't find a '${noun}' to search.`); }
+                actionTaken = true;
+            }
+            // Other verb commands could be expanded here.
+        }
+        
+        // Non-verb based special commands (e.g., item interactions)
+        if (!actionTaken && room.objects) {
+             for (const objKey of Object.keys(room.objects)) {
+                const objData = room.objects[objKey];
+                // Brazier puzzle
+                if (command.startsWith('light') && objKey.startsWith(command.substring(6))) {
                     const resultText = objData.race_specific[player.race] || objData.race_specific.default;
-                    await typeText(`\n> ${fullCommand}\n\n${resultText}`);
+                    await typeText(`\n> ${command}\n\n${resultText}`);
                     if (objData.item && objData.race_specific[player.race]) {
                         if (!player.inventory.includes(objData.item)) player.inventory.push(objData.item);
                         await typeText("\nCongratulations! You have found the Gem of Life and completed your quest!");
@@ -451,16 +458,26 @@ async function parseCommand(command) {
                     }
                     actionTaken = true; break;
                 }
-            }
+                // Other unique actions
+                if (objData.action && objData.action.command.some(c => c.startsWith(command))) {
+                    await typeText(`\n> ${command}\n\n${objData.action.text}`);
+                    if (objData.action.item && !player.inventory.includes(objData.action.item)) {
+                        player.inventory.push(objData.action.item);
+                    }
+                    actionTaken = true; break;
+                }
+             }
         }
+        
         if (actionTaken) return;
 
+        // Navigation as the fallback
         const availableOptions = room.options || {};
         const matchedCommand = Object.keys(availableOptions).find(c => c.startsWith(command));
         if (matchedCommand) {
             currentPlayerLocation = availableOptions[matchedCommand];
             await typeText(`\n> ${matchedCommand}\n`);
-            await updateDisplay();
+            await typeText(gameState[currentPlayerLocation].text, false);
         } else {
             await typeText(`\n> ${command}\n\nThat's not a valid command here.`);
         }
