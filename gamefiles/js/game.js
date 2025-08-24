@@ -49,23 +49,17 @@ const gameState = {
         }
     },
     
+    // --- FIRST FLOOR ---
     foyer: {
-        text: "You are in the Grand Foyer. A thick layer of dust covers everything, sparkling in a single beam of moonlight that lances through a high, grimy window. A grand staircase sweeps upwards into darkness to the west. A wide archway leads north, and a smaller door stands to the east.\n\nType 'look around' to see more detail.",
+        text: "You are in the Grand Foyer. Dust motes dance in a single beam of moonlight. A grand staircase sweeps upwards to the west, a wide archway leads north, and a smaller door stands to the east.\n\nType 'look around' to see more detail.",
         objects: {
-            'grand staircase': {
-                description: "The staircase is impressive, carved from a dark, rich wood. Thick cobwebs cling to the banister. It leads up into oppressive darkness.",
-                searched: false
-            },
+            'grand staircase': { description: "The staircase is impressive, carved from dark wood. Thick cobwebs cling to the banister." },
             'small door': {
                 description: "This is a simple, plain door. A small brass key is sticking out of the keyhole.",
                 items: ['a small brass key'],
-                destination: 'closet',
-                searched: false
+                destination: 'closet'
             },
-            'wide archway': {
-                description: "The archway is framed with ornate carvings of vines and strange beasts. It leads into what appears to be a grand hall.",
-                searched: false
-            }
+            'wide archway': { description: "The archway is framed with ornate carvings. It leads into what appears to be a grand hall." }
         },
         options: {
             'go north': 'grand_hall',
@@ -77,22 +71,128 @@ const gameState = {
         text: "You slip into a small, cramped closet. It smells of mothballs and decay. The door clicks shut behind you!",
         options: {}
     },
-    grand_hall: {
-        text: "This is the Grand Hall. The sheer size of the room is breathtaking, though it's empty and desolate. [This room is under construction]",
+    parlor: {
+        text: "You are in the Parlor. Furniture lies draped in white sheets, like a congregation of ghosts. A soot-stained fireplace stands on the far wall.",
+        objects: {
+            'sheet-covered furniture': { description: "You pull back the musty sheets. The furniture beneath is of high quality, but impossibly cold to the touch." },
+            'soot-stained fireplace': {
+                description: "The fireplace is cold, choked with ash.",
+                items: ['a charred diary page']
+            },
+            'music box': {
+                description: "A small, unadorned music box rests on the mantelpiece.",
+                race_specific: {
+                    human: "You open the box. It plays a sad, tinkling melody. You notice a tiny, almost invisible switch inside.",
+                    elf: "You feel a wave of profound sadness from the box. You easily spot a magical glyph on the bottom.",
+                    orc: "The box feels fragile. You try to open it, but your large fingers fumble with the tiny latch. It remains closed."
+                },
+                action: {
+                    command: ['press switch', 'press glyph'],
+                    text: "A hidden compartment opens, revealing a **silver locket**.",
+                    item: 'a silver locket'
+                }
+            }
+        },
         options: {
-            'south': 'foyer'
+            'go west': 'foyer'
         }
     },
+    grand_hall: {
+        text: "This is the Grand Hall. The sheer size of the room is breathtaking. A massive tapestry dominates the northern wall. A door is set in the east wall.",
+        objects: {
+            'massive tapestry': {
+                description: "It depicts a noble family: a king, a queen, and a sad-looking princess. The king is pointing towards a stylized mountain.",
+                race_specific: {
+                    elf: "You recognize the Elven stitch-work. The mountain isn't a mountain; it's the Elven symbol for 'secret'."
+                },
+                action: {
+                    command: ['pull secret thread', 'pull thread'],
+                    text: "A section of the tapestry rips away, revealing a shallow alcove. Inside is a **heavy iron key**.",
+                    item: 'a heavy iron key'
+                }
+            }
+        },
+        options: {
+            'go south': 'foyer',
+            'go east': 'dining_hall'
+        }
+    },
+    dining_hall: {
+        text: "You've entered a grand Dining Hall. A long table, set for a feast that never happened, dominates the room. A heavy sideboard rests against the east wall.",
+        objects: {
+            'long dining table': { description: "The table is set with tarnished silverware. The food has long since rotted into black lumps." },
+            'heavy sideboard': {
+                description: "A massive piece of oak furniture.",
+                race_specific: {
+                    orc: "This is nothing. You put your shoulder into it and shove. With a deep groan, the sideboard slides aside, revealing a loose floorboard. Beneath it, you find a **ceremonial dagger**.",
+                    default: "You try to push the sideboard, but it won't budge an inch."
+                },
+                item: 'a ceremonial dagger'
+            }
+        },
+        options: {
+            'go west': 'grand_hall',
+            'go south': 'kitchen'
+        }
+    },
+    kitchen: {
+        text: "The Kitchen is a stark contrast to the rest of the floor, with iron stoves and butcher blocks. A simple door leads down into darkness.",
+        objects: {
+            'cooking stove': { description: "A huge, cast-iron beast. Inside, you find only ashes." },
+            'butcher\'s block': { description: "The wood is stained and scarred from years of use." }
+        },
+        options: {
+            'go north': 'dining_hall',
+            'go down': 'wine_cellar'
+        }
+    },
+
+    // --- BASEMENT ---
+    wine_cellar: {
+        text: "You are in a damp Wine Cellar, lined with dusty racks. A heavy iron gate blocks the way east.",
+        objects: {
+            'wine racks': {
+                description: "Hundreds of dusty bottles. One has an unusual label: 'King's Folly, 1888. Only the patient will find the prize.'",
+                action: {
+                    command: ['open bottle', 'open king\'s folly'],
+                    text: "You uncork the bottle. Instead of wine, a rolled-up scroll is inside. It's a **magical recipe**.",
+                    item: 'a magical recipe'
+                }
+            },
+            'iron gate': {
+                description: "A heavy iron gate, locked with a large, sturdy lock.",
+                requires: 'a heavy iron key',
+                destination: 'boiler_room'
+            }
+        },
+        options: {
+            'go up': 'kitchen',
+            'go east': 'boiler_room' // Becomes available after unlocking
+        }
+    },
+    boiler_room: {
+        text: "The air is hot and thick with the smell of ozone. A massive iron boiler hums in the center of the room.",
+        objects: {
+            'iron boiler': { description: "It's still warm, radiating a deep heat. A pressure valve hisses softly." },
+            'copper pipes': {
+                description: "A network of hot copper pipes crisscrosses the ceiling. You notice something glinting on top of the largest pipe, just out of reach.",
+                race_specific: {
+                    human: "You look around for a tool. You find a long iron poker and use it to deftly knock the object down. It's a **set of lockpicks**.",
+                    default: "It's too high and too hot to touch. You can't reach it."
+                },
+                item: 'a set of lockpicks'
+            }
+        },
+        options: {
+            'go west': 'wine_cellar'
+        }
+    },
+
+    // Unconnected placeholder rooms
     staircase: {
         text: "A grand staircase. It's probably not safe to go up yet. [This area is under construction]",
         options: {
-            'east': 'foyer'
-        }
-    },
-    parlor: {
-        text: "You've entered the Parlor. Furniture lies draped in white sheets, like a congregation of ghosts. [This room is under construction]",
-        options: {
-            'west': 'foyer'
+            'go east': 'foyer'
         }
     }
 };
@@ -111,17 +211,12 @@ async function typeText(text, clearFirst = false) {
     if (clearFirst) {
         gameTextElement.innerHTML = '';
     }
-
     const p = document.createElement('p');
     gameTextElement.appendChild(p);
-    
-    // Using textContent is safer and handles special characters correctly
     p.textContent = text;
     gameTextElement.innerHTML += '<br>';
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     isTyping = false;
-    // The typewriter effect is temporarily disabled for the ASCII art to render instantly.
-    // We can add it back for other text later.
 }
 
 function createPlayer(race) {
@@ -149,7 +244,6 @@ function createPlayer(race) {
 async function updateDisplay() {
     let textToDisplay = '';
     if (gamePhase === 'title') {
-        // **FIXED: Using backticks (`) for the multi-line string.**
         textToDisplay = `
                     /\\
                    /  \\
@@ -194,12 +288,7 @@ async function parseCommand(command) {
 
     if (command === 'clear') {
         const room = gameState[currentPlayerLocation];
-        let roomText = room.text;
-         if (room.objects && Object.keys(room.objects).length > 0) {
-            roomText = room.text.replace("\n\nType 'look around' to see more detail.", "");
-            roomText += "\n\nType 'look around' to see more detail.";
-        }
-        await typeText(roomText, true);
+        await typeText(room.text, true);
         return;
     }
     
@@ -278,70 +367,95 @@ async function parseCommand(command) {
         const verb = commandParts[0];
         const noun = commandParts.slice(1).join(' ');
 
-        if (['look', 'search', 'cast', 'take'].includes(verb) || (player.spells && player.spells.includes(verb))) {
-            if (verb === 'look') {
-                let lookText = "\nYou scan the room and notice a few things of interest:\n";
-                const objectKeys = Object.keys(room.objects || {});
-                if (objectKeys.length > 0) {
-                    objectKeys.forEach(obj => { lookText += `- ${obj}\n`; });
-                } else {
-                    lookText = "\nYou look around, but see nothing of particular interest.";
-                }
-                await typeText(lookText);
-
-                if (currentPlayerLocation === 'foyer' && !foyerLooked) {
-                    foyerLooked = true;
-                    setTimeout(async () => {
-                        if (currentPlayerLocation === 'foyer' && gamePhase === 'playing') {
-                            gamePhase = 'event';
-                            await typeText("\n**Suddenly, you hear a heavy scraping sound from the floor above, followed by slow, deliberate footsteps. Something is coming.**\n\nYou need to act quickly!\n\n- **use door** with the key\n- **flee** (e.g., 'flee north')");
-                        }
-                    }, 7000);
-                }
-                return;
+        if (command.startsWith('look')) {
+            let lookText = "\nYou scan the room and notice a few things of interest:\n";
+            const objectKeys = Object.keys(room.objects || {});
+            if (objectKeys.length > 0) {
+                objectKeys.forEach(obj => { lookText += `- ${obj}\n`; });
+            } else {
+                lookText = "\nYou look around, but see nothing of particular interest.";
             }
+            await typeText(lookText);
 
-            if (verb === 'search') {
-                const objectKeys = Object.keys(room.objects || {});
-                const objectToSearch = objectKeys.find(obj => obj.startsWith(noun));
-                if (objectToSearch) {
-                    const objData = room.objects[objectToSearch];
-                    let searchText = `\n> search ${objectToSearch}\n\n${objData.description}`;
-                    if (objData.items && objData.items.length > 0) {
-                        const foundItem = objData.items[0];
-                        searchText += `\nYou find: ${foundItem}.`;
-                        player.inventory.push(objData.items.pop());
+            if (currentPlayerLocation === 'foyer' && !foyerLooked) {
+                foyerLooked = true;
+                setTimeout(async () => {
+                    if (currentPlayerLocation === 'foyer' && gamePhase === 'playing') {
+                        gamePhase = 'event';
+                        await typeText("\n**Suddenly, you hear a heavy scraping sound from the floor above, followed by slow, deliberate footsteps. Something is coming.**\n\nYou need to act quickly!\n\n- **use door** with the key\n- **flee** (e.g., 'flee north')");
                     }
-                    await typeText(searchText);
-                } else {
-                    await typeText(`\n> search ${noun}\n\nYou can't find a '${noun}' to search.`);
-                }
-                return;
+                }, 7000);
             }
+            return;
+        }
+
+        if (verb === 'search') {
+            const objectKeys = Object.keys(room.objects || {});
+            const objectToSearch = objectKeys.find(obj => obj.startsWith(noun));
+            if (objectToSearch) {
+                const objData = room.objects[objectToSearch];
+                let searchText = `\n> search ${objectToSearch}\n\n`;
+
+                if (objData.race_specific) {
+                    searchText += objData.race_specific[player.race] || objData.race_specific['default'] || "";
+                    if (objData.item && objData.race_specific[player.race]) { // Only give item if race had a specific success message
+                         player.inventory.push(objData.item);
+                         delete objData.item; // Item is taken
+                    }
+                } else {
+                    searchText += objData.description;
+                }
+                
+                if (objData.items && objData.items.length > 0) {
+                    const foundItem = objData.items[0];
+                    searchText += `\nYou find: ${foundItem}.`;
+                    player.inventory.push(objData.items.pop());
+                }
+                await typeText(searchText);
+            } else {
+                await typeText(`\n> search ${noun}\n\nYou can't find a '${noun}' to search.`);
+            }
+            return;
         }
         
+        // Handle specific actions on objects
+        let actionTaken = false;
+        if (room.objects) {
+            for (const objKey of Object.keys(room.objects)) {
+                const objData = room.objects[objKey];
+                if (objData.action && objData.action.command.some(c => c.startsWith(command))) {
+                    await typeText(`\n> ${command}\n\n${objData.action.text}`);
+                    if (objData.action.item) {
+                        player.inventory.push(objData.action.item);
+                        delete objData.action.item; // Item is taken
+                    }
+                    actionTaken = true;
+                    break;
+                }
+                if (objData.requires && command.startsWith('use') && command.includes(objData.requires.split(' ')[2])) {
+                     if (player.inventory.includes(objData.requires)) {
+                        currentPlayerLocation = objData.destination;
+                        await typeText(`\n> ${command}\n\nYou use the ${objData.requires}. The way is open.`);
+                        await updateDisplay();
+                     } else {
+                        await typeText(`\n> ${command}\n\nYou don't have the required key.`);
+                     }
+                     actionTaken = true;
+                     break;
+                }
+            }
+        }
+        if (actionTaken) return;
+
+        // Handle navigation
         const availableOptions = room.options || {};
-        const allCommandKeys = Object.keys(availableOptions);
-        const matchedCommand = allCommandKeys.find(c => c.startsWith(command));
+        const matchedCommand = Object.keys(availableOptions).find(c => c.startsWith(command));
 
         if (matchedCommand) {
             const option = availableOptions[matchedCommand];
-            if (typeof option === 'string') {
-                currentPlayerLocation = option;
-                await typeText(`\n> ${matchedCommand}\n`);
-                await typeText(gameState[currentPlayerLocation].text, false);
-            } else if (typeof option === 'object') {
-                let message = '';
-                if (option.descriptions && option.descriptions[player.race]) {
-                    message = option.descriptions[player.race];
-                }
-                if (message) { await typeText(`\n> ${matchedCommand}\n\n${message}`); }
-                if (option.destination) {
-                    currentPlayerLocation = option.destination;
-                    await sleep(500);
-                    await typeText(gameState[currentPlayerLocation].text, false);
-                }
-            }
+            currentPlayerLocation = option;
+            await typeText(`\n> ${matchedCommand}\n`);
+            await updateDisplay();
         } else {
             await typeText(`\n> ${command}\n\nThat's not a valid command here.`);
         }
