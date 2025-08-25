@@ -49,50 +49,49 @@ const gameState = {
         options: {
             'knock loudly': {
                 descriptions: {
-                    human: "You rap your knuckles sharply on the ancient wood. The sound is solid and definitive, yet it's swallowed by the immense silence of the place. No answer comes.",
-                    elf: "With a light but firm touch, you tap a rhythmic pattern on the door. The sound seems to echo deep within the mansion's halls, a clear and pleasant tone. Still, the door remains shut.",
-                    orc: "You hammer a heavy fist against the door. A deep BOOM echoes across the clearing, and the iron fittings rattle in protest. The door does not open."
+                    human: "You rap your knuckles sharply on the ancient wood...",
+                    elf: "With a light but firm touch, you tap a rhythmic pattern...",
+                    orc: "You hammer a heavy fist against the door..."
                 }
             },
             'ring the bell': {
                  descriptions: {
-                    human: "You find a simple iron pull-cord. You give it a firm tug, and a faint, tinny jangling can be heard somewhere in the mansion's depths before falling silent.",
-                    elf: "Your keen eyes spot a delicate silver chain nearly hidden by ivy. A gentle pull produces a series of beautiful, resonant chimes that seem to hang in the air for a moment too long. No one answers the call.",
-                    orc: "You see a thick, greasy rope attached to a large bell. You yank it with all your might. A deafening, discordant CLANG shatters the quiet. The rope comes off in your hand. The door remains closed."
+                    human: "You find a simple iron pull-cord...",
+                    elf: "Your keen eyes spot a delicate silver chain...",
+                    orc: "You see a thick, greasy rope attached to a large bell..."
                 }
             },
             'try the door': {
                 destination: 'foyer',
                 descriptions: {
-                    human: "You grip the large, cold iron ring and pull. The door is immensely heavy but feels… unlatched. It scrapes open just enough for you to slip inside.",
-                    elf: "You place your slender fingers on the door's edge and push. With a surprising lack of resistance, it swings inward on silent hinges, opening a path into the darkness.",
-                    orc: "You put your shoulder to the door and heave. With a groan of protesting wood, it shudders open. You step through into the mansion."
+                    human: "You grip the large, cold iron ring and pull...",
+                    elf: "You place your slender fingers on the door's edge...",
+                    orc: "You put your shoulder to the door and heave..."
                 }
             }
         }
     },
     foyer: {
-        text: "You are in the Grand Foyer. Dust motes dance in a single beam of moonlight. A grand staircase sweeps upwards to the west, a wide archway leads north, and a smaller door stands to the east.\n\nType 'look around' to see more detail.",
+        text: "You are in the Grand Foyer. Dust motes dance in a single beam of moonlight...",
         objects: {
-            'grand staircase': { description: "The staircase is impressive, carved from dark wood. Thick cobwebs cling to the banister." },
+            'grand staircase': { description: "The staircase is impressive..." },
             'small door': {
                 description: "This is a simple, plain door. A small brass key is sticking out of the keyhole.",
                 items: ['a small brass key'],
                 destination: 'closet'
             },
-            'wide archway': { description: "The archway is framed with ornate carvings. It leads into what appears to be a grand hall." }
+            'wide archway': { description: "The archway is framed with ornate carvings..." }
         },
-        options: {
-            'go north': 'grand_hall',
-            'go west': 'staircase',
-            'go east': 'parlor'
-        }
+        options: { 'go north': 'grand_hall', 'go west': 'staircase', 'go east': 'parlor' }
     },
-    closet: { text: "You slip into a small, cramped closet. It smells of mothballs and decay. The door clicks shut behind you!", options: {} },
+    closet: { 
+        text: "You slip into a small, cramped closet. It smells of mothballs and decay. The door clicks shut behind you!", 
+        options: { 'go back': 'foyer' }
+    },
     parlor: {
-        text: "You are in the Parlor. Furniture lies draped in white sheets, like a congregation of ghosts. A soot-stained fireplace stands on the far wall.",
+        text: "You are in the Parlor. Furniture lies draped in white sheets...",
         objects: {
-            'sheet-covered furniture': { description: "You pull back the musty sheets. The furniture beneath is of high quality, but impossibly cold to the touch." },
+            'sheet-covered furniture': { description: "You pull back the musty sheets..." },
             'soot-stained fireplace': {
                 description: "The fireplace is cold, choked with ash.",
                 items: ['a charred diary page']
@@ -100,9 +99,9 @@ const gameState = {
             'music box': {
                 description: "A small, unadorned music box rests on the mantelpiece.",
                 race_specific: {
-                    human: "You open the box. It plays a sad, tinkling melody. You notice a tiny, almost invisible switch inside.",
-                    elf: "You feel a wave of profound sadness from the box. You easily spot a magical glyph on the bottom.",
-                    orc: "The box feels fragile. You try to open it, but your large fingers fumble with the tiny latch. It remains closed."
+                    human: "You open the box... You notice a tiny, almost invisible switch inside.",
+                    elf: "You feel a wave of profound sadness... You easily spot a magical glyph on the bottom.",
+                    orc: "The box feels fragile... your large fingers fumble with the tiny latch."
                 },
                 action: {
                     command: ['press switch', 'press glyph'],
@@ -114,14 +113,14 @@ const gameState = {
         options: { 'go west': 'foyer' }
     },
     grand_hall: {
-        text: "This is the Grand Hall. The sheer size of the room is breathtaking. A massive tapestry dominates the northern wall. A door is set in the east wall.",
+        text: "This is the Grand Hall. The sheer size of the room is breathtaking...",
         objects: {
             'massive tapestry': {
-                description: "It depicts a noble family: a king, a queen, and a sad-looking princess. The king is pointing towards a stylized mountain.",
-                race_specific: { elf: "You recognize the Elven stitch-work. The mountain isn't a mountain; it's the Elven symbol for 'secret'." },
+                description: "It depicts a noble family...",
+                race_specific: { elf: "You recognize the Elven stitch-work..." },
                 action: {
                     command: ['pull secret thread', 'pull thread'],
-                    text: "A section of the tapestry rips away, revealing a shallow alcove. Inside is a **heavy iron key**.",
+                    text: "A section of the tapestry rips away, revealing... a **heavy iron key**.",
                     item: 'a heavy iron key'
                 }
             }
@@ -129,13 +128,13 @@ const gameState = {
         options: { 'go south': 'foyer', 'go east': 'dining_hall' }
     },
     dining_hall: {
-        text: "You've entered a grand Dining Hall. A long table, set for a feast that never happened, dominates the room. A heavy sideboard rests against the east wall.",
+        text: "You've entered a grand Dining Hall...",
         objects: {
-            'long dining table': { description: "The table is set with tarnished silverware. The food has long since rotted into black lumps." },
+            'long dining table': { description: "The table is set with tarnished silverware..." },
             'heavy sideboard': {
                 description: "A massive piece of oak furniture.",
                 race_specific: {
-                    orc: "This is nothing. You put your shoulder into it and shove. With a deep groan, the sideboard slides aside, revealing a loose floorboard. Beneath it, you find a **ceremonial dagger**.",
+                    orc: "This is nothing... you find a **ceremonial dagger**.",
                     default: "You try to push the sideboard, but it won't budge an inch."
                 },
                 item: 'a ceremonial dagger'
@@ -144,21 +143,21 @@ const gameState = {
         options: { 'go west': 'grand_hall', 'go south': 'kitchen' }
     },
     kitchen: {
-        text: "The Kitchen is a stark contrast to the rest of the floor, with iron stoves and butcher blocks. A simple door leads down into darkness.",
+        text: "The Kitchen is a stark contrast to the rest of the floor...",
         objects: {
-            'cooking stove': { description: "A huge, cast-iron beast. Inside, you find only ashes." },
-            'butcher\'s block': { description: "The wood is stained and scarred from years of use." }
+            'cooking stove': { description: "A huge, cast-iron beast..." },
+            'butcher\'s block': { description: "The wood is stained and scarred..." }
         },
         options: { 'go north': 'dining_hall', 'go down': 'wine_cellar' }
     },
     wine_cellar: {
-        text: "You are in a damp Wine Cellar, lined with dusty racks. A heavy iron gate blocks the way east.",
+        text: "You are in a damp Wine Cellar...",
         objects: {
             'wine racks': {
-                description: "Hundreds of dusty bottles. One has an unusual label: 'King's Folly, 1888. Only the patient will find the prize.'",
+                description: "Hundreds of dusty bottles...",
                 action: {
                     command: ['open bottle', 'open king\'s folly'],
-                    text: "You uncork the bottle. Instead of wine, a rolled-up scroll is inside. It's a **magical recipe**.",
+                    text: "You uncork the bottle... inside is a **magical recipe**.",
                     item: 'a magical recipe'
                 }
             },
@@ -171,14 +170,14 @@ const gameState = {
         options: { 'go up': 'kitchen', 'go east': 'boiler_room' }
     },
     boiler_room: {
-        text: "The air is hot and thick with the smell of ozone. A massive iron boiler hums in the center of the room.",
+        text: "The air is hot and thick with the smell of ozone...",
         objects: {
-            'iron boiler': { description: "It's still warm, radiating a deep heat. A pressure valve hisses softly." },
+            'iron boiler': { description: "It's still warm..." },
             'copper pipes': {
-                description: "A network of hot copper pipes crisscrosses the ceiling. You notice something glinting on top of the largest pipe, just out of reach.",
+                description: "A network of hot copper pipes...",
                 race_specific: {
-                    human: "You look around for a tool. You find a long iron poker and use it to deftly knock the object down. It's a **set of lockpicks**.",
-                    default: "It's too high and too hot to touch. You can't reach it."
+                    human: "You find a long iron poker... It's a **set of lockpicks**.",
+                    default: "It's too high and too hot to touch."
                 },
                 item: 'a set of lockpicks'
             }
@@ -186,31 +185,31 @@ const gameState = {
         options: { 'go west': 'wine_cellar' }
     },
     staircase: {
-        text: "You stand at the top of the Grand Staircase, on the second floor landing. A large, dusty portrait hangs on the wall. Passages lead north and south.",
+        text: "You stand at the top of the Grand Staircase...",
         objects: {
             'large portrait': {
-                description: "It's a portrait of the sad-looking princess, Lady Elara. Her eyes seem to plead with you.",
+                description: "It's a portrait of the sad-looking princess, Lady Elara.",
                 requires: 'a silver locket',
-                action_text: "You hold the silver locket up to the portrait. It begins to glow with a soft, warm light. A previously invisible seam appears on the wall next to the portrait, revealing a hidden door to the attic stairs.",
+                action_text: "You hold the silver locket up to the portrait... A hidden door to the attic stairs is revealed.",
                 unlocks: 'attic_landing'
             }
         },
         options: { 'go down': 'foyer', 'go north': 'master_bedroom', 'go south': 'nursery' }
     },
     master_bedroom: {
-        text: "This must be the Master Bedroom. A large four-poster bed sits against the far wall, flanked by a wardrobe and a writing desk.",
+        text: "This must be the Master Bedroom...",
         objects: {
             'four-poster bed': {
-                description: "A grand but faded bed. Lifting the pillow, you find a small, ornate **boudoir key**.",
+                description: "A grand but faded bed... you find a small, ornate **boudoir key**.",
                 items: ['a boudoir key']
             },
-            'large wardrobe': { description: "Filled with dusty, fine clothes. The pockets are empty." },
+            'large wardrobe': { description: "Filled with dusty, fine clothes." },
             'writing desk': {
                 description: "An elegant wooden desk. The main drawer is locked.",
                 requires: 'a set of lockpicks',
                 race_specific: {
-                    human: "Your deft fingers make short work of the simple lock. The desk drawer opens. Inside is the **Architect's Journal**.",
-                    default: "You fumble with the intricate tools and give up before breaking them."
+                    human: "Your deft fingers make short work of the simple lock... Inside is the **Architect's Journal**.",
+                    default: "You fumble with the intricate tools..."
                 },
                 item: 'the Architect\'s Journal'
             }
@@ -218,59 +217,59 @@ const gameState = {
         options: { 'go south': 'staircase' }
     },
     nursery: {
-        text: "This small room was clearly a nursery. Faded drawings line one wall, and a lonely rocking horse sits in the center.",
+        text: "This small room was clearly a nursery...",
         objects: {
-            'rocking horse': { description: "A beautifully carved wooden horse. It creaks ominously as you touch it." },
-            'chalk drawings': { description: "Stick-figure drawings of a king, a queen, and a princess holding a bright red gem." },
+            'rocking horse': { description: "A beautifully carved wooden horse." },
+            'chalk drawings': { description: "Stick-figure drawings of a family..." },
             'small chest': {
                 description: "A small chest for toys, locked with a tiny, ornate lock.",
                 requires: 'a boudoir key',
-                action_text: "The small key fits perfectly. Inside, nestled amongst dried flowers, is a **flawless crystal prism**.",
+                action_text: "The small key fits perfectly... inside is a **flawless crystal prism**.",
                 item: 'a flawless crystal prism'
             }
         },
         options: { 'go north': 'staircase' }
     },
     attic_landing: {
-        text: "You've climbed a narrow set of stairs to the Attic. It's cramped and smells of dust and time. Before you is a single, sturdy door set next to a stone pedestal.",
+        text: "You've climbed a narrow set of stairs to the Attic...",
         objects: {
-            'dusty furniture': { description: "Old chairs and tables lie under thick sheets. There is nothing of value here." },
+            'dusty furniture': { description: "Old chairs and tables lie under thick sheets." },
             'stone pedestal': {
-                description: "A stone pedestal with a single, perfectly round depression in the top.",
+                description: "A stone pedestal with a round depression in the top.",
                 requires: 'a flawless crystal prism',
-                action_text: "You place the crystal prism in the depression. A beam of moonlight strikes it, refracting into a rainbow that projects three glowing symbols onto the door: a **Crown**, a **Sword**, and a **Mountain**."
+                action_text: "You place the crystal prism in the depression... three glowing symbols appear on the door: a **Crown**, a **Sword**, and a **Mountain**."
             },
             'sturdy door': { 
-                description: "This door has no handle or lock. Three symbols glow faintly on its surface.",
+                description: "This door has no handle or lock... Three symbols glow faintly.",
                 destination: 'ritual_chamber'
             }
         },
         options: { 'go down': 'staircase', 'go through door': 'ritual_chamber' }
     },
     ritual_chamber: {
-        text: "You are in the heart of the mansion. Three large, unlit braziers stand in the center of the room, marked with symbols: a Crown, a Sword, and a Mountain. In the middle, a beam of light shines on an empty stand.",
+        text: "You are in the heart of the mansion. Three large, unlit braziers stand in the center of the room...",
         objects: {
             'crown brazier': {
-                description: "A brazier marked with the symbol of a Crown.",
+                description: "A brazier marked with a Crown.",
                 race_specific: {
-                    human: "You light the Brazier of the Crown. The flame burns a steady, noble white... The **Gem of Life** materializes on the stand.",
-                    default: "The flame sputters and dies. A voice whispers, '*That is not your path.*'"
+                    human: "You light the Brazier of the Crown... The **Gem of Life** materializes.",
+                    default: "The flame sputters... '*That is not your path.*'"
                 },
                 item: 'the Gem of Life'
             },
             'sword brazier': {
-                description: "A brazier marked with the symbol of a Sword.",
+                description: "A brazier marked with a Sword.",
                 race_specific: {
-                    elf: "You light the Brazier of the Sword. The flame burns with a sharp, intelligent blue... The **Gem of Life** materializes on the stand.",
-                    default: "The flame sputters and dies. A voice whispers, '*That is not your path.*'"
+                    elf: "You light the Brazier of the Sword... The **Gem of Life** materializes.",
+                    default: "The flame sputters... '*That is not your path.*'"
                 },
                 item: 'the Gem of Life'
             },
             'mountain brazier': {
-                description: "A brazier marked with the symbol of a Mountain.",
+                description: "A brazier marked with a Mountain.",
                 race_specific: {
-                    orc: "You light the Brazier of the Mountain. The flame roars to life... The **Gem of Life** materializes on the stand.",
-                    default: "The flame sputters and dies. A voice whispers, '*That is not your path.*'"
+                    orc: "You light the Brazier of the Mountain... The **Gem of Life** materializes.",
+                    default: "The flame sputters... '*That is not your path.*'"
                 },
                 item: 'the Gem of Life'
             }
@@ -288,13 +287,10 @@ function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
 async function displayText(text, clear = false) {
     isTyping = true;
-    if (clear) {
-        gameTextElement.innerHTML = '';
-    }
+    if (clear) gameTextElement.innerHTML = '';
     const p = document.createElement('p');
     gameTextElement.appendChild(p);
     
-    // ASCII art and event text should be instant
     const isInstant = gamePhase === 'title' || gamePhase === 'event';
     if (isInstant) {
         p.textContent = text;
@@ -335,7 +331,7 @@ async function parseCommand(command) {
         await displayText(gameState.title.text, true);
         return;
     }
-    
+
     // --- Phase-Specific Logic ---
     switch (gamePhase) {
         case 'title':
@@ -360,7 +356,7 @@ async function parseCommand(command) {
                 const doorObject = gameState.foyer.objects['small door'];
                 if (doorObject.items.length > 0) player.inventory.push(doorObject.items.pop());
                 currentPlayerLocation = doorObject.destination;
-                await displayText("\n> You frantically turn the key and throw yourself through the door just as heavy footsteps thunder into the foyer.", true);
+                await displayText("\n> You frantically turn the key and throw yourself through the door...", true);
             } else { 
                 const fleeOption = Object.keys(gameState.foyer.options).find(opt => command.includes(opt.split(' ')[1])) || 'go north';
                 currentPlayerLocation = gameState.foyer.options[fleeOption];
@@ -373,47 +369,21 @@ async function parseCommand(command) {
 
         case 'playing':
             const room = gameState[currentPlayerLocation];
-            const availableOptions = room.options || {};
-            
-            // The command parser now has a clear priority:
-            // 1. Check for an exact or partial match in the room's options (like 'knock loudly' or 'go north').
-            // 2. If no match, then check for verb-based commands (like 'look around' or 'search door').
-            // 3. If still no match, it's an invalid command.
+            const commandParts = command.split(' ');
+            const verb = commandParts[0];
+            const noun = commandParts.slice(1).join(' ');
+            let actionTaken = false;
 
-            const matchedOptionKey = Object.keys(availableOptions).find(c => c.startsWith(command));
-
-            if (matchedOptionKey) {
-                const option = availableOptions[matchedOptionKey];
-                await displayText(`\n> ${matchedOptionKey}`);
-                
-                if (typeof option === 'string') {
-                    currentPlayerLocation = option;
-                    await displayText(gameState[currentPlayerLocation].text, false);
-                } else if (typeof option === 'object') {
-                    if (option.descriptions) {
-                        const message = option.descriptions[player.race] || "You can't do that.";
-                        await displayText(message, false);
-                    }
-                    if (option.destination) {
-                        currentPlayerLocation = option.destination;
-                        await sleep(500);
-                        await displayText(gameState[currentPlayerLocation].text, true);
-                    }
-                }
-            } else {
-                // If no direct option was matched, check for verbs
-                const commandParts = command.split(' ');
-                const verb = commandParts[0];
-                const noun = commandParts.slice(1).join(' ');
-                let actionTaken = false;
-
+            // Command Priority 1: Verb-based actions (look, search, use, etc.)
+            const knownVerbs = ['look', 'search', 'use', 'press', 'pull', 'open', 'light', 'read', 'go', 'g'];
+            if (knownVerbs.includes(verb)) {
                 if (verb === 'look' && noun === 'around') {
+                    await displayText(`\n> ${command}`);
                     let lookText = "You scan the room and notice a few things of interest:\n";
                     const objectKeys = Object.keys(room.objects || {});
                     if (objectKeys.length > 0) {
                         objectKeys.forEach(obj => { lookText += `- ${obj}\n`; });
                     } else { lookText = "You look around, but see nothing of particular interest."; }
-                    await displayText(`\n> ${command}`);
                     await displayText(lookText);
                     actionTaken = true;
 
@@ -422,16 +392,39 @@ async function parseCommand(command) {
                         setTimeout(async () => {
                             if (currentPlayerLocation === 'foyer' && gamePhase === 'playing') {
                                 gamePhase = 'event';
-                                await displayText("\n**Suddenly, you hear a heavy scraping sound from the floor above, followed by slow, deliberate footsteps. Something is coming.**\n\nYou need to act quickly!\n\n- **use door**\n- **flee**");
+                                await displayText("\n**Suddenly, you hear a heavy scraping sound...**\n\nYou need to act quickly!\n\n- **use door**\n- **flee**");
                             }
                         }, 7000);
                     }
-                } 
-                // Add other verb logic here in the future ('search', 'use', etc.)
-
-                if (!actionTaken) {
-                    await displayText(`\n> ${command}\n\nThat's not a valid command here.`);
                 }
+                // Future verbs like 'use' would go here
+            }
+
+            if (actionTaken) return;
+
+            // Command Priority 2: Full command strings from room options (covers actions and navigation)
+            const availableOptions = room.options || {};
+            const matchedCommand = Object.keys(availableOptions).find(c => c.startsWith(command));
+
+            if (matchedCommand) {
+                const option = availableOptions[matchedCommand];
+                await displayText(`\n> ${matchedCommand}`);
+                
+                if (typeof option === 'string') { // Simple navigation
+                    currentPlayerLocation = option;
+                    await displayText(gameState[currentPlayerLocation].text, false);
+                } else { // Complex actions like 'try the door'
+                    if (option.descriptions) {
+                        await displayText(option.descriptions[player.race] || "You can't do that.");
+                    }
+                    if (option.destination) {
+                        currentPlayerLocation = option.destination;
+                        await sleep(500);
+                        await displayText(gameState[currentPlayerLocation].text, true);
+                    }
+                }
+            } else {
+                await displayText(`\n> ${command}\n\nThat's not a valid command here.`);
             }
             break;
     }
