@@ -71,8 +71,6 @@ const gameState = {
             }
         }
     },
-    
-    // --- FIRST FLOOR ---
     foyer: {
         text: "You are in the Grand Foyer. Dust motes dance in a single beam of moonlight. A grand staircase sweeps upwards to the west, a wide archway leads north, and a smaller door stands to the east.\n\nType 'look around' to see more detail.",
         objects: {
@@ -153,8 +151,6 @@ const gameState = {
         },
         options: { 'go north': 'dining_hall', 'go down': 'wine_cellar' }
     },
-
-    // --- BASEMENT ---
     wine_cellar: {
         text: "You are in a damp Wine Cellar, lined with dusty racks. A heavy iron gate blocks the way east.",
         objects: {
@@ -189,10 +185,8 @@ const gameState = {
         },
         options: { 'go west': 'wine_cellar' }
     },
-
-    // --- SECOND FLOOR ---
     staircase: {
-        text: "You stand at the top of the Grand Staircase, on the second floor landing. A large, dusty portrait hangs on the wall. A faded velvet rope, now dust on the floor, once blocked the way. Passages lead north and south.",
+        text: "You stand at the top of the Grand Staircase, on the second floor landing. A large, dusty portrait hangs on the wall. Passages lead north and south.",
         objects: {
             'large portrait': {
                 description: "It's a portrait of the sad-looking princess, Lady Elara. Her eyes seem to plead with you.",
@@ -204,7 +198,7 @@ const gameState = {
         options: { 'go down': 'foyer', 'go north': 'master_bedroom', 'go south': 'nursery' }
     },
     master_bedroom: {
-        text: "This must be the Master Bedroom. It is spacious and was once luxurious. A large four-poster bed sits against the far wall, flanked by a wardrobe and a writing desk.",
+        text: "This must be the Master Bedroom. A large four-poster bed sits against the far wall, flanked by a wardrobe and a writing desk.",
         objects: {
             'four-poster bed': {
                 description: "A grand but faded bed. Lifting the pillow, you find a small, ornate **boudoir key**.",
@@ -237,8 +231,6 @@ const gameState = {
         },
         options: { 'go north': 'staircase' }
     },
-
-    // --- ATTIC ---
     attic_landing: {
         text: "You've climbed a narrow set of stairs to the Attic. It's cramped and smells of dust and time. Before you is a single, sturdy door set next to a stone pedestal.",
         objects: {
@@ -246,39 +238,39 @@ const gameState = {
             'stone pedestal': {
                 description: "A stone pedestal with a single, perfectly round depression in the top.",
                 requires: 'a flawless crystal prism',
-                action_text: "You place the crystal prism in the depression. A beam of moonlight from a high window strikes it, refracting into a rainbow that projects three glowing symbols onto the door: a **Crown**, a **Sword**, and a **Mountain**."
+                action_text: "You place the crystal prism in the depression. A beam of moonlight strikes it, refracting into a rainbow that projects three glowing symbols onto the door: a **Crown**, a **Sword**, and a **Mountain**."
             },
             'sturdy door': { 
-                description: "This door is made of a strange, dark wood and has no handle or lock. Three symbols glow faintly on its surface.",
+                description: "This door has no handle or lock. Three symbols glow faintly on its surface.",
                 destination: 'ritual_chamber'
             }
         },
         options: { 'go down': 'staircase', 'go through door': 'ritual_chamber' }
     },
     ritual_chamber: {
-        text: "You are in the heart of the mansion. Three large, unlit braziers stand in the center of the room, marked with symbols: a Crown, a Sword, and a Mountain. In the middle, a beam of light shines on an empty stand. The Architect's Journal entry echoes in your mind: '...a reflection of true character...'",
+        text: "You are in the heart of the mansion. Three large, unlit braziers stand in the center of the room, marked with symbols: a Crown, a Sword, and a Mountain. In the middle, a beam of light shines on an empty stand.",
         objects: {
             'crown brazier': {
                 description: "A brazier marked with the symbol of a Crown.",
                 race_specific: {
-                    human: "You light the Brazier of the Crown. The flame burns a steady, noble white. You understand that true leadership is about adaptability and understanding. The **Gem of Life** materializes on the stand.",
-                    default: "You light the Brazier of the Crown. The flame sputters and dies. A voice whispers, '*That is not your path.*'"
+                    human: "You light the Brazier of the Crown. The flame burns a steady, noble white... The **Gem of Life** materializes on the stand.",
+                    default: "The flame sputters and dies. A voice whispers, '*That is not your path.*'"
                 },
                 item: 'the Gem of Life'
             },
             'sword brazier': {
                 description: "A brazier marked with the symbol of a Sword.",
                 race_specific: {
-                    elf: "You light the Brazier of the Sword. The flame burns with a sharp, intelligent blue. You understand that true power is in precision and wisdom. The **Gem of Life** materializes on the stand.",
-                    default: "You light the Brazier of the Sword. The flame sputters and dies. A voice whispers, '*That is not your path.*'"
+                    elf: "You light the Brazier of the Sword. The flame burns with a sharp, intelligent blue... The **Gem of Life** materializes on the stand.",
+                    default: "The flame sputters and dies. A voice whispers, '*That is not your path.*'"
                 },
                 item: 'the Gem of Life'
             },
             'mountain brazier': {
                 description: "A brazier marked with the symbol of a Mountain.",
                 race_specific: {
-                    orc: "You light the Brazier of the Mountain. The flame roars to life, strong and unyielding as stone. You understand that true strength is about endurance and resilience. The **Gem of Life** materializes on the stand.",
-                    default: "You light the Brazier of the Mountain. The flame sputters and dies. A voice whispers, '*That is not your path.*'"
+                    orc: "You light the Brazier of the Mountain. The flame roars to life... The **Gem of Life** materializes on the stand.",
+                    default: "The flame sputters and dies. A voice whispers, '*That is not your path.*'"
                 },
                 item: 'the Gem of Life'
             }
@@ -294,17 +286,25 @@ const gameState = {
 
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-async function typeText(text, clear = false) {
+async function displayText(text, clear = false) {
     isTyping = true;
     if (clear) {
         gameTextElement.innerHTML = '';
     }
     const p = document.createElement('p');
     gameTextElement.appendChild(p);
-    for (const char of text) {
-        p.textContent += char;
-        await sleep(TYPEWRITER_SPEED);
+    
+    // ASCII art and event text should be instant
+    const isInstant = gamePhase === 'title' || gamePhase === 'event';
+    if (isInstant) {
+        p.textContent = text;
+    } else {
+        for (const char of text) {
+            p.textContent += char;
+            await sleep(TYPEWRITER_SPEED);
+        }
     }
+    
     gameTextElement.innerHTML += '<br>';
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     isTyping = false;
@@ -322,15 +322,17 @@ function createPlayer(race) {
     }
 }
 
+// **REBUILT and OPTIMIZED: The main command processing function.**
 async function parseCommand(command) {
     if (!command) return;
 
+    // --- Universal Commands ---
     if (command === 'restart') {
         gamePhase = 'title';
         player = {};
         foyerLooked = false;
         currentPlayerLocation = 'start';
-        await typeText(gameState.title.text, true);
+        await displayText(gameState.title.text, true);
         return;
     }
     
@@ -339,7 +341,7 @@ async function parseCommand(command) {
         case 'title':
             if (command.startsWith('start')) {
                 gamePhase = 'race_selection';
-                await typeText("Choose your character:\n\n- human\n- elf\n- orc", true);
+                await displayText("Choose your character:\n\n- human\n- elf\n- orc", true);
             }
             break;
 
@@ -349,82 +351,87 @@ async function parseCommand(command) {
                 createPlayer(raceChoice);
                 gamePhase = 'playing';
                 currentPlayerLocation = 'start';
-                await typeText(gameState.start.text, true);
+                await displayText(gameState.start.text, true);
             }
             break;
 
-        // **FIXED: The logic for the timed event is now robust.**
         case 'event':
             if (command.startsWith('use')) {
                 const doorObject = gameState.foyer.objects['small door'];
-                if (doorObject.items.length > 0) {
-                    player.inventory.push(doorObject.items.pop());
-                }
+                if (doorObject.items.length > 0) player.inventory.push(doorObject.items.pop());
                 currentPlayerLocation = doorObject.destination;
-                await typeText("\n> You frantically turn the key and throw yourself through the door just as heavy footsteps thunder into the foyer.", true);
-                await sleep(500);
-                gamePhase = 'playing';
-                await typeText(gameState[currentPlayerLocation].text, false);
-            } else { // Any other command is treated as fleeing
+                await displayText("\n> You frantically turn the key and throw yourself through the door just as heavy footsteps thunder into the foyer.", true);
+            } else { 
                 const fleeOption = Object.keys(gameState.foyer.options).find(opt => command.includes(opt.split(' ')[1])) || 'go north';
                 currentPlayerLocation = gameState.foyer.options[fleeOption];
-                await typeText("\n> You don't waste a second and bolt through the nearest exit.", true);
-                await sleep(500);
-                gamePhase = 'playing';
-                await typeText(gameState[currentPlayerLocation].text, false);
+                await displayText("\n> You don't waste a second and bolt through the nearest exit.", true);
             }
+            gamePhase = 'playing';
+            await sleep(500);
+            await displayText(gameState[currentPlayerLocation].text);
             break;
 
         case 'playing':
             const room = gameState[currentPlayerLocation];
-            const commandParts = command.split(' ');
-            const verb = commandParts[0];
-            const noun = commandParts.slice(1).join(' ');
-
-            // Verb-based actions first
-            if (verb === 'look') {
-                let lookText = "\nYou scan the room and notice a few things of interest:\n";
-                const objectKeys = Object.keys(room.objects || {});
-                if (objectKeys.length > 0) {
-                    objectKeys.forEach(obj => { lookText += `- ${obj}\n`; });
-                } else { lookText = "\nYou look around, but see nothing of particular interest."; }
-                await typeText(lookText, false);
-
-                if (currentPlayerLocation === 'foyer' && !foyerLooked) {
-                    foyerLooked = true;
-                    setTimeout(async () => {
-                        if (currentPlayerLocation === 'foyer' && gamePhase === 'playing') {
-                            gamePhase = 'event';
-                            await typeText("\n**Suddenly, you hear a heavy scraping sound from the floor above, followed by slow, deliberate footsteps. Something is coming.**\n\nYou need to act quickly!\n\n- **use door** with the key\n- **flee** (e.g., 'flee north')");
-                        }
-                    }, 7000);
-                }
-                return;
-            }
-            
-            // Then check for full command matches in room options
             const availableOptions = room.options || {};
-            const matchedCommand = Object.keys(availableOptions).find(c => c.startsWith(command));
+            
+            // The command parser now has a clear priority:
+            // 1. Check for an exact or partial match in the room's options (like 'knock loudly' or 'go north').
+            // 2. If no match, then check for verb-based commands (like 'look around' or 'search door').
+            // 3. If still no match, it's an invalid command.
 
-            if (matchedCommand) {
-                const option = availableOptions[matchedCommand];
+            const matchedOptionKey = Object.keys(availableOptions).find(c => c.startsWith(command));
+
+            if (matchedOptionKey) {
+                const option = availableOptions[matchedOptionKey];
+                await displayText(`\n> ${matchedOptionKey}`);
+                
                 if (typeof option === 'string') {
                     currentPlayerLocation = option;
-                    await typeText(`\n> ${matchedCommand}`, false);
-                    await typeText(gameState[currentPlayerLocation].text, false);
+                    await displayText(gameState[currentPlayerLocation].text, false);
                 } else if (typeof option === 'object') {
                     if (option.descriptions) {
                         const message = option.descriptions[player.race] || "You can't do that.";
-                        await typeText(`\n> ${matchedCommand}\n\n${message}`, false);
+                        await displayText(message, false);
                     }
                     if (option.destination) {
                         currentPlayerLocation = option.destination;
                         await sleep(500);
-                        await typeText(gameState[currentPlayerLocation].text, true);
+                        await displayText(gameState[currentPlayerLocation].text, true);
                     }
                 }
             } else {
-                await typeText(`\n> ${command}\n\nThat's not a valid command here.`, false);
+                // If no direct option was matched, check for verbs
+                const commandParts = command.split(' ');
+                const verb = commandParts[0];
+                const noun = commandParts.slice(1).join(' ');
+                let actionTaken = false;
+
+                if (verb === 'look' && noun === 'around') {
+                    let lookText = "You scan the room and notice a few things of interest:\n";
+                    const objectKeys = Object.keys(room.objects || {});
+                    if (objectKeys.length > 0) {
+                        objectKeys.forEach(obj => { lookText += `- ${obj}\n`; });
+                    } else { lookText = "You look around, but see nothing of particular interest."; }
+                    await displayText(`\n> ${command}`);
+                    await displayText(lookText);
+                    actionTaken = true;
+
+                    if (currentPlayerLocation === 'foyer' && !foyerLooked) {
+                        foyerLooked = true;
+                        setTimeout(async () => {
+                            if (currentPlayerLocation === 'foyer' && gamePhase === 'playing') {
+                                gamePhase = 'event';
+                                await displayText("\n**Suddenly, you hear a heavy scraping sound from the floor above, followed by slow, deliberate footsteps. Something is coming.**\n\nYou need to act quickly!\n\n- **use door**\n- **flee**");
+                            }
+                        }, 7000);
+                    }
+                } 
+                // Add other verb logic here in the future ('search', 'use', etc.)
+
+                if (!actionTaken) {
+                    await displayText(`\n> ${command}\n\nThat's not a valid command here.`);
+                }
             }
             break;
     }
@@ -442,4 +449,4 @@ commandForm.addEventListener('submit', async function(event) {
     commandInput.focus();
 });
 
-typeText(gameState.title.text, true);
+displayText(gameState.title.text, true);
