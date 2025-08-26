@@ -9,9 +9,10 @@ const commandInput = document.getElementById('command-input');
 // ======================================================
 // SECTION 2: GAME STATE VARIABLES
 // ======================================================
-let gamePhase = 'title'; // Can be 'title', 'race_selection', or 'playing'
+let gamePhase = 'title'; // Can be 'title', 'race_selection', 'name_selection', 'playing'
 let currentPlayerLocation = 'start';
 let player = {}; // A single object to hold all player data
+let playerName = ""; // NEW: To store the character's name
 let isTyping = false; // Flag to prevent input during text animation
 const TYPEWRITER_SPEED = 15;
 
@@ -77,12 +78,12 @@ const gameState = {
             'small door': {
                 description: "This is a simple, plain door. A small brass key is sticking out of the keyhole.",
                 items: ['a small brass key']
-                // The door doesn't lead anywhere until it's properly used/unlocked
             },
             'wide archway': { description: "The archway is framed with ornate carvings. It leads into what appears to be a grand hall." }
         },
         options: { 'go north': 'grand_hall', 'go west': 'staircase', 'go east': 'parlor' }
     },
+    // ... (All other room data is the same)
     closet: { 
         text: "You slip into a small, cramped closet. It smells of mothballs and decay. The door clicks shut behind you!", 
         options: { 'go back': 'foyer' }
@@ -149,8 +150,6 @@ const gameState = {
         },
         options: { 'go north': 'dining_hall', 'go down': 'wine_cellar' }
     },
-
-    // --- BASEMENT ---
     wine_cellar: {
         text: "You are in a damp Wine Cellar, lined with dusty racks. A heavy iron gate blocks the way east.",
         objects: {
@@ -185,8 +184,6 @@ const gameState = {
         },
         options: { 'go west': 'wine_cellar' }
     },
-
-    // --- SECOND FLOOR ---
     staircase: {
         text: "You stand at the top of the Grand Staircase, on the second floor landing. A large, dusty portrait hangs on the wall. Passages lead north and south.",
         objects: {
@@ -233,8 +230,6 @@ const gameState = {
         },
         options: { 'go north': 'staircase' }
     },
-
-    // --- ATTIC ---
     attic_landing: {
         text: "You've climbed a narrow set of stairs to the Attic...",
         objects: {
@@ -296,7 +291,7 @@ async function displayText(text, clear = false) {
     const p = document.createElement('p');
     gameTextElement.appendChild(p);
     
-    const isInstant = gamePhase === 'title';
+    const isInstant = gamePhase === 'title' || gamePhase === 'event';
     if (isInstant) {
         p.textContent = text;
     } else {
@@ -323,7 +318,6 @@ function createPlayer(race) {
     }
 }
 
-// **REBUILT and OPTIMIZED: The main command processing function.**
 async function parseCommand(command) {
     if (!command) return;
 
@@ -331,11 +325,27 @@ async function parseCommand(command) {
     if (command === 'restart') {
         gamePhase = 'title';
         player = {};
+        playerName = "";
         await displayText(gameState.title.text, true);
         return;
     }
-    // Add other universal commands like inventory, status here if needed.
 
+    // NEW: Player Card command
+    if (command === 'card' || command === 'player') {
+        if (gamePhase !== 'playing') {
+            await displayText(`\n> ${command}\n\nYou must create your character first.`);
+            return;
+        }
+        let cardText = `
+        --- Adventurer ---
+        Name: ${playerName}
+        Race: ${player.race.charAt(0).toUpperCase() + player.race.slice(1)}
+        Health: ${player.health} / ${player.maxHealth}
+        Weapon: ${player.equipment.weapon}
+        ------------------`;
+        await displayText(cardText);
+        return;
+    }
     
     // --- Phase-Specific Logic ---
     switch (gamePhase) {
@@ -350,20 +360,30 @@ async function parseCommand(command) {
             const raceChoice = ['human', 'elf', 'orc'].find(r => r.startsWith(command));
             if (raceChoice) {
                 createPlayer(raceChoice);
-                gamePhase = 'playing';
-                currentPlayerLocation = 'start';
-                await displayText(gameState.start.text, true);
+                gamePhase = 'name_selection'; // NEW PHASE
+                await displayText(`\nYou have chosen to be an ${raceChoice}.\n\nWhat is your name?`);
             }
+            break;
+        
+        // NEW: Handle the name selection phase
+        case 'name_selection':
+            playerName = command.charAt(0).toUpperCase() + command.slice(1); // Capitalize the first letter
+            gamePhase = 'playing';
+            currentPlayerLocation = 'start';
+            await displayText(`Welcome, ${playerName}. Your adventure begins...`, true);
+            await sleep(1500); // Dramatic pause
+            await displayText(gameState.start.text, true);
             break;
 
         case 'playing':
             const room = gameState[currentPlayerLocation];
+            
+            // Priority 1: Verb-based actions (look, search, etc.)
             const commandParts = command.split(' ');
             const verb = commandParts[0];
             const noun = commandParts.slice(1).join(' ');
             let actionTaken = false;
 
-            // Priority 1: Verb-based commands (look, search, use, etc.)
             if (verb === 'look' && noun === 'around') {
                 await displayText(`\n> ${command}`);
                 let lookText = "You scan the room and notice a few things of interest:\n";
@@ -373,28 +393,11 @@ async function parseCommand(command) {
                 } else { lookText = "You look around, but see nothing of particular interest."; }
                 await displayText(lookText);
                 actionTaken = true;
-            } else if (verb === 'search') {
-                await displayText(`\n> ${command}`);
-                const objectKeys = Object.keys(room.objects || {});
-                const objectToSearch = objectKeys.find(obj => obj.startsWith(noun));
-                if (objectToSearch) {
-                    const objData = room.objects[objectToSearch];
-                    let searchText = objData.description;
-                    if (objData.items && objData.items.length > 0) {
-                        const foundItem = objData.items[0];
-                        searchText += `\nYou find: ${foundItem}.`;
-                        player.inventory.push(objData.items.pop());
-                    }
-                    await displayText(searchText);
-                } else {
-                    await displayText(`You can't find a '${noun}' to search.`);
-                }
-                actionTaken = true;
             }
 
             if (actionTaken) return;
 
-            // Priority 2: Full command strings from room options (covers actions and navigation)
+            // Priority 2: Full command strings from room options
             const availableOptions = room.options || {};
             const matchedCommand = Object.keys(availableOptions).find(c => c.startsWith(command));
 
@@ -428,9 +431,9 @@ async function parseCommand(command) {
 commandForm.addEventListener('submit', async function(event) {
     event.preventDefault();
     if (isTyping) return;
-    const command = commandInput.value.trim().toLowerCase();
+    const command = commandInput.value.trim(); // Keep case for names
     commandInput.value = '';
-    if (command) { await parseCommand(command); }
+    if (command) { await parseCommand(gamePhase === 'name_selection' ? command : command.toLowerCase()); }
     commandInput.focus();
 });
 
