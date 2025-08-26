@@ -12,7 +12,7 @@ const commandInput = document.getElementById('command-input');
 let gamePhase = 'title'; // Can be 'title', 'race_selection', 'name_selection', 'playing'
 let currentPlayerLocation = 'start';
 let player = {}; // A single object to hold all player data
-let playerName = ""; // NEW: To store the character's name
+let playerName = ""; // To store the character's name
 let isTyping = false; // Flag to prevent input during text animation
 const TYPEWRITER_SPEED = 15;
 
@@ -291,7 +291,7 @@ async function displayText(text, clear = false) {
     const p = document.createElement('p');
     gameTextElement.appendChild(p);
     
-    const isInstant = gamePhase === 'title' || gamePhase === 'event';
+    const isInstant = gamePhase === 'title';
     if (isInstant) {
         p.textContent = text;
     } else {
@@ -330,7 +330,6 @@ async function parseCommand(command) {
         return;
     }
 
-    // NEW: Player Card command
     if (command === 'card' || command === 'player') {
         if (gamePhase !== 'playing') {
             await displayText(`\n> ${command}\n\nYou must create your character first.`);
@@ -350,7 +349,7 @@ async function parseCommand(command) {
     // --- Phase-Specific Logic ---
     switch (gamePhase) {
         case 'title':
-            if (command.startsWith('start')) {
+            if (command === 'start') {
                 gamePhase = 'race_selection';
                 await displayText("Choose your character:\n\n- human\n- elf\n- orc", true);
             }
@@ -360,55 +359,41 @@ async function parseCommand(command) {
             const raceChoice = ['human', 'elf', 'orc'].find(r => r.startsWith(command));
             if (raceChoice) {
                 createPlayer(raceChoice);
-                gamePhase = 'name_selection'; // NEW PHASE
+                gamePhase = 'name_selection';
                 await displayText(`\nYou have chosen to be an ${raceChoice}.\n\nWhat is your name?`);
             }
             break;
         
-        // NEW: Handle the name selection phase
         case 'name_selection':
-            playerName = command.charAt(0).toUpperCase() + command.slice(1); // Capitalize the first letter
+            playerName = command.charAt(0).toUpperCase() + command.slice(1);
             gamePhase = 'playing';
             currentPlayerLocation = 'start';
             await displayText(`Welcome, ${playerName}. Your adventure begins...`, true);
-            await sleep(1500); // Dramatic pause
+            await sleep(1500);
             await displayText(gameState.start.text, true);
             break;
 
         case 'playing':
             const room = gameState[currentPlayerLocation];
-            
-            // Priority 1: Verb-based actions (look, search, etc.)
             const commandParts = command.split(' ');
             const verb = commandParts[0];
             const noun = commandParts.slice(1).join(' ');
             let actionTaken = false;
 
-            if (verb === 'look' && noun === 'around') {
-                await displayText(`\n> ${command}`);
-                let lookText = "You scan the room and notice a few things of interest:\n";
-                const objectKeys = Object.keys(room.objects || {});
-                if (objectKeys.length > 0) {
-                    objectKeys.forEach(obj => { lookText += `- ${obj}\n`; });
-                } else { lookText = "You look around, but see nothing of particular interest."; }
-                await displayText(lookText);
+            // **NEW: Unified command matching logic**
+            const allOptions = room.options || {};
+            const allObjects = room.objects || {};
+            
+            // Priority 1: Check room options (e.g., 'go north', 'knock loudly')
+            let matchedCommandKey = Object.keys(allOptions).find(key => key.split(' ')[0] === command);
+            if (matchedCommandKey) {
                 actionTaken = true;
-            }
-
-            if (actionTaken) return;
-
-            // Priority 2: Full command strings from room options
-            const availableOptions = room.options || {};
-            const matchedCommand = Object.keys(availableOptions).find(c => c.startsWith(command));
-
-            if (matchedCommand) {
-                const option = availableOptions[matchedCommand];
-                await displayText(`\n> ${matchedCommand}`);
-                
-                if (typeof option === 'string') { // Simple navigation
+                const option = allOptions[matchedCommandKey];
+                await displayText(`\n> ${matchedCommandKey}`);
+                if (typeof option === 'string') {
                     currentPlayerLocation = option;
                     await displayText(gameState[currentPlayerLocation].text);
-                } else { // Complex actions like 'try the door'
+                } else {
                     if (option.descriptions) {
                         await displayText(option.descriptions[player.race] || "You can't do that.");
                     }
@@ -418,7 +403,40 @@ async function parseCommand(command) {
                         await displayText(gameState[currentPlayerLocation].text, true);
                     }
                 }
-            } else {
+            }
+
+            // Priority 2: Check for verb-noun commands (e.g., 'look around', 'search small door')
+            if (!actionTaken) {
+                if (verb === 'look' && noun === 'around') {
+                    actionTaken = true;
+                    await displayText(`\n> ${command}`);
+                    let lookText = "You scan the room and notice a few things of interest:\n";
+                    const objectKeys = Object.keys(allObjects);
+                    if (objectKeys.length > 0) {
+                        objectKeys.forEach(obj => { lookText += `- ${obj}\n`; });
+                    } else { lookText = "You look around, but see nothing of particular interest."; }
+                    await displayText(lookText);
+                } else if (verb === 'search') {
+                    actionTaken = true;
+                    await displayText(`\n> ${command}`);
+                    const matchedObjectKey = Object.keys(allObjects).find(key => key.split(' ')[0] === noun);
+                    if (matchedObjectKey) {
+                        const objData = allObjects[matchedObjectKey];
+                        let searchText = objData.description;
+                        if (objData.items && objData.items.length > 0) {
+                            const foundItem = objData.items[0];
+                            searchText += `\nYou find: ${foundItem}.`;
+                            player.inventory.push(objData.items.pop());
+                        }
+                        await displayText(searchText);
+                    } else {
+                        await displayText(`You can't find a '${noun}' to search.`);
+                    }
+                }
+            }
+
+            // If no action was taken, command is invalid
+            if (!actionTaken) {
                 await displayText(`\n> ${command}\n\nThat's not a valid command here.`);
             }
             break;
@@ -431,7 +449,7 @@ async function parseCommand(command) {
 commandForm.addEventListener('submit', async function(event) {
     event.preventDefault();
     if (isTyping) return;
-    const command = commandInput.value.trim(); // Keep case for names
+    const command = commandInput.value.trim();
     commandInput.value = '';
     if (command) { await parseCommand(gamePhase === 'name_selection' ? command : command.toLowerCase()); }
     commandInput.focus();
