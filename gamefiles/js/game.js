@@ -9,7 +9,7 @@ const commandInput = document.getElementById('command-input');
 // ======================================================
 // SECTION 2: GAME STATE VARIABLES
 // ======================================================
-let gamePhase = 'title'; // Can be 'title', 'race_selection', 'name_selection', 'playing'
+let gamePhase = 'title'; // Can be 'title', 'race_selection', 'name_selection', 'instructions', 'playing'
 let currentPlayerLocation = 'start';
 let player = {}; // A single object to hold all player data
 let playerName = ""; // To store the character's name
@@ -43,6 +43,26 @@ const gameState = {
 
              Type 'start' to begin
 `
+    },
+    instructions: {
+        text: `
+        --- How to Play ---
+
+        - To move, type the direction you want to go.
+          Example: north, south, east, west
+
+        - To see what's in a room, type 'look around'.
+          Example: look around
+
+        - To interact with objects, type 'search' and the object's name.
+          Example: search small door
+
+        - To see your character's status, type 'card'.
+
+        - To restart the game at any time, type 'restart'.
+
+        Type 'begin' to start your adventure.
+        `
     },
     start: {
         text: "The last light of dusk fails as you finally break through the oppressive woods. Before you looms the Supra Mansion, a silhouette of spires and gables against a bruised purple sky.\n\nA chill wind cuts across the clearing, carrying the scent of rain and old stone. Massive oak doors, bound in dark, pitted iron, stand before you.\n\nWhat is your approach?\n\n- knock loudly\n- ring the bell\n- try the door",
@@ -291,7 +311,7 @@ async function displayText(text, clear = false) {
     const p = document.createElement('p');
     gameTextElement.appendChild(p);
     
-    const isInstant = gamePhase === 'title';
+    const isInstant = gamePhase === 'title' || gamePhase === 'instructions';
     if (isInstant) {
         p.textContent = text;
     } else {
@@ -366,34 +386,44 @@ async function parseCommand(command) {
         
         case 'name_selection':
             playerName = command.charAt(0).toUpperCase() + command.slice(1);
-            gamePhase = 'playing';
-            currentPlayerLocation = 'start';
-            await displayText(`Welcome, ${playerName}. Your adventure begins...`, true);
-            await sleep(1500);
-            await displayText(gameState.start.text, true);
+            gamePhase = 'instructions'; // NEW PHASE
+            await displayText(`Welcome, ${playerName}.`, true);
+            await sleep(1000);
+            await displayText(gameState.instructions.text, true);
+            break;
+        
+        // NEW: Handle the instructions phase
+        case 'instructions':
+            if (command.startsWith('begin')) {
+                gamePhase = 'playing';
+                currentPlayerLocation = 'start';
+                await displayText(gameState.start.text, true);
+            }
             break;
 
         case 'playing':
             const room = gameState[currentPlayerLocation];
-            const commandParts = command.split(' ');
-            const verb = commandParts[0];
-            const noun = commandParts.slice(1).join(' ');
             let actionTaken = false;
 
-            // **NEW: Unified command matching logic**
-            const allOptions = room.options || {};
-            const allObjects = room.objects || {};
-            
-            // Priority 1: Check room options (e.g., 'go north', 'knock loudly')
-            let matchedCommandKey = Object.keys(allOptions).find(key => key.split(' ')[0] === command);
-            if (matchedCommandKey) {
+            // **NEW: Simplified Navigation Logic**
+            const directions = ['north', 'east', 'south', 'west', 'up', 'down', 'back'];
+            if (directions.includes(command)) {
+                command = 'go ' + command; // Standardize the command
+            }
+
+            // Priority 1: Full command strings from room options
+            const availableOptions = room.options || {};
+            const matchedCommand = Object.keys(availableOptions).find(c => c.startsWith(command));
+
+            if (matchedCommand) {
                 actionTaken = true;
-                const option = allOptions[matchedCommandKey];
-                await displayText(`\n> ${matchedCommandKey}`);
-                if (typeof option === 'string') {
+                const option = availableOptions[matchedCommand];
+                await displayText(`\n> ${matchedCommand}`);
+                
+                if (typeof option === 'string') { // Simple navigation
                     currentPlayerLocation = option;
                     await displayText(gameState[currentPlayerLocation].text);
-                } else {
+                } else { // Complex actions like 'try the door'
                     if (option.descriptions) {
                         await displayText(option.descriptions[player.race] || "You can't do that.");
                     }
@@ -405,13 +435,17 @@ async function parseCommand(command) {
                 }
             }
 
-            // Priority 2: Check for verb-noun commands (e.g., 'look around', 'search small door')
+            // Priority 2: Verb-based commands (if no option was matched)
             if (!actionTaken) {
+                const commandParts = command.split(' ');
+                const verb = commandParts[0];
+                const noun = commandParts.slice(1).join(' ');
+
                 if (verb === 'look' && noun === 'around') {
                     actionTaken = true;
                     await displayText(`\n> ${command}`);
                     let lookText = "You scan the room and notice a few things of interest:\n";
-                    const objectKeys = Object.keys(allObjects);
+                    const objectKeys = Object.keys(room.objects || {});
                     if (objectKeys.length > 0) {
                         objectKeys.forEach(obj => { lookText += `- ${obj}\n`; });
                     } else { lookText = "You look around, but see nothing of particular interest."; }
@@ -419,9 +453,10 @@ async function parseCommand(command) {
                 } else if (verb === 'search') {
                     actionTaken = true;
                     await displayText(`\n> ${command}`);
-                    const matchedObjectKey = Object.keys(allObjects).find(key => key.split(' ')[0] === noun);
+                    const objectKeys = Object.keys(room.objects || {});
+                    const matchedObjectKey = objectKeys.find(key => key.startsWith(noun));
                     if (matchedObjectKey) {
-                        const objData = allObjects[matchedObjectKey];
+                        const objData = room.objects[matchedObjectKey];
                         let searchText = objData.description;
                         if (objData.items && objData.items.length > 0) {
                             const foundItem = objData.items[0];
