@@ -9,12 +9,11 @@ const commandInput = document.getElementById('command-input');
 // ======================================================
 // SECTION 2: GAME STATE VARIABLES
 // ======================================================
-let gamePhase = 'title'; // Can be 'title', 'race_selection', 'playing', or 'event'
+let gamePhase = 'title'; // Can be 'title', 'race_selection', or 'playing'
 let currentPlayerLocation = 'start';
 let player = {}; // A single object to hold all player data
 let isTyping = false; // Flag to prevent input during text animation
 const TYPEWRITER_SPEED = 15;
-let foyerLooked = false; // Tracks if the player has looked around the foyer
 
 
 // ======================================================
@@ -77,8 +76,8 @@ const gameState = {
             'grand staircase': { description: "The staircase is impressive, carved from dark wood. Thick cobwebs cling to the banister." },
             'small door': {
                 description: "This is a simple, plain door. A small brass key is sticking out of the keyhole.",
-                items: ['a small brass key'],
-                destination: 'closet'
+                items: ['a small brass key']
+                // The door doesn't lead anywhere until it's properly used/unlocked
             },
             'wide archway': { description: "The archway is framed with ornate carvings. It leads into what appears to be a grand hall." }
         },
@@ -150,6 +149,8 @@ const gameState = {
         },
         options: { 'go north': 'dining_hall', 'go down': 'wine_cellar' }
     },
+
+    // --- BASEMENT ---
     wine_cellar: {
         text: "You are in a damp Wine Cellar, lined with dusty racks. A heavy iron gate blocks the way east.",
         objects: {
@@ -184,6 +185,8 @@ const gameState = {
         },
         options: { 'go west': 'wine_cellar' }
     },
+
+    // --- SECOND FLOOR ---
     staircase: {
         text: "You stand at the top of the Grand Staircase, on the second floor landing. A large, dusty portrait hangs on the wall. Passages lead north and south.",
         objects: {
@@ -230,6 +233,8 @@ const gameState = {
         },
         options: { 'go north': 'staircase' }
     },
+
+    // --- ATTIC ---
     attic_landing: {
         text: "You've climbed a narrow set of stairs to the Attic...",
         objects: {
@@ -286,14 +291,12 @@ const gameState = {
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
 async function displayText(text, clear = false) {
-    if (clear) {
-        gameTextElement.innerHTML = '';
-    }
+    isTyping = true;
+    if (clear) gameTextElement.innerHTML = '';
     const p = document.createElement('p');
     gameTextElement.appendChild(p);
     
-    isTyping = true;
-    const isInstant = gamePhase === 'title' || gamePhase === 'event';
+    const isInstant = gamePhase === 'title';
     if (isInstant) {
         p.textContent = text;
     } else {
@@ -302,10 +305,10 @@ async function displayText(text, clear = false) {
             await sleep(TYPEWRITER_SPEED);
         }
     }
-    isTyping = false; // **FIXED: Ensure isTyping is always reset**
     
     gameTextElement.innerHTML += '<br>';
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    isTyping = false;
 }
 
 function createPlayer(race) {
@@ -328,11 +331,11 @@ async function parseCommand(command) {
     if (command === 'restart') {
         gamePhase = 'title';
         player = {};
-        foyerLooked = false;
-        currentPlayerLocation = 'start';
         await displayText(gameState.title.text, true);
         return;
     }
+    // Add other universal commands like inventory, status here if needed.
+
     
     // --- Phase-Specific Logic ---
     switch (gamePhase) {
@@ -353,22 +356,6 @@ async function parseCommand(command) {
             }
             break;
 
-        case 'event':
-            if (command.startsWith('use')) {
-                const doorObject = gameState.foyer.objects['small door'];
-                if (doorObject.items.length > 0) player.inventory.push(doorObject.items.pop());
-                currentPlayerLocation = doorObject.destination;
-                await displayText("\n> You frantically turn the key and throw yourself through the door...", true);
-            } else { 
-                const fleeOption = Object.keys(gameState.foyer.options).find(opt => command.includes(opt.split(' ')[1])) || 'go north';
-                currentPlayerLocation = gameState.foyer.options[fleeOption];
-                await displayText("\n> You don't waste a second and bolt through the nearest exit.", true);
-            }
-            gamePhase = 'playing';
-            await sleep(500);
-            await displayText(gameState[currentPlayerLocation].text);
-            break;
-
         case 'playing':
             const room = gameState[currentPlayerLocation];
             const commandParts = command.split(' ');
@@ -376,7 +363,7 @@ async function parseCommand(command) {
             const noun = commandParts.slice(1).join(' ');
             let actionTaken = false;
 
-            // Priority 1: Verb-based actions (look, search, etc.)
+            // Priority 1: Verb-based commands (look, search, use, etc.)
             if (verb === 'look' && noun === 'around') {
                 await displayText(`\n> ${command}`);
                 let lookText = "You scan the room and notice a few things of interest:\n";
@@ -386,22 +373,28 @@ async function parseCommand(command) {
                 } else { lookText = "You look around, but see nothing of particular interest."; }
                 await displayText(lookText);
                 actionTaken = true;
-
-                if (currentPlayerLocation === 'foyer' && !foyerLooked) {
-                    foyerLooked = true;
-                    setTimeout(async () => {
-                        if (currentPlayerLocation === 'foyer' && gamePhase === 'playing') {
-                            gamePhase = 'event';
-                            await displayText("\n**Suddenly, you hear a heavy scraping sound from the floor above, followed by slow, deliberate footsteps. Something is coming.**\n\nYou need to act quickly!\n\n- **use door**\n- **flee**");
-                        }
-                    }, 7000);
+            } else if (verb === 'search') {
+                await displayText(`\n> ${command}`);
+                const objectKeys = Object.keys(room.objects || {});
+                const objectToSearch = objectKeys.find(obj => obj.startsWith(noun));
+                if (objectToSearch) {
+                    const objData = room.objects[objectToSearch];
+                    let searchText = objData.description;
+                    if (objData.items && objData.items.length > 0) {
+                        const foundItem = objData.items[0];
+                        searchText += `\nYou find: ${foundItem}.`;
+                        player.inventory.push(objData.items.pop());
+                    }
+                    await displayText(searchText);
+                } else {
+                    await displayText(`You can't find a '${noun}' to search.`);
                 }
+                actionTaken = true;
             }
-            // Add other verbs like 'search' here.
 
             if (actionTaken) return;
 
-            // Priority 2: Full command strings from room options
+            // Priority 2: Full command strings from room options (covers actions and navigation)
             const availableOptions = room.options || {};
             const matchedCommand = Object.keys(availableOptions).find(c => c.startsWith(command));
 
