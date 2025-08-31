@@ -56,10 +56,46 @@ h1, h2 {
 .message-item {
     padding: 0.5rem;
     border-bottom: 1px dashed #00ff00;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.message-item:hover {
+    background-color: rgba(0, 255, 0, 0.1);
 }
 
 .message-item:last-child {
     border-bottom: none;
+}
+
+.message-item input[type="checkbox"] {
+    margin-right: 1rem;
+    /* Basic retro styling for checkbox */
+    appearance: none;
+    background-color: transparent;
+    border: 1px solid #00ff00;
+    width: 16px;
+    height: 16px;
+    position: relative;
+    cursor: pointer;
+}
+
+.message-item input[type="checkbox"]:checked::before {
+    content: '■';
+    color: #00ff00;
+    position: absolute;
+    top: -6px;
+    left: 2px;
+    font-size: 20px;
+}
+
+/* --- NEW: List Actions --- */
+.list-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 /* --- Buttons --- */
@@ -77,9 +113,17 @@ h1, h2 {
     text-align: left;
 }
 
-.btn:hover {
+.btn:hover:not(:disabled) {
     background-color: #00ff00;
     color: #0d0d2b;
+}
+
+/* NEW: Disabled state for buttons */
+.btn:disabled {
+    color: #005200; /* Dark green */
+    border-color: #005200;
+    text-shadow: none;
+    cursor: not-allowed;
 }
 
 .btn-secondary {
@@ -88,9 +132,14 @@ h1, h2 {
     text-shadow: 0 0 5px #ff00ff;
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
     background-color: #ff00ff;
     color: #0d0d2b;
+}
+
+.btn-secondary:disabled {
+    border-color: #5c005c; /* Dark magenta */
+    color: #5c005c;
 }
 
 
