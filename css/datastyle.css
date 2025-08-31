@@ -1,30 +1,68 @@
+/* --- NEW: Color Themes using CSS Variables --- */
+:root {
+    /* Default Theme: Neon Green */
+    --bg-color: #0d0d2b;
+    --main-color: #00ff00;
+    --secondary-color: #ff00ff;
+    --disabled-main: #005200;
+    --disabled-secondary: #5c005c;
+    --text-color: #00ff00;
+    --bg-hover: rgba(0, 255, 0, 0.1);
+    --checkbox-char: '■';
+}
+
+body.theme-amber {
+    /* Amber Theme */
+    --bg-color: #1a1000;
+    --main-color: #ffb800;
+    --secondary-color: #00d9ff;
+    --disabled-main: #614500;
+    --disabled-secondary: #005a69;
+    --text-color: #ffb800;
+    --bg-hover: rgba(255, 184, 0, 0.1);
+    --checkbox-char: '◆';
+}
+/* --- End of Themes --- */
+
+
 /* --- Main 80s Retro Styling --- */
 body {
-    background-color: #0d0d2b; /* Dark blue */
-    color: #00ff00; /* Neon green */
+    background-color: var(--bg-color); /* USE VARIABLE */
+    color: var(--text-color); /* USE VARIABLE */
     font-family: 'VT323', monospace;
     font-size: 20px;
-    text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;
+    text-shadow: 0 0 5px var(--main-color), 0 0 10px var(--main-color); /* USE VARIABLE */
     margin: 0;
     padding: 2rem;
-    overflow: hidden; /* Hide scrollbars from scanlines */
+    overflow: hidden;
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition */
 }
 
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    border: 2px solid #00ff00;
-    padding: 2rem;
-    box-shadow: 0 0 15px #00ff00 inset;
+/* NEW: Header layout */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
 }
-
-h1, h2 {
+h1 {
+    margin: 0;
+}
+h2 {
     text-align: center;
     margin-bottom: 2rem;
     letter-spacing: 3px;
 }
+/* --- End Header --- */
 
-/* --- Scanlines Effect --- */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    border: 2px solid var(--main-color); /* USE VARIABLE */
+    padding: 2rem;
+    box-shadow: 0 0 15px var(--main-color) inset; /* USE VARIABLE */
+}
+
 .scanlines {
     position: fixed;
     top: 0;
@@ -45,7 +83,7 @@ h1, h2 {
 
 /* --- Message List --- */
 .message-list {
-    border: 1px solid #00ff00;
+    border: 1px solid var(--main-color); /* USE VARIABLE */
     padding: 1rem;
     min-height: 200px;
     margin-bottom: 2rem;
@@ -55,7 +93,7 @@ h1, h2 {
 
 .message-item {
     padding: 0.5rem;
-    border-bottom: 1px dashed #00ff00;
+    border-bottom: 1px dashed var(--main-color); /* USE VARIABLE */
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -63,7 +101,7 @@ h1, h2 {
 }
 
 .message-item:hover {
-    background-color: rgba(0, 255, 0, 0.1);
+    background-color: var(--bg-hover); /* USE VARIABLE */
 }
 
 .message-item:last-child {
@@ -72,10 +110,9 @@ h1, h2 {
 
 .message-item input[type="checkbox"] {
     margin-right: 1rem;
-    /* Basic retro styling for checkbox */
     appearance: none;
     background-color: transparent;
-    border: 1px solid #00ff00;
+    border: 1px solid var(--main-color); /* USE VARIABLE */
     width: 16px;
     height: 16px;
     position: relative;
@@ -83,15 +120,14 @@ h1, h2 {
 }
 
 .message-item input[type="checkbox"]:checked::before {
-    content: '■';
-    color: #00ff00;
+    content: var(--checkbox-char); /* USE VARIABLE */
+    color: var(--main-color); /* USE VARIABLE */
     position: absolute;
     top: -6px;
     left: 2px;
     font-size: 20px;
 }
 
-/* --- NEW: List Actions --- */
 .list-actions {
     display: flex;
     gap: 1rem;
@@ -101,45 +137,50 @@ h1, h2 {
 /* --- Buttons --- */
 .btn {
     background-color: transparent;
-    border: 2px solid #00ff00;
-    color: #00ff00;
+    border: 2px solid var(--main-color); /* USE VARIABLE */
+    color: var(--main-color); /* USE VARIABLE */
     padding: 10px 20px;
     font-family: 'VT323', monospace;
     font-size: 18px;
-    text-shadow: 0 0 5px #00ff00;
+    text-shadow: 0 0 5px var(--main-color); /* USE VARIABLE */
     cursor: pointer;
     transition: background-color 0.2s, color 0.2s;
     width: 100%;
     text-align: left;
 }
-
-.btn:hover:not(:disabled) {
-    background-color: #00ff00;
-    color: #0d0d2b;
+/* NEW: Small button for theme toggle */
+.btn-small {
+    width: auto;
+    padding: 5px 15px;
+    font-size: 16px;
 }
 
-/* NEW: Disabled state for buttons */
+.btn:hover:not(:disabled) {
+    background-color: var(--main-color); /* USE VARIABLE */
+    color: var(--bg-color); /* USE VARIABLE */
+}
+
 .btn:disabled {
-    color: #005200; /* Dark green */
-    border-color: #005200;
+    color: var(--disabled-main); /* USE VARIABLE */
+    border-color: var(--disabled-main); /* USE VARIABLE */
     text-shadow: none;
     cursor: not-allowed;
 }
 
 .btn-secondary {
-    border-color: #ff00ff; /* Magenta for secondary action */
-    color: #ff00ff;
-    text-shadow: 0 0 5px #ff00ff;
+    border-color: var(--secondary-color); /* USE VARIABLE */
+    color: var(--secondary-color); /* USE VARIABLE */
+    text-shadow: 0 0 5px var(--secondary-color); /* USE VARIABLE */
 }
 
 .btn-secondary:hover:not(:disabled) {
-    background-color: #ff00ff;
-    color: #0d0d2b;
+    background-color: var(--secondary-color); /* USE VARIABLE */
+    color: var(--bg-color); /* USE VARIABLE */
 }
 
 .btn-secondary:disabled {
-    border-color: #5c005c; /* Dark magenta */
-    color: #5c005c;
+    border-color: var(--disabled-secondary); /* USE VARIABLE */
+    color: var(--disabled-secondary); /* USE VARIABLE */
 }
 
 
@@ -158,10 +199,10 @@ h1, h2 {
 }
 
 .modal-content {
-    background-color: #0d0d2b;
-    border: 2px solid #00ff00;
+    background-color: var(--bg-color); /* USE VARIABLE */
+    border: 2px solid var(--main-color); /* USE VARIABLE */
     padding: 2rem;
-    box-shadow: 0 0 20px #00ff00;
+    box-shadow: 0 0 20px var(--main-color); /* USE VARIABLE */
     width: 90%;
     max-width: 500px;
 }
@@ -183,17 +224,17 @@ label {
 input[type="text"], textarea {
     width: calc(100% - 20px);
     background-color: #000;
-    border: 1px solid #00ff00;
-    color: #00ff00;
+    border: 1px solid var(--main-color); /* USE VARIABLE */
+    color: var(--main-color); /* USE VARIABLE */
     padding: 10px;
     font-family: 'VT323', monospace;
     font-size: 16px;
-    caret-color: #00ff00; /* Blinking cursor color */
+    caret-color: var(--main-color); /* USE VARIABLE */
 }
 
 input[type="text"]:focus, textarea:focus {
     outline: none;
-    box-shadow: 0 0 10px #00ff00;
+    box-shadow: 0 0 10px var(--main-color); /* USE VARIABLE */
 }
 
 .modal-actions {
@@ -201,3 +242,4 @@ input[type="text"]:focus, textarea:focus {
     display: flex;
     gap: 1rem;
 }
+
