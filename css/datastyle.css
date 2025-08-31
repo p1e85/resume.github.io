@@ -1,0 +1,154 @@
+/* --- Main 80s Retro Styling --- */
+body {
+    background-color: #0d0d2b; /* Dark blue */
+    color: #00ff00; /* Neon green */
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;
+    margin: 0;
+    padding: 2rem;
+    overflow: hidden; /* Hide scrollbars from scanlines */
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    border: 2px solid #00ff00;
+    padding: 2rem;
+    box-shadow: 0 0 15px #00ff00 inset;
+}
+
+h1, h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    letter-spacing: 3px;
+}
+
+/* --- Scanlines Effect --- */
+.scanlines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.3),
+        rgba(0, 0, 0, 0.3) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+    z-index: 1000;
+}
+
+
+/* --- Message List --- */
+.message-list {
+    border: 1px solid #00ff00;
+    padding: 1rem;
+    min-height: 200px;
+    margin-bottom: 2rem;
+    overflow-y: auto;
+    max-height: 40vh;
+}
+
+.message-item {
+    padding: 0.5rem;
+    border-bottom: 1px dashed #00ff00;
+}
+
+.message-item:last-child {
+    border-bottom: none;
+}
+
+/* --- Buttons --- */
+.btn {
+    background-color: transparent;
+    border: 2px solid #00ff00;
+    color: #00ff00;
+    padding: 10px 20px;
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    text-shadow: 0 0 5px #00ff00;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    width: 100%;
+    text-align: left;
+}
+
+.btn:hover {
+    background-color: #00ff00;
+    color: #0d0d2b;
+}
+
+.btn-secondary {
+    border-color: #ff00ff; /* Magenta for secondary action */
+    color: #ff00ff;
+    text-shadow: 0 0 5px #ff00ff;
+}
+
+.btn-secondary:hover {
+    background-color: #ff00ff;
+    color: #0d0d2b;
+}
+
+
+/* --- Modal (Pop-up) Styling --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99;
+}
+
+.modal-content {
+    background-color: #0d0d2b;
+    border: 2px solid #00ff00;
+    padding: 2rem;
+    box-shadow: 0 0 20px #00ff00;
+    width: 90%;
+    max-width: 500px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* --- Form Elements --- */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+input[type="text"], textarea {
+    width: calc(100% - 20px);
+    background-color: #000;
+    border: 1px solid #00ff00;
+    color: #00ff00;
+    padding: 10px;
+    font-family: 'VT323', monospace;
+    font-size: 16px;
+    caret-color: #00ff00; /* Blinking cursor color */
+}
+
+input[type="text"]:focus, textarea:focus {
+    outline: none;
+    box-shadow: 0 0 10px #00ff00;
+}
+
+.modal-actions {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+}
