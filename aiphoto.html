@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Photo Enhancer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-left-color: #4f46e5;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .comparison-slider {
+            --position: 50%;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+        .image-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        #enhanced-image-container {
+            clip-path: inset(0 0 0 var(--position));
+        }
+        #comparison-handle {
+            position: absolute;
+            top: 0;
+            left: var(--position);
+            height: 100%;
+            width: 4px;
+            background-color: white;
+            cursor: ew-resize;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+        #comparison-handle::before, #comparison-handle::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #comparison-handle::before {
+            top: -10px;
+            border-width: 0 8px 10px 8px;
+            border-color: transparent transparent white transparent;
+        }
+        #comparison-handle::after {
+            bottom: -10px;
+            border-width: 10px 8px 0 8px;
+            border-color: white transparent transparent transparent;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
+
+    <div class="w-full max-w-4xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
+                AI Photo Enhancer
+            </h1>
+            <p class="text-gray-400 mt-2 text-lg">Upload your photo and let our AI work its magic.</p>
+        </header>
+
+        <main class="bg-gray-800 rounded-xl shadow-2xl p-6 sm:p-8">
+            <!-- Upload Section -->
+            <div id="upload-section" class="text-center">
+                <label for="image-upload" class="cursor-pointer inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                    Upload Photo
+                </label>
+                <input type="file" id="image-upload" class="hidden" accept="image/png, image/jpeg, image/webp">
+                <p class="text-gray-500 mt-4 text-sm">Supports PNG, JPG, WEBP. Max 10MB.</p>
+            </div>
+
+            <!-- Image Processing Section -->
+            <div id="processing-section" class="hidden mt-6 text-center">
+                 <div class="relative w-full max-w-2xl mx-auto aspect-video bg-gray-700 rounded-lg flex items-center justify-center comparison-slider" id="comparison-container">
+                    <!-- Original Image (Base Layer) -->
+                    <img id="original-image-preview" src="#" alt="Original" class="absolute inset-0 w-full h-full object-contain">
+                    
+                    <!-- Enhanced Image (Top Layer) -->
+                    <div id="enhanced-image-container" class="image-container">
+                       <img id="enhanced-image-preview" src="#" alt="Enhanced" class="absolute inset-0 w-full h-full object-contain">
+                    </div>
+
+                    <!-- Slider Handle -->
+                    <div id="comparison-handle"></div>
+                </div>
+
+                <div id="loader-container" class="mt-6 flex flex-col items-center justify-center text-center">
+                    <div class="loader"></div>
+                    <p class="text-gray-400 mt-4">Enhancing your image... This may take a moment.</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div id="actions-section" class="hidden mt-6 flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                 <button id="enhance-button" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100">
+                    Enhance Photo
+                </button>
+                <button id="download-button" class="w-full sm:w-auto hidden bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105 shadow-lg">
+                    Download
+                </button>
+                 <button id="reset-button" class="w-full sm:w-auto bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105 shadow-lg">
+                    Start Over
+                </button>
+            </div>
+
+             <!-- Error Message -->
+            <div id="error-message" class="hidden mt-4 text-center bg-red-900 border border-red-700 text-red-300 px-4 py-3 rounded-lg relative">
+                <strong class="font-bold">Error:</strong>
+                <span class="block sm:inline" id="error-text"></span>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // DOM element references
+        const uploadSection = document.getElementById('upload-section');
+        const processingSection = document.getElementById('processing-section');
+        const actionsSection = document.getElementById('actions-section');
+        const imageUpload = document.getElementById('image-upload');
+        const originalImagePreview = document.getElementById('original-image-preview');
+        const enhancedImagePreview = document.getElementById('enhanced-image-preview');
+        const enhanceButton = document.getElementById('enhance-button');
+        const downloadButton = document.getElementById('download-button');
+        const resetButton = document.getElementById('reset-button');
+        const loaderContainer = document.getElementById('loader-container');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+
+        // Comparison slider elements
+        const comparisonContainer = document.getElementById('comparison-container');
+        const comparisonHandle = document.getElementById('comparison-handle');
+
+        let originalImageData = null;
+        let enhancedImageData = null; // This will now store the watermarked image data
+        let isDragging = false;
+        
+        // --- Core Logic ---
+
+        // Handle image upload from user
+        imageUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+                showError('Please upload a valid image file (PNG, JPG, WEBP).');
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) { // 10 MB limit
+                showError('File size exceeds 10MB. Please upload a smaller image.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                originalImageData = e.target.result;
+                originalImagePreview.src = originalImageData;
+                enhancedImagePreview.src = 'https://placehold.co/1280x720/1f2937/4b5563?text=Enhanced+Image';
+                
+                uploadSection.classList.add('hidden');
+                processingSection.classList.remove('hidden');
+                actionsSection.classList.remove('hidden');
+                loaderContainer.classList.add('hidden');
+                enhancedImagePreview.parentElement.parentElement.classList.add('hidden');
+                originalImagePreview.classList.remove('hidden');
+                enhanceButton.disabled = false;
+                downloadButton.classList.add('hidden');
+                errorMessage.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Trigger AI enhancement
+        enhanceButton.addEventListener('click', async () => {
+            if (!originalImageData) {
+                showError("No image data found. Please upload an image first.");
+                return;
+            }
+            
+            enhanceButton.disabled = true;
+            resetButton.disabled = true;
+            loaderContainer.classList.remove('hidden');
+            originalImagePreview.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+
+            try {
+                const model = 'gemini-2.5-flash-image-preview';
+                const apiKey = ''; // Leave blank
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+                const base64Data = originalImageData.split(',')[1];
+                const mimeType = originalImageData.split(';')[0].split(':')[1];
+
+                const payload = {
+                    contents: [{
+                        parts: [
+                            { text: "Enhance this photo. Improve lighting, sharpness, and color balance to make it look professional and vibrant. Do not crop the image or change its aspect ratio." },
+                            { inlineData: { mimeType: mimeType, data: base64Data } }
+                        ]
+                    }],
+                    generationConfig: {
+                        responseModalities: ['TEXT', 'IMAGE']
+                    },
+                };
+
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `API request failed with status ${response.status}`);
+                }
+
+                const result = await response.json();
+                const imagePart = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+
+                if (!imagePart) {
+                    throw new Error("No image data returned from the API.");
+                }
+
+                const rawEnhancedImage = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+                
+                // Add the watermark to the enhanced image
+                enhancedImageData = await addWatermark(rawEnhancedImage);
+
+                // Update UI with watermarked image
+                enhancedImagePreview.src = enhancedImageData;
+                originalImagePreview.src = originalImageData; // Ensure original is set for comparison
+
+                loaderContainer.classList.add('hidden');
+                enhancedImagePreview.parentElement.parentElement.classList.remove('hidden');
+                downloadButton.classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Enhancement Error:', error);
+                showError(error.message || 'Failed to enhance the image. Please try again.');
+                loaderContainer.classList.add('hidden');
+                originalImagePreview.classList.remove('hidden');
+            } finally {
+                enhanceButton.disabled = false;
+                resetButton.disabled = false;
+            }
+        });
+
+        // Download the enhanced (and watermarked) image
+        downloadButton.addEventListener('click', () => {
+            if (!enhancedImageData) return;
+            const a = document.createElement('a');
+            a.href = enhancedImageData;
+            a.download = 'enhanced-photo-p1.png'; // Updated filename
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+        
+        // Reset the interface
+        resetButton.addEventListener('click', () => {
+            uploadSection.classList.remove('hidden');
+            processingSection.classList.add('hidden');
+            actionsSection.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            imageUpload.value = '';
+            originalImageData = null;
+            enhancedImageData = null;
+            originalImagePreview.src = "#";
+            enhancedImagePreview.src = "#";
+            resetComparisonSlider();
+        });
+
+
+        // --- Helper & Utility Functions ---
+
+        /**
+         * Draws a "p1" watermark on the bottom right of an image.
+         * @param {string} imageDataUrl The base64 data URL of the image.
+         * @returns {Promise<string>} A promise that resolves with the watermarked image data URL.
+         */
+        function addWatermark(imageDataUrl) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+
+                    // 1. Draw the enhanced image onto the canvas
+                    ctx.drawImage(img, 0, 0);
+
+                    // 2. Style the watermark text
+                    const fontSize = Math.max(16, Math.min(img.width * 0.025, 60));
+                    ctx.font = `bold ${fontSize}px "Inter", sans-serif`;
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'bottom';
+                    
+                    // Add a subtle shadow for better visibility on any background
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+                    ctx.shadowBlur = 6;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+
+                    // 3. Draw the watermark text
+                    const padding = fontSize * 0.6;
+                    ctx.fillText('p1', canvas.width - padding, canvas.height - padding);
+
+                    // 4. Export canvas to a new data URL and resolve the promise
+                    resolve(canvas.toDataURL('image/png'));
+                };
+                img.onerror = () => {
+                    reject(new Error("Failed to load image for watermarking."));
+                };
+                img.src = imageDataUrl;
+            });
+        }
+
+        // Show an error message in the UI
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        // Fetch API with exponential backoff for retries
+        async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.status !== 429 && response.status < 500) {
+                        return response;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                }
+            }
+        }
+
+
+        // --- Comparison Slider Logic ---
+
+        function updateSliderPosition(x) {
+            const rect = comparisonContainer.getBoundingClientRect();
+            let pos = (x - rect.left) / rect.width;
+            pos = Math.max(0, Math.min(1, pos));
+            comparisonContainer.style.setProperty('--position', `${pos * 100}%`);
+        }
+
+        function resetComparisonSlider() {
+            comparisonContainer.style.setProperty('--position', `50%`);
+        }
+
+        comparisonHandle.addEventListener('mousedown', () => { isDragging = true; });
+        document.addEventListener('mouseup', () => { isDragging = false; });
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                updateSliderPosition(e.clientX);
+            }
+        });
+
+        comparisonHandle.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            e.preventDefault();
+        });
+        document.addEventListener('touchend', () => { isDragging = false; });
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                updateSliderPosition(e.touches[0].clientX);
+            }
+        });
+    </script>
+</body>
+</html>
