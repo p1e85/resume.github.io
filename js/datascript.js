@@ -8,20 +8,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTitle = document.getElementById('modalTitle');
     const saveBtn = document.getElementById('saveBtn');
 
-    // NEW: Action Buttons
     const editBtn = document.getElementById('editBtn');
     const deleteBtn = document.getElementById('deleteBtn');
     const clearAllBtn = document.getElementById('clearAllBtn');
+    
+    // NEW: Theme Toggle Elements
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const body = document.body;
+    const themeKey = 'retro-db-theme';
 
     // State
     let messages = JSON.parse(localStorage.getItem('retroDbMessages')) || [];
-    let editIndex = null; // To track if we are in "edit mode"
+    let editIndex = null;
 
     // --- Functions ---
+    
+    // NEW: Theme Functions
+    const applyTheme = (theme) => {
+        if (theme === 'amber') {
+            body.classList.add('theme-amber');
+        } else {
+            body.classList.remove('theme-amber');
+        }
+    };
 
-    /**
-     * Update the enabled/disabled state of action buttons based on selections.
-     */
+    const toggleTheme = () => {
+        const currentTheme = body.classList.contains('theme-amber') ? 'default' : 'amber';
+        localStorage.setItem(themeKey, currentTheme);
+        applyTheme(currentTheme);
+    };
+    // End of NEW Theme Functions
+
     const updateActionButtons = () => {
         const selectedCount = messageList.querySelectorAll('input[type="checkbox"]:checked').length;
         
@@ -30,18 +47,14 @@ document.addEventListener('DOMContentLoaded', () => {
         clearAllBtn.disabled = messages.length === 0;
     };
 
-    /**
-     * Renders the list of messages on the main page.
-     */
     const renderMessages = () => {
-        messageList.innerHTML = ''; // Clear the list first
+        messageList.innerHTML = ''; 
         if (messages.length === 0) {
             messageList.innerHTML = '<p>// NO ENTRIES FOUND. CREATE ONE.</p>';
         } else {
             messages.forEach((msg, index) => {
                 const messageEl = document.createElement('div');
                 messageEl.className = 'message-item';
-                // Use a data attribute to store the index
                 messageEl.dataset.index = index; 
 
                 const checkbox = document.createElement('input');
@@ -60,9 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateActionButtons();
     };
     
-    /**
-     * Shows the modal pop-up, configuring it for "Create" or "Edit" mode.
-     */
     const showModal = (isEditMode = false, data = {}) => {
         if (isEditMode) {
             modalTitle.textContent = "EDIT DATA ENTRY";
@@ -77,13 +87,10 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.classList.remove('hidden');
     };
 
-    /**
-     * Hides the modal pop-up and resets the form and edit state.
-     */
     const hideModal = () => {
         modal.classList.add('hidden');
         dataForm.reset();
-        editIndex = null; // Always exit edit mode when closing modal
+        editIndex = null;
     };
     
     const downloadTxtFile = (filename, text) => {
@@ -114,12 +121,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const newMessageData = { fileName, subject, message };
 
         if (editIndex !== null) {
-            // Edit mode
             messages[editIndex] = newMessageData;
         } else {
-            // Create mode
             messages.push(newMessageData);
-            downloadTxtFile(fileName, fileContent); // Only download for new entries
+            downloadTxtFile(fileName, fileContent);
         }
 
         localStorage.setItem('retroDbMessages', JSON.stringify(messages));
@@ -127,13 +132,10 @@ document.addEventListener('DOMContentLoaded', () => {
         hideModal();
     };
 
-    // --- NEW: Event Handlers for Actions ---
-
     const handleEdit = () => {
         const checkedBox = messageList.querySelector('input[type="checkbox"]:checked');
         if (!checkedBox) return;
 
-        // Get index from the parent message-item's data-index attribute
         const itemDiv = checkedBox.closest('.message-item');
         editIndex = parseInt(itemDiv.dataset.index, 10);
         
@@ -149,12 +151,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Get all indexes to delete
         const indexesToDelete = Array.from(checkedBoxes).map(box => {
             return parseInt(box.closest('.message-item').dataset.index, 10);
         });
 
-        // Filter out the messages to be deleted
         messages = messages.filter((_, index) => !indexesToDelete.includes(index));
 
         localStorage.setItem('retroDbMessages', JSON.stringify(messages));
@@ -170,7 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMessages();
     };
 
-
     // --- Event Listeners ---
     createBtn.addEventListener('click', () => showModal());
     cancelBtn.addEventListener('click', hideModal);
@@ -179,18 +178,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     dataForm.addEventListener('submit', handleFormSubmit);
 
-    // NEW: Action button listeners
     editBtn.addEventListener('click', handleEdit);
     deleteBtn.addEventListener('click', handleDelete);
     clearAllBtn.addEventListener('click', handleClearAll);
 
-    // Use event delegation for checkboxes to improve performance
     messageList.addEventListener('change', (event) => {
         if (event.target.type === 'checkbox') {
             updateActionButtons();
         }
     });
+    
+    // NEW: Theme toggle listener
+    themeToggleBtn.addEventListener('click', toggleTheme);
 
     // --- Initial Load ---
+    const savedTheme = localStorage.getItem(themeKey) || 'default';
+    applyTheme(savedTheme);
     renderMessages();
 });
+
