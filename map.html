@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapbox Location Tracker</title>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />
+    <link rel="stylesheet" href="css/mapstyle.css">
+</head>
+<body>
+
+    <div id='map'></div>
+
+    <div class="controls">
+        <button id="findMeBtn">📍 Find Me</button>
+        <button id="trackBtn">🛰️ Start Tracking</button>
+        <input type="file" accept="image/*" capture="environment" id="cameraInput" style="display: none;">
+        <button id="pictureBtn">📸 Pin Picture</button>
+    </div>
+
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
+    <script src="js/mapscript.js"></script>
+
+</body>
+</html>
