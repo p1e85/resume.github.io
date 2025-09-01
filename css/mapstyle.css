@@ -1,0 +1,50 @@
+/* Basic body styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
+
+/* Make the map container take up the entire screen */
+#map {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Style and position the control buttons */
+.controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    display: flex;
+    gap: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+/* Style the buttons */
+.controls button {
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.controls button:hover {
+    background-color: #0056b3;
+}
+
+/* Style for when tracking is active */
+.controls button.tracking {
+    background-color: #dc3545; /* Red color for stop */
+}
