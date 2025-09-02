@@ -36,7 +36,7 @@ body {
     background-color: rgba(255, 255, 255, 0.4);
 }
 
-/* --- General Modal Styles --- */
+/* --- General Modal Styles (FIXED) --- */
 .modal-overlay, .modal {
     display: none; 
     position: fixed;
@@ -46,6 +46,8 @@ body {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
     z-index: 1000;
+    /* These properties center the .modal-content box */
+    display: flex; 
     justify-content: center;
     align-items: center;
 }
@@ -153,7 +155,7 @@ body {
     font-size: 14px;
 }
 
-/* --- NEW: Bottom Container for Controls and User Status --- */
+/* --- Bottom Container for Controls and User Status --- */
 .bottom-container {
     position: absolute;
     bottom: 20px;
@@ -161,12 +163,12 @@ body {
     transform: translateX(-50%);
     z-index: 10;
     display: flex;
-    flex-direction: column; /* Stack items vertically */
-    align-items: center;    /* Center items horizontally */
-    gap: 10px;              /* Space between user status and buttons */
+    flex-direction: column;
+    align-items: center;    
+    gap: 10px;              
 }
 
-/* --- Main UI Controls (MODIFIED) --- */
+/* --- Main UI Controls --- */
 .controls {
     display: flex;
     gap: 10px;
@@ -192,12 +194,12 @@ body {
 }
 
 .controls button.tracking {
-    background-color: #dc3545; /* Red for "Stop Tracking" */
+    background-color: #dc3545;
 }
 
-/* --- User Status Display (MODIFIED) --- */
+/* --- User Status Display --- */
 .user-status-display {
-    display: none; /* Hidden by default, shown by JS */
+    display: none; 
     background-color: rgba(255, 255, 255, 0.8);
     padding: 8px 12px;
     border-radius: 8px;
@@ -215,7 +217,6 @@ body {
     border-radius: 5px;
     cursor: pointer;
 }
-
 
 /* --- Data Management Modal --- */
 #dataModal .modal-content {
@@ -246,13 +247,12 @@ body {
 }
 
 .modal-button.export {
-    background-color: #28a745; /* Green */
+    background-color: #28a745;
 }
 
 .modal-button:hover {
     opacity: 0.9;
 }
-
 
 /* --- Map-Specific Elements --- */
 .photo-marker {
