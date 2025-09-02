@@ -11,30 +11,41 @@ document.addEventListener('DOMContentLoaded', () => {
     const editBtn = document.getElementById('editBtn');
     const deleteBtn = document.getElementById('deleteBtn');
     const clearAllBtn = document.getElementById('clearAllBtn');
-    const downloadBtn = document.getElementById('downloadBtn'); // NEW: Get download button
+    const downloadBtn = document.getElementById('downloadBtn'); 
     
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     const body = document.body;
     const themeKey = 'retro-db-theme';
 
-    // State
+    // --- State ---
     let messages = JSON.parse(localStorage.getItem('retroDbMessages')) || [];
     let editIndex = null;
+    // NEW: Array of all available themes
+    const themes = ['default', 'amber', 'vaporwave', 'monochrome'];
 
     // --- Functions ---
     
-    const applyTheme = (theme) => {
-        if (theme === 'amber') {
-            body.classList.add('theme-amber');
-        } else {
-            body.classList.remove('theme-amber');
+    // UPDATED: applyTheme function to handle multiple classes
+    const applyTheme = (themeName) => {
+        // First, remove any existing theme classes
+        body.classList.remove('theme-amber', 'theme-vaporwave', 'theme-monochrome');
+        
+        // Add the new theme class if it's not the default
+        if (themeName !== 'default') {
+            body.classList.add(`theme-${themeName}`);
         }
     };
 
+    // UPDATED: toggleTheme function to cycle through the themes array
     const toggleTheme = () => {
-        const currentTheme = body.classList.contains('theme-amber') ? 'default' : 'amber';
-        localStorage.setItem(themeKey, currentTheme);
-        applyTheme(currentTheme);
+        const currentTheme = localStorage.getItem(themeKey) || 'default';
+        const currentIndex = themes.indexOf(currentTheme);
+        // Cycle to the next theme in the array
+        const nextIndex = (currentIndex + 1) % themes.length;
+        const nextTheme = themes[nextIndex];
+        
+        localStorage.setItem(themeKey, nextTheme);
+        applyTheme(nextTheme);
     };
 
     const updateActionButtons = () => {
@@ -42,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         editBtn.disabled = selectedCount !== 1;
         deleteBtn.disabled = selectedCount === 0;
-        downloadBtn.disabled = selectedCount === 0; // NEW: Control download button state
+        downloadBtn.disabled = selectedCount === 0; 
         clearAllBtn.disabled = messages.length === 0;
     };
 
@@ -81,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('message').value = data.message;
         } else {
             modalTitle.textContent = "NEW DATA ENTRY";
-            saveBtn.textContent = "> SAVE ENTRY"; // UPDATED: Text changed
+            saveBtn.textContent = "> SAVE ENTRY";
         }
         modal.classList.remove('hidden');
     };
@@ -122,7 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
             messages[editIndex] = newMessageData;
         } else {
             messages.push(newMessageData);
-            // REMOVED: The automatic downloadTxtFile() call was here
         }
 
         localStorage.setItem('retroDbMessages', JSON.stringify(messages));
@@ -143,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showModal(true, messageToEdit);
     };
 
-    // NEW: Function to handle downloading selected items
     const handleDownload = () => {
         const checkedBoxes = messageList.querySelectorAll('input[type="checkbox"]:checked');
         
@@ -195,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
     editBtn.addEventListener('click', handleEdit);
     deleteBtn.addEventListener('click', handleDelete);
     clearAllBtn.addEventListener('click', handleClearAll);
-    downloadBtn.addEventListener('click', handleDownload); // NEW: Listener for download button
+    downloadBtn.addEventListener('click', handleDownload); 
 
     messageList.addEventListener('change', (event) => {
         if (event.target.type === 'checkbox') {
