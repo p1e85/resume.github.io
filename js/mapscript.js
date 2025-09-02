@@ -1,3 +1,25 @@
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyCxyFBT_Is-jY2n39Bp-1fW8Nn3PxaSfsc",
+    authDomain: "garbage-path.firebaseapp.com",
+    projectId: "garbage-path",
+    storageBucket: "garbage-path.firebasestorage.app",
+    messagingSenderId: "885911396160",
+    appId: "1:885911396160:web:c37e5128f9c7a3a1be64a5",
+    measurementId: "G-G0SEDXVZ3V"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+
 // --- NEW: Terms of Use Modal Logic ---
 document.addEventListener('DOMContentLoaded', () => {
     const termsModal = document.getElementById('termsModal');
