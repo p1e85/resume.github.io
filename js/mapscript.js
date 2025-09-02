@@ -1,32 +1,27 @@
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
+// --- Firebase SDK Setup ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+// Firestore imports
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  // https://firebase.google.com/docs/web/setup#available-libraries
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCxyFBT_Is-jY2n39Bp-1fW8Nn3PxaSfsc",
-    authDomain: "garbage-path.firebaseapp.com",
-    projectId: "garbage-path",
-    storageBucket: "garbage-path.firebasestorage.app",
-    messagingSenderId: "885911396160",
-    appId: "1:885911396160:web:c37e5128f9c7a3a1be64a5",
-    measurementId: "G-G0SEDXVZ3V"
-  };
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCxyFBT_Is-jY2n39Bp-1fW8Nn3PxaSfsc",
+  authDomain: "garbage-path.firebaseapp.com",
+  projectId: "garbage-path",
+  storageBucket: "garbage-path.firebasestorage.app",
+  messagingSenderId: "885911396160",
+  appId: "1:885911396160:web:c37e5128f9c7a3a1be64a5",
+  measurementId: "G-G0SEDXVZ3V"
+};
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-
-// NEW: Initialize Firestore
-const db = getFirestore(app);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+// Initialize Firestore
+const db = getFirestore(); // Use the default app instance
 console.log("Firebase Initialized!");
 
 
-// --- NEW: Firebase Connection Test ---
+// --- Firebase Connection Test ---
 // This is a temporary function to test our connection.
 async function testFirebaseConnection() {
   try {
@@ -52,8 +47,6 @@ async function testFirebaseConnection() {
 }
 // Run the test as soon as the app loads.
 testFirebaseConnection();
-
-
 
 // --- NEW: Terms of Use Modal Logic ---
 document.addEventListener('DOMContentLoaded', () => {
