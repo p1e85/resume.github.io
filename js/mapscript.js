@@ -26,45 +26,76 @@ const auth = getAuth();
 console.log("Firebase Initialized!");
 
 // --- Global State ---
-let currentUser = null; // Will hold the logged-in user object
+let currentUser = null;
 let trackingWatcher = null;
 let routeCoordinates = [];
 let photoPins = [];
 let markers = [];
+let map; // <-- Make map a global variable
 
 // --- Element References ---
+// ... (Your element references are unchanged)
 const termsModal = document.getElementById('termsModal');
 const authModal = document.getElementById('authModal');
-const userStatus = document.getElementById('userStatus');
-const userEmail = document.getElementById('userEmail');
-const agreeBtn = document.getElementById('agreeBtn');
-const termsCheckbox = document.getElementById('termsCheckbox');
-const signUpBtn = document.getElementById('signUpBtn');
-const loginBtn = document.getElementById('loginBtn');
-const skipBtn = document.getElementById('skipBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const emailInput = document.getElementById('emailInput');
-const passwordInput = document.getElementById('passwordInput');
-const authError = document.getElementById('authError');
-const findMeBtn = document.getElementById('findMeBtn');
-const trackBtn = document.getElementById('trackBtn');
-const pictureBtn = document.getElementById('pictureBtn');
-const cameraInput = document.getElementById('cameraInput');
-const dataBtn = document.getElementById('dataBtn');
-const dataModal = document.getElementById('dataModal');
-const closeBtn = dataModal.querySelector('.close-btn');
-const saveBtn = document.getElementById('saveBtn');
-const loadBtn = document.getElementById('loadBtn');
-const exportBtn = document.getElementById('exportBtn');
+// ... etc.
 
-// --- Auth Flow Logic ---
+// --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
+    // This function runs AFTER the HTML is fully loaded
+    
+    // --- Auth Flow Logic ---
     if (sessionStorage.getItem('termsAccepted')) {
         termsModal.style.display = 'none';
+        if (!currentUser) authModal.style.display = 'flex';
     } else {
         termsModal.style.display = 'flex';
     }
+    
+    // --- Element References (for elements inside modals, etc.)
+    const userStatus = document.getElementById('userStatus');
+    const userEmail = document.getElementById('userEmail');
+    const agreeBtn = document.getElementById('agreeBtn');
+    const termsCheckbox = document.getElementById('termsCheckbox');
+    const signUpBtn = document.getElementById('signUpBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const skipBtn = document.getElementById('skipBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const authError = document.getElementById('authError');
+    const findMeBtn = document.getElementById('findMeBtn');
+    const trackBtn = document.getElementById('trackBtn');
+    const pictureBtn = document.getElementById('pictureBtn');
+    const cameraInput = document.getElementById('cameraInput');
+    const dataBtn = document.getElementById('dataBtn');
+    const dataModal = document.getElementById('dataModal');
+    const closeBtn = dataModal.querySelector('.close-btn');
+    const saveBtn = document.getElementById('saveBtn');
+    const loadBtn = document.getElementById('loadBtn');
+    const exportBtn = document.getElementById('exportBtn');
 
+    // --- Mapbox Setup ---
+    mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY2p6ajZvejJmMDZhaTNkcWpiN294dm12eCJ9.8ckNT6kfuJry7K7GAeIuxw';
+    map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+    });
+
+    map.on('load', () => {
+        map.addSource('route', {
+            'type': 'geojson',
+            'data': { 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': [] } }
+        });
+        map.addLayer({
+            'id': 'route',
+            'type': 'line',
+            'source': 'route',
+            'layout': { 'line-join': 'round', 'line-cap': 'round' },
+            'paint': { 'line-color': '#0000ff', 'line-width': 5 }
+        });
+    });
+
+    // --- All other event listeners go here ---
     termsCheckbox.addEventListener('change', () => {
         agreeBtn.disabled = !termsCheckbox.checked;
     });
@@ -76,97 +107,70 @@ document.addEventListener('DOMContentLoaded', () => {
             authModal.style.display = 'flex';
         }
     });
+
+    signUpBtn.addEventListener('click', async () => {
+        try {
+            await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+        } catch (error) {
+            authError.textContent = error.message;
+        }
+    });
+
+    loginBtn.addEventListener('click', async () => {
+        try {
+            await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+        } catch (error) {
+            authError.textContent = error.message;
+        }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+        await signOut(auth);
+    });
+
+    skipBtn.addEventListener('click', () => {
+        authModal.style.display = 'none';
+    });
+
+    findMeBtn.addEventListener('click', findMe);
+    trackBtn.addEventListener('click', toggleTracking);
+    pictureBtn.addEventListener('click', () => cameraInput.click());
+    cameraInput.addEventListener('change', handlePhoto);
+
+    dataBtn.addEventListener('click', () => dataModal.style.display = 'block');
+    closeBtn.addEventListener('click', () => dataModal.style.display = 'none');
+    window.addEventListener('click', (event) => {
+        if (event.target == dataModal) {
+            dataModal.style.display = 'none';
+        }
+    });
+    saveBtn.addEventListener('click', saveSession);
+    loadBtn.addEventListener('click', loadSession);
+    exportBtn.addEventListener('click', exportGeoJSON);
 });
 
+// --- Firebase Auth State Listener ---
 onAuthStateChanged(auth, (user) => {
+    const userStatus = document.getElementById('userStatus'); // Re-get elements or ensure they are accessible
+    const userEmail = document.getElementById('userEmail');
+    const authModal = document.getElementById('authModal');
     if (user) {
         currentUser = user;
-        updateUIForUser(user);
-        authModal.style.display = 'none';
+        if(userEmail) userEmail.textContent = `Logged in as: ${user.email}`;
+        if(userStatus) userStatus.style.display = 'flex';
+        if(authModal) authModal.style.display = 'none';
     } else {
         currentUser = null;
-        updateUIForGuest();
-        if (sessionStorage.getItem('termsAccepted')) {
+        if(userStatus) userStatus.style.display = 'none';
+        if(userEmail) userEmail.textContent = '';
+        if (authModal && sessionStorage.getItem('termsAccepted')) {
             authModal.style.display = 'flex';
         }
     }
 });
 
-function updateUIForUser(user) {
-    userEmail.textContent = `Logged in as: ${user.email}`;
-    userStatus.style.display = 'flex';
-}
 
-function updateUIForGuest() {
-    userStatus.style.display = 'none';
-    userEmail.textContent = '';
-}
-
-signUpBtn.addEventListener('click', async () => {
-    try {
-        await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-    } catch (error) {
-        authError.textContent = error.message;
-    }
-});
-
-loginBtn.addEventListener('click', async () => {
-    try {
-        await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-    } catch (error) {
-        authError.textContent = error.message;
-    }
-});
-
-logoutBtn.addEventListener('click', async () => {
-    await signOut(auth);
-});
-
-skipBtn.addEventListener('click', () => {
-    authModal.style.display = 'none';
-});
-
-
-// --- Mapbox Setup & Logic ---
-// ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-// CRITICAL: PASTE YOUR REAL MAPBOX TOKEN HERE
-mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY2p6ajZvejJmMDZhaTNkcWpiN294dm12eCJ9.8ckNT6kfuJry7K7GAeIuxw'; 
-// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
-
-const map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v12',
-});
-
-map.on('load', () => {
-    map.addSource('route', {
-        'type': 'geojson',
-        'data': { 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': [] } }
-    });
-    map.addLayer({
-        'id': 'route',
-        'type': 'line',
-        'source': 'route',
-        'layout': { 'line-join': 'round', 'line-cap': 'round' },
-        'paint': { 'line-color': '#0000ff', 'line-width': 5 }
-    });
-});
-
-findMeBtn.addEventListener('click', findMe);
-trackBtn.addEventListener('click', toggleTracking);
-pictureBtn.addEventListener('click', () => cameraInput.click());
-cameraInput.addEventListener('change', handlePhoto);
-
-dataBtn.addEventListener('click', () => dataModal.style.display = 'block');
-closeBtn.addEventListener('click', () => dataModal.style.display = 'none');
-window.addEventListener('click', (event) => {
-    if (event.target == dataModal) {
-        dataModal.style.display = 'none';
-    }
-});
-saveBtn.addEventListener('click', saveSession);
-loadBtn.addEventListener('click', loadSession);
-exportBtn.addEventListener('click', exportGeoJSON);
+// --- Functions (can stay outside DOMContentLoaded) ---
 
 function findMe() {
     navigator.geolocation.getCurrentPosition(position => {
@@ -259,8 +263,8 @@ function createPhotoPopupHTML(pinInfo) {
     `;
 }
 
-// --- Data Management ---
 async function saveSession() {
+    const dataModal = document.getElementById('dataModal');
     if (currentUser) {
         try {
             const userDocRef = doc(db, "users", currentUser.uid);
@@ -280,6 +284,7 @@ async function saveSession() {
 }
 
 async function loadSession() {
+    const dataModal = document.getElementById('dataModal');
     markers.forEach(marker => marker.remove());
     markers = [];
     photoPins = [];
@@ -321,6 +326,7 @@ async function loadSession() {
 }
 
 function exportGeoJSON() {
+    const dataModal = document.getElementById('dataModal');
     const pinFeatures = photoPins.map(pin => ({
         'type': 'Feature',
         'geometry': { 'type': 'Point', 'coordinates': pin.coords },
@@ -348,6 +354,4 @@ function exportGeoJSON() {
     downloadAnchorNode.remove();
     dataModal.style.display = 'none';
 }
-
-
 
