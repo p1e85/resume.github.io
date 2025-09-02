@@ -32,6 +32,7 @@ let routeCoordinates = [];
 let photoPins = [];
 let markers = [];
 let map; 
+let findMeMarker = null; // NEW: To hold the "Find Me" marker
 
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -170,9 +171,19 @@ onAuthStateChanged(auth, (user) => {
 // --- Functions ---
 
 function findMe() {
+    // UPDATED: Remove the previous marker if it exists
+    if (findMeMarker) {
+        findMeMarker.remove();
+    }
+
     navigator.geolocation.getCurrentPosition(position => {
         const { latitude, longitude } = position.coords;
-        new mapboxgl.Marker().setLngLat([longitude, latitude]).addTo(map);
+        
+        // UPDATED: Create the new marker and store it in our variable
+        findMeMarker = new mapboxgl.Marker()
+            .setLngLat([longitude, latitude])
+            .addTo(map);
+        
         map.flyTo({ center: [longitude, latitude], zoom: 15 });
     }, () => alert("Could not get your location."), { enableHighAccuracy: true });
 }
@@ -189,7 +200,9 @@ function toggleTracking() {
         trackingWatcher = navigator.geolocation.watchPosition(position => {
             const newCoord = [position.coords.longitude, position.coords.latitude];
             routeCoordinates.push(newCoord);
-            map.getSource('route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
+            if (map.getSource('route')) {
+                map.getSource('route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
+            }
             map.flyTo({ center: newCoord, zoom: 16 });
         }, () => alert("Error watching position."), { enableHighAccuracy: true });
         trackBtn.textContent = '🛑 Stop Tracking';
