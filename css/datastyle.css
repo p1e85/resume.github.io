@@ -1,4 +1,4 @@
-/* --- NEW: Color Themes using CSS Variables --- */
+/* --- Color Themes using CSS Variables --- */
 :root {
     /* Default Theme: Neon Green */
     --bg-color: #0d0d2b;
@@ -22,23 +22,47 @@ body.theme-amber {
     --bg-hover: rgba(255, 184, 0, 0.1);
     --checkbox-char: '◆';
 }
+
+/* NEW: Vaporwave Theme */
+body.theme-vaporwave {
+    --bg-color: #0f0c2d;
+    --main-color: #f721b6;
+    --secondary-color: #00e5e5;
+    --disabled-main: #610d48;
+    --disabled-secondary: #005c5c;
+    --text-color: #f721b6;
+    --bg-hover: rgba(247, 33, 182, 0.1);
+    --checkbox-char: '▲';
+}
+
+/* NEW: Monochrome Theme */
+body.theme-monochrome {
+    --bg-color: #000000;
+    --main-color: #c0c0c0;
+    --secondary-color: #808080;
+    --disabled-main: #3d3d3d;
+    --disabled-secondary: #2b2b2b;
+    --text-color: #c0c0c0;
+    --bg-hover: rgba(192, 192, 192, 0.1);
+    --checkbox-char: 'X';
+}
 /* --- End of Themes --- */
 
 
 /* --- Main 80s Retro Styling --- */
 body {
-    background-color: var(--bg-color); /* USE VARIABLE */
-    color: var(--text-color); /* USE VARIABLE */
+    background-color: var(--bg-color); 
+    color: var(--text-color); 
     font-family: 'VT323', monospace;
     font-size: 20px;
-    text-shadow: 0 0 5px var(--main-color), 0 0 10px var(--main-color); /* USE VARIABLE */
+    text-shadow: 0 0 5px var(--main-color), 0 0 10px var(--main-color); 
     margin: 0;
     padding: 2rem;
     overflow: hidden;
-    transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+    transition: background-color 0.3s, color 0.3s; 
 }
 
-/* NEW: Header layout */
+/* Header layout */
 .header {
     display: flex;
     justify-content: space-between;
@@ -58,9 +82,9 @@ h2 {
 .container {
     max-width: 800px;
     margin: 0 auto;
-    border: 2px solid var(--main-color); /* USE VARIABLE */
+    border: 2px solid var(--main-color); 
     padding: 2rem;
-    box-shadow: 0 0 15px var(--main-color) inset; /* USE VARIABLE */
+    box-shadow: 0 0 15px var(--main-color) inset; 
 }
 
 .scanlines {
@@ -83,7 +107,7 @@ h2 {
 
 /* --- Message List --- */
 .message-list {
-    border: 1px solid var(--main-color); /* USE VARIABLE */
+    border: 1px solid var(--main-color); 
     padding: 1rem;
     min-height: 200px;
     margin-bottom: 2rem;
@@ -93,7 +117,7 @@ h2 {
 
 .message-item {
     padding: 0.5rem;
-    border-bottom: 1px dashed var(--main-color); /* USE VARIABLE */
+    border-bottom: 1px dashed var(--main-color); 
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -101,7 +125,7 @@ h2 {
 }
 
 .message-item:hover {
-    background-color: var(--bg-hover); /* USE VARIABLE */
+    background-color: var(--bg-hover); 
 }
 
 .message-item:last-child {
@@ -112,7 +136,7 @@ h2 {
     margin-right: 1rem;
     appearance: none;
     background-color: transparent;
-    border: 1px solid var(--main-color); /* USE VARIABLE */
+    border: 1px solid var(--main-color); 
     width: 16px;
     height: 16px;
     position: relative;
@@ -120,8 +144,8 @@ h2 {
 }
 
 .message-item input[type="checkbox"]:checked::before {
-    content: var(--checkbox-char); /* USE VARIABLE */
-    color: var(--main-color); /* USE VARIABLE */
+    content: var(--checkbox-char); 
+    color: var(--main-color); 
     position: absolute;
     top: -6px;
     left: 2px;
@@ -137,18 +161,18 @@ h2 {
 /* --- Buttons --- */
 .btn {
     background-color: transparent;
-    border: 2px solid var(--main-color); /* USE VARIABLE */
-    color: var(--main-color); /* USE VARIABLE */
+    border: 2px solid var(--main-color); 
+    color: var(--main-color); 
     padding: 10px 20px;
     font-family: 'VT323', monospace;
     font-size: 18px;
-    text-shadow: 0 0 5px var(--main-color); /* USE VARIABLE */
+    text-shadow: 0 0 5px var(--main-color); 
     cursor: pointer;
     transition: background-color 0.2s, color 0.2s;
     width: 100%;
     text-align: left;
 }
-/* NEW: Small button for theme toggle */
+/* Small button for theme toggle */
 .btn-small {
     width: auto;
     padding: 5px 15px;
@@ -156,31 +180,31 @@ h2 {
 }
 
 .btn:hover:not(:disabled) {
-    background-color: var(--main-color); /* USE VARIABLE */
-    color: var(--bg-color); /* USE VARIABLE */
+    background-color: var(--main-color); 
+    color: var(--bg-color); 
 }
 
 .btn:disabled {
-    color: var(--disabled-main); /* USE VARIABLE */
-    border-color: var(--disabled-main); /* USE VARIABLE */
+    color: var(--disabled-main); 
+    border-color: var(--disabled-main); 
     text-shadow: none;
     cursor: not-allowed;
 }
 
 .btn-secondary {
-    border-color: var(--secondary-color); /* USE VARIABLE */
-    color: var(--secondary-color); /* USE VARIABLE */
-    text-shadow: 0 0 5px var(--secondary-color); /* USE VARIABLE */
+    border-color: var(--secondary-color); 
+    color: var(--secondary-color); 
+    text-shadow: 0 0 5px var(--secondary-color); 
 }
 
 .btn-secondary:hover:not(:disabled) {
-    background-color: var(--secondary-color); /* USE VARIABLE */
-    color: var(--bg-color); /* USE VARIABLE */
+    background-color: var(--secondary-color); 
+    color: var(--bg-color); 
 }
 
 .btn-secondary:disabled {
-    border-color: var(--disabled-secondary); /* USE VARIABLE */
-    color: var(--disabled-secondary); /* USE VARIABLE */
+    border-color: var(--disabled-secondary); 
+    color: var(--disabled-secondary); 
 }
 
 
@@ -199,10 +223,10 @@ h2 {
 }
 
 .modal-content {
-    background-color: var(--bg-color); /* USE VARIABLE */
-    border: 2px solid var(--main-color); /* USE VARIABLE */
+    background-color: var(--bg-color); 
+    border: 2px solid var(--main-color); 
     padding: 2rem;
-    box-shadow: 0 0 20px var(--main-color); /* USE VARIABLE */
+    box-shadow: 0 0 20px var(--main-color); 
     width: 90%;
     max-width: 500px;
 }
@@ -224,17 +248,17 @@ label {
 input[type="text"], textarea {
     width: calc(100% - 20px);
     background-color: #000;
-    border: 1px solid var(--main-color); /* USE VARIABLE */
-    color: var(--main-color); /* USE VARIABLE */
+    border: 1px solid var(--main-color); 
+    color: var(--main-color); 
     padding: 10px;
     font-family: 'VT323', monospace;
     font-size: 16px;
-    caret-color: var(--main-color); /* USE VARIABLE */
+    caret-color: var(--main-color); 
 }
 
 input[type="text"]:focus, textarea:focus {
     outline: none;
-    box-shadow: 0 0 10px var(--main-color); /* USE VARIABLE */
+    box-shadow: 0 0 10px var(--main-color); 
 }
 
 .modal-actions {
@@ -242,4 +266,3 @@ input[type="text"]:focus, textarea:focus {
     display: flex;
     gap: 1rem;
 }
-
