@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Garbage Path</title>
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />
-    <link rel="stylesheet" href="css/mapstyle.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -29,12 +29,28 @@
     <div id='map'></div>
 
     <div class="controls">
-        </div>
+        <button id="findMeBtn">📍 Find Me</button>
+        <button id="trackBtn">🛰️ Start Tracking</button>
+        <input type="file" accept="image/*" capture="environment" id="cameraInput" style="display: none;">
+        <button id="pictureBtn">📸 Pin Picture</button>
+        <button id="dataBtn">💾 Data</button>
+    </div>
+
     <div id="dataModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Data Management</h2>
+            <p>Save your current session to the browser, or load a previous session.</p>
+            <button id="saveBtn" class="modal-button">Save Session</button>
+            <button id="loadBtn" class="modal-button">Load Session</button>
+            <hr>
+            <p>Export your pins and route as a GeoJSON file.</p>
+            <button id="exportBtn" class="modal-button export">Export as GeoJSON</button>
         </div>
+    </div>
 
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
-    <script src="js/mapscript.js"></script>
+    <script src="script.js"></script>
 
 </body>
 </html>
