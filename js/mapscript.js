@@ -33,25 +33,13 @@ let photoPins = [];
 let markers = [];
 let map; // <-- Make map a global variable
 
-// --- Element References ---
-// ... (Your element references are unchanged)
-const termsModal = document.getElementById('termsModal');
-const authModal = document.getElementById('authModal');
-// ... etc.
-
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     // This function runs AFTER the HTML is fully loaded
     
-    // --- Auth Flow Logic ---
-    if (sessionStorage.getItem('termsAccepted')) {
-        termsModal.style.display = 'none';
-        if (!currentUser) authModal.style.display = 'flex';
-    } else {
-        termsModal.style.display = 'flex';
-    }
-    
-    // --- Element References (for elements inside modals, etc.)
+    // --- Element References ---
+    const termsModal = document.getElementById('termsModal');
+    const authModal = document.getElementById('authModal');
     const userStatus = document.getElementById('userStatus');
     const userEmail = document.getElementById('userEmail');
     const agreeBtn = document.getElementById('agreeBtn');
@@ -73,7 +61,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveBtn = document.getElementById('saveBtn');
     const loadBtn = document.getElementById('loadBtn');
     const exportBtn = document.getElementById('exportBtn');
-
+    
+    // --- Initial UI Setup ---
+    if (sessionStorage.getItem('termsAccepted')) {
+        termsModal.style.display = 'none';
+        // Auth modal will be handled by onAuthStateChanged
+    } else {
+        termsModal.style.display = 'flex';
+    }
+    
     // --- Mapbox Setup ---
     mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY2p6ajZvejJmMDZhaTNkcWpiN294dm12eCJ9.8ckNT6kfuJry7K7GAeIuxw';
     map = new mapboxgl.Map({
@@ -95,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- All other event listeners go here ---
+    // --- Event Listeners ---
     termsCheckbox.addEventListener('change', () => {
         agreeBtn.disabled = !termsCheckbox.checked;
     });
@@ -110,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     signUpBtn.addEventListener('click', async () => {
         try {
+            authError.textContent = ''; // Clear previous errors
             await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
         } catch (error) {
             authError.textContent = error.message;
@@ -118,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loginBtn.addEventListener('click', async () => {
         try {
+            authError.textContent = ''; // Clear previous errors
             await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
         } catch (error) {
             authError.textContent = error.message;
@@ -149,11 +147,13 @@ document.addEventListener('DOMContentLoaded', () => {
     exportBtn.addEventListener('click', exportGeoJSON);
 });
 
-// --- Firebase Auth State Listener ---
+// --- Firebase Auth State Listener (runs independently) ---
 onAuthStateChanged(auth, (user) => {
-    const userStatus = document.getElementById('userStatus'); // Re-get elements or ensure they are accessible
+    // Get fresh references to elements since this can run before or after DOMContentLoaded
+    const userStatus = document.getElementById('userStatus'); 
     const userEmail = document.getElementById('userEmail');
     const authModal = document.getElementById('authModal');
+
     if (user) {
         currentUser = user;
         if(userEmail) userEmail.textContent = `Logged in as: ${user.email}`;
@@ -170,7 +170,7 @@ onAuthStateChanged(auth, (user) => {
 });
 
 
-// --- Functions (can stay outside DOMContentLoaded) ---
+// --- Functions ---
 
 function findMe() {
     navigator.geolocation.getCurrentPosition(position => {
@@ -181,6 +181,7 @@ function findMe() {
 }
 
 function toggleTracking() {
+    const trackBtn = document.getElementById('trackBtn'); // Get fresh reference
     if (trackingWatcher) {
         navigator.geolocation.clearWatch(trackingWatcher);
         trackingWatcher = null;
@@ -321,7 +322,7 @@ async function loadSession() {
     }
     
     photoPins.forEach(pin => addPhotoMarker(pin));
-    map.getSource('route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
+    map.getSource('route').setData({ type: 'Feature', geometry: { 'type': 'LineString', coordinates: routeCoordinates } });
     dataModal.style.display = 'none';
 }
 
