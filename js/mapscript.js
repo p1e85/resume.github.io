@@ -20,6 +20,40 @@
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
 
+// NEW: Initialize Firestore
+const db = getFirestore(app);
+console.log("Firebase Initialized!");
+
+
+// --- NEW: Firebase Connection Test ---
+// This is a temporary function to test our connection.
+async function testFirebaseConnection() {
+  try {
+    // We try to get a document that doesn't exist.
+    // If this command runs without errors, our connection and rules are working.
+    const docRef = doc(db, "testCollection", "testDocument");
+    const docSnap = await getDoc(docRef);
+    
+    // Log a success message to the console.
+    console.log(
+      "%c✅ SUCCESS: Firebase connection is working correctly!",
+      "color: green; font-weight: bold; font-size: 14px;"
+    );
+    
+  } catch (error) {
+    // If there's an error, it means something is wrong with our setup.
+    console.error(
+      "%c❌ ERROR: Failed to connect to Firestore.",
+      "color: red; font-weight: bold; font-size: 14px;",
+      error
+    );
+  }
+}
+// Run the test as soon as the app loads.
+testFirebaseConnection();
+
+
+
 // --- NEW: Terms of Use Modal Logic ---
 document.addEventListener('DOMContentLoaded', () => {
     const termsModal = document.getElementById('termsModal');
