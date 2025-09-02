@@ -58,7 +58,7 @@ trackBtn.addEventListener('click', () => {
     }
 });
 
-// --- 3. Pin Picture Functionality (UPDATED) ---
+// --- 3. Pin Picture Functionality ---
 pictureBtn.addEventListener('click', () => {
     cameraInput.click();
 });
@@ -67,47 +67,38 @@ cameraInput.addEventListener('change', (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Use FileReader to convert image to a Data URL (a text string)
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = (e) => {
         const imageDataUrl = e.target.result;
 
-        // Now get the location
         navigator.geolocation.getCurrentPosition(position => {
             const { latitude, longitude } = position.coords;
             const coords = [longitude, latitude];
-            
-            // Create a unique ID for this pin
             const pinId = `pin-${Date.now()}`;
             
-            // Store all the pin's info in an object
             const pinInfo = {
                 id: pinId,
                 coords: coords,
                 image: imageDataUrl,
-                title: 'New Photo' // Default title
+                title: 'New Photo'
             };
 
-            // Save it to our array and to localStorage
             photoPins.push(pinInfo);
             savePinsToLocalStorage();
-            
-            // Add the marker to the map
             addPhotoMarker(pinInfo);
 
         }, () => {
             alert("Could not get location for the picture.");
         }, { enableHighAccuracy: true });
     };
-    // Clear the input value to allow taking the same picture again
     event.target.value = '';
 });
 
-// --- 4. Helper Functions for Photos (NEW) ---
+// --- 4. Helper Functions for Photos ---
 
 /**
- * Creates the HTML content for a photo pin's popup.
+ * Creates the HTML content for a photo pin's popup. (UPDATED)
  * @param {object} pinInfo - The object containing pin data.
  * @returns {string} - The HTML string for the popup.
  */
@@ -116,13 +107,16 @@ function createPhotoPopup(pinInfo) {
         <div>
             <img src="${pinInfo.image}" alt="User photo" style="width:100%; height:auto; border-radius: 4px;"/>
             <input type="text" id="title-${pinInfo.id}" value="${pinInfo.title}" placeholder="Enter a title" style="width: 95%; margin-top: 10px;">
-            <button id="save-${pinInfo.id}" style="margin-top: 5px;">Save Title</button>
+            <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                <button id="save-${pinInfo.id}">Save Title</button>
+                <button id="delete-${pinInfo.id}" style="background-color: #dc3545;">Delete</button>
+            </div>
         </div>
     `;
 }
 
 /**
- * Adds a photo marker and its interactive popup to the map.
+ * Adds a photo marker and its interactive popup to the map. (UPDATED)
  * @param {object} pinInfo - The object containing pin data.
  */
 function addPhotoMarker(pinInfo) {
@@ -142,15 +136,29 @@ function addPhotoMarker(pinInfo) {
         .setPopup(popup)
         .addTo(map);
 
-    // Add a listener for the save button inside the popup
+    // Add listeners for the buttons inside the popup
     popup.on('open', () => {
         const saveBtn = document.getElementById(`save-${pinInfo.id}`);
         const titleInput = document.getElementById(`title-${pinInfo.id}`);
+        const deleteBtn = document.getElementById(`delete-${pinInfo.id}`);
+
         saveBtn.addEventListener('click', () => {
             pinInfo.title = titleInput.value;
             savePinsToLocalStorage();
-            popup.remove(); // Close popup after saving
+            popup.remove();
             alert("Title saved!");
+        });
+
+        // **NEW** Delete button functionality
+        deleteBtn.addEventListener('click', () => {
+            if (confirm("Are you sure you want to delete this pin?")) {
+                // Remove the pin from our data array
+                photoPins = photoPins.filter(p => p.id !== pinInfo.id);
+                // Update localStorage
+                savePinsToLocalStorage();
+                // Remove the marker from the map
+                marker.remove();
+            }
         });
     });
 }
