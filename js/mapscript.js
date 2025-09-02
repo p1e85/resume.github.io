@@ -1,3 +1,38 @@
+// --- NEW: Terms of Use Modal Logic ---
+document.addEventListener('DOMContentLoaded', () => {
+    const termsModal = document.getElementById('termsModal');
+    const termsCheckbox = document.getElementById('termsCheckbox');
+    const agreeBtn = document.getElementById('agreeBtn');
+
+    // Check if the user has already agreed in this session
+    if (sessionStorage.getItem('termsAccepted')) {
+        termsModal.style.display = 'none';
+    } else {
+        termsModal.style.display = 'flex';
+    }
+
+    // Enable the "I Agree" button only when the checkbox is ticked
+    termsCheckbox.addEventListener('change', () => {
+        if (termsCheckbox.checked) {
+            agreeBtn.disabled = false;
+        } else {
+            agreeBtn.disabled = true;
+        }
+    });
+
+    // When the user agrees, hide the modal and save the state
+    agreeBtn.addEventListener('click', () => {
+        termsModal.style.display = 'none';
+        sessionStorage.setItem('termsAccepted', 'true');
+    });
+});
+
+// --- Your existing JavaScript code continues below ---
+// IMPORTANT: Replace with your actual Mapbox access token
+mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN';
+// ... rest of your script.js file
+
+
 // IMPORTANT: Replace with your actual Mapbox access token
 mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY2p6ajZvejJmMDZhaTNkcWpiN294dm12eCJ9.8ckNT6kfuJry7K7GAeIuxw';
 
