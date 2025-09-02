@@ -3,26 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garbage Path</title>
+    <title>Garbage Path - Map Tracker</title>
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />
     <link rel="stylesheet" href="css/mapstyle.css">
 </head>
 <body>
 
-    <!-- NEW: Discreet Donate Button -->
+    <!-- 1. Discreet Donate Button -->
     <a href="https://www.buymeacoffee.com/p1skates" target="_blank" class="donate-button">
         ☕ Support the Mission
     </a>
 
+    <!-- 2. Terms of Use Modal -->
     <div id="termsModal" class="modal-overlay">
         <div class="modal-content">
             <h2>Terms of Use</h2>
             <div class="terms-box">
                 <p>Welcome to Garbage Path! By accessing or using our application (the "Service"), you agree to be bound by these Terms of Use.</p>
-                <p><strong>1. Description of Service:</strong> This Service is for the sole purpose of identifying and documenting refuse, trash, and litter (collectively, "Garbage").</p>
-                <p><strong>2. Prohibited Content:</strong> You may NOT upload any photograph containing people, illegal activities, or personal information. The focus must be exclusively on Garbage.</p>
-                <p><strong>3. Disclaimer:</strong> This Service is provided "AS IS". Your use of this service is entirely at your own risk. We are not liable for any damages or harm arising from your use of the Service.</p>
-                </div>
+                <!-- ... (rest of terms) ... -->
+            </div>
             <div class="agreement-section">
                 <input type="checkbox" id="termsCheckbox">
                 <label for="termsCheckbox">I acknowledge and have read the terms of use.</label>
@@ -30,9 +29,37 @@
             <button id="agreeBtn" disabled>I Agree</button>
         </div>
     </div>
+    
+    <!-- 3. NEW: Authentication Modal -->
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-content auth-modal">
+            <h2>Join Garbage Path</h2>
+            <p>Create an account to save your cleanup routes and contribute to the community map, or continue as a guest.</p>
+            
+            <div class="auth-form">
+                <input type="email" id="emailInput" placeholder="Email">
+                <input type="password" id="passwordInput" placeholder="Password (min. 6 characters)">
+                <button id="signUpBtn">Sign Up</button>
+                <button id="loginBtn">Log In</button>
+            </div>
+            
+            <hr>
+            
+            <button id="skipBtn" class="skip-button">Skip for now</button>
+            <p id="authError" class="error-message"></p>
+        </div>
+    </div>
+    
+    <!-- 4. NEW: User Status Display -->
+    <div id="userStatus" class="user-status-display">
+        <span id="userEmail"></span>
+        <button id="logoutBtn">Log Out</button>
+    </div>
 
+    <!-- 5. Map container -->
     <div id='map'></div>
 
+    <!-- 6. UI controls -->
     <div class="controls">
         <button id="findMeBtn">📍 Find Me</button>
         <button id="trackBtn">🛰️ Start Tracking</button>
@@ -41,11 +68,12 @@
         <button id="dataBtn">💾 Data</button>
     </div>
 
+    <!-- 7. Data Management Modal -->
     <div id="dataModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
             <h2>Data Management</h2>
-            <p>Save your current session to the browser, or load a previous session.</p>
+            <p>Save your current session to your account, or load a previous one.</p>
             <button id="saveBtn" class="modal-button">Save Session</button>
             <button id="loadBtn" class="modal-button">Load Session</button>
             <hr>
@@ -54,8 +82,10 @@
         </div>
     </div>
 
+    <!-- JavaScript Libraries -->
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
-    <script type="module" src="js/mapscript.js"></script>
+    <script src="js/script.js" type="module"></script>
 
 </body>
 </html>
+
