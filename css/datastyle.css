@@ -23,8 +23,8 @@ body.theme-amber {
     --checkbox-char: '◆';
 }
 
-/* NEW: Vaporwave Theme */
 body.theme-vaporwave {
+    /* Vaporwave Theme */
     --bg-color: #0f0c2d;
     --main-color: #f721b6;
     --secondary-color: #00e5e5;
@@ -35,8 +35,8 @@ body.theme-vaporwave {
     --checkbox-char: '▲';
 }
 
-/* NEW: Monochrome Theme */
 body.theme-monochrome {
+    /* Monochrome Theme */
     --bg-color: #000000;
     --main-color: #c0c0c0;
     --secondary-color: #808080;
@@ -265,4 +265,39 @@ input[type="text"]:focus, textarea:focus {
     margin-top: 2rem;
     display: flex;
     gap: 1rem;
+}
+
+
+/* --- NEW: Mobile Responsive Styles --- */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem; /* Reduce padding on small screens */
+        font-size: 18px; /* Slightly smaller font */
+    }
+
+    .container {
+        padding: 1rem;
+    }
+
+    .header {
+        flex-direction: column; /* Stack title and theme button */
+        gap: 1rem;
+        align-items: stretch; /* Make children full width */
+    }
+
+    h1 {
+        text-align: center;
+    }
+
+    .btn-small {
+        width: 100%; /* Make theme button full width */
+    }
+
+    .list-actions {
+        flex-direction: column; /* Stack action buttons vertically */
+    }
+
+    .btn {
+        text-align: center; /* Center text inside buttons */
+    }
 }
