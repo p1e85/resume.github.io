@@ -1,9 +1,14 @@
 // --- Firebase SDK Setup ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-// Firestore imports
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    signOut, 
+    onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCxyFBT_Is-jY2n39Bp-1fW8Nn3PxaSfsc",
   authDomain: "garbage-path.firebaseapp.com",
@@ -16,102 +21,121 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-// Initialize Firestore
-const db = getFirestore(); // Use the default app instance
+const db = getFirestore();
+const auth = getAuth();
 console.log("Firebase Initialized!");
 
+// --- Global State ---
+let currentUser = null; // Will hold the logged-in user object
+let trackingWatcher = null;
+let routeCoordinates = [];
+let photoPins = [];
+let markers = [];
 
-// --- Firebase Connection Test ---
-// This is a temporary function to test our connection.
-async function testFirebaseConnection() {
-  try {
-    // We try to get a document that doesn't exist.
-    // If this command runs without errors, our connection and rules are working.
-    const docRef = doc(db, "testCollection", "testDocument");
-    const docSnap = await getDoc(docRef);
-    
-    // Log a success message to the console.
-    console.log(
-      "%c✅ SUCCESS: Firebase connection is working correctly!",
-      "color: green; font-weight: bold; font-size: 14px;"
-    );
-    
-  } catch (error) {
-    // If there's an error, it means something is wrong with our setup.
-    console.error(
-      "%c❌ ERROR: Failed to connect to Firestore.",
-      "color: red; font-weight: bold; font-size: 14px;",
-      error
-    );
-  }
-}
-// Run the test as soon as the app loads.
-testFirebaseConnection();
+// --- Element References ---
+const termsModal = document.getElementById('termsModal');
+const authModal = document.getElementById('authModal');
+const userStatus = document.getElementById('userStatus');
+const userEmail = document.getElementById('userEmail');
+const agreeBtn = document.getElementById('agreeBtn');
+const termsCheckbox = document.getElementById('termsCheckbox');
+const signUpBtn = document.getElementById('signUpBtn');
+const loginBtn = document.getElementById('loginBtn');
+const skipBtn = document.getElementById('skipBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const emailInput = document.getElementById('emailInput');
+const passwordInput = document.getElementById('passwordInput');
+const authError = document.getElementById('authError');
+const findMeBtn = document.getElementById('findMeBtn');
+const trackBtn = document.getElementById('trackBtn');
+const pictureBtn = document.getElementById('pictureBtn');
+const cameraInput = document.getElementById('cameraInput');
+const dataBtn = document.getElementById('dataBtn');
+const dataModal = document.getElementById('dataModal');
+const closeBtn = dataModal.querySelector('.close-btn');
+const saveBtn = document.getElementById('saveBtn');
+const loadBtn = document.getElementById('loadBtn');
+const exportBtn = document.getElementById('exportBtn');
 
-// --- NEW: Terms of Use Modal Logic ---
+// --- Auth Flow Logic ---
 document.addEventListener('DOMContentLoaded', () => {
-    const termsModal = document.getElementById('termsModal');
-    const termsCheckbox = document.getElementById('termsCheckbox');
-    const agreeBtn = document.getElementById('agreeBtn');
-
-    // Check if the user has already agreed in this session
     if (sessionStorage.getItem('termsAccepted')) {
         termsModal.style.display = 'none';
     } else {
         termsModal.style.display = 'flex';
     }
 
-    // Enable the "I Agree" button only when the checkbox is ticked
     termsCheckbox.addEventListener('change', () => {
-        if (termsCheckbox.checked) {
-            agreeBtn.disabled = false;
-        } else {
-            agreeBtn.disabled = true;
-        }
+        agreeBtn.disabled = !termsCheckbox.checked;
     });
 
-    // When the user agrees, hide the modal and save the state
     agreeBtn.addEventListener('click', () => {
         termsModal.style.display = 'none';
         sessionStorage.setItem('termsAccepted', 'true');
+        if (!currentUser) {
+            authModal.style.display = 'flex';
+        }
     });
 });
 
-// --- Your existing JavaScript code continues below ---
-// IMPORTANT: Replace with your actual Mapbox access token
-mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN';
-// ... rest of your script.js file
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        updateUIForUser(user);
+        authModal.style.display = 'none';
+    } else {
+        currentUser = null;
+        updateUIForGuest();
+        if (sessionStorage.getItem('termsAccepted')) {
+            authModal.style.display = 'flex';
+        }
+    }
+});
+
+function updateUIForUser(user) {
+    userEmail.textContent = `Logged in as: ${user.email}`;
+    userStatus.style.display = 'flex';
+}
+
+function updateUIForGuest() {
+    userStatus.style.display = 'none';
+    userEmail.textContent = '';
+}
+
+signUpBtn.addEventListener('click', async () => {
+    try {
+        await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+    } catch (error) {
+        authError.textContent = error.message;
+    }
+});
+
+loginBtn.addEventListener('click', async () => {
+    try {
+        await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+    } catch (error) {
+        authError.textContent = error.message;
+    }
+});
+
+logoutBtn.addEventListener('click', async () => {
+    await signOut(auth);
+});
+
+skipBtn.addEventListener('click', () => {
+    authModal.style.display = 'none';
+});
 
 
-// IMPORTANT: Replace with your actual Mapbox access token
-mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY21mMmZ3ZDE5MTg0dDJrcHpia2p3ZWFmaSJ9.51xw2AyiqR1Hdr6-xPVOTA';
-
+// --- Mapbox Setup & Logic ---
+mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN'; // IMPORTANT: Replace with your token
 const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v12',
-    center: [-98.5795, 39.8283],
-    zoom: 3
+    center: [-87.7312, 42.0095], // Lincolnwood, IL
+    zoom: 13
 });
 
-// --- Element References ---
-const findMeBtn = document.getElementById('findMeBtn');
-const trackBtn = document.getElementById('trackBtn');
-const pictureBtn = document.getElementById('pictureBtn');
-const cameraInput = document.getElementById('cameraInput');
-const dataBtn = document.getElementById('dataBtn');
-const modal = document.getElementById('dataModal');
-const closeBtn = document.querySelector('.close-btn');
-const saveBtn = document.getElementById('saveBtn');
-const loadBtn = document.getElementById('loadBtn');
-const exportBtn = document.getElementById('exportBtn');
-
-// --- Global State ---
-let trackingWatcher = null;
-let routeCoordinates = [];
-let photoPins = [];
-let markers = []; // Keep track of marker objects to remove them later
-
-// --- Mapbox Setup ---
 map.on('load', () => {
     map.addSource('route', {
         'type': 'geojson',
@@ -126,23 +150,22 @@ map.on('load', () => {
     });
 });
 
-// --- Event Listeners ---
 findMeBtn.addEventListener('click', findMe);
 trackBtn.addEventListener('click', toggleTracking);
 pictureBtn.addEventListener('click', () => cameraInput.click());
 cameraInput.addEventListener('change', handlePhoto);
-dataBtn.addEventListener('click', () => modal.style.display = 'block');
-closeBtn.addEventListener('click', () => modal.style.display = 'none');
+
+dataBtn.addEventListener('click', () => dataModal.style.display = 'block');
+closeBtn.addEventListener('click', () => dataModal.style.display = 'none');
 window.addEventListener('click', (event) => {
-    if (event.target == modal) {
-        modal.style.display = 'none';
+    if (event.target == dataModal) {
+        dataModal.style.display = 'none';
     }
 });
 saveBtn.addEventListener('click', saveSession);
 loadBtn.addEventListener('click', loadSession);
 exportBtn.addEventListener('click', exportGeoJSON);
 
-// --- Core Functions ---
 function findMe() {
     navigator.geolocation.getCurrentPosition(position => {
         const { latitude, longitude } = position.coords;
@@ -158,6 +181,7 @@ function toggleTracking() {
         trackBtn.textContent = '🛰️ Start Tracking';
         trackBtn.classList.remove('tracking');
     } else {
+        routeCoordinates = []; // Start a new route
         trackingWatcher = navigator.geolocation.watchPosition(position => {
             const newCoord = [position.coords.longitude, position.coords.latitude];
             routeCoordinates.push(newCoord);
@@ -198,19 +222,14 @@ function addPhotoMarker(pinInfo) {
     el.style.backgroundImage = `url(${pinInfo.image})`;
 
     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(createPhotoPopupHTML(pinInfo));
-    
-    const marker = new mapboxgl.Marker(el)
-        .setLngLat(pinInfo.coords)
-        .setPopup(popup)
-        .addTo(map);
-
-    markers.push(marker); // Add to our array of markers
+    const marker = new mapboxgl.Marker(el).setLngLat(pinInfo.coords).setPopup(popup).addTo(map);
+    markers.push(marker);
 
     popup.on('open', () => {
         document.getElementById(`save-${pinInfo.id}`).addEventListener('click', () => {
             const titleInput = document.getElementById(`title-${pinInfo.id}`);
             const pin = photoPins.find(p => p.id === pinInfo.id);
-            pin.title = titleInput.value;
+            if (pin) pin.title = titleInput.value;
             popup.remove();
             alert("Title updated! Remember to save your session.");
         });
@@ -239,65 +258,80 @@ function createPhotoPopupHTML(pinInfo) {
 }
 
 // --- Data Management ---
-function saveSession() {
-    const sessionData = {
-        pins: photoPins,
-        route: routeCoordinates
-    };
-    localStorage.setItem('mapSessionData', JSON.stringify(sessionData));
-    alert("Session Saved!");
-    modal.style.display = 'none';
+async function saveSession() {
+    if (currentUser) {
+        try {
+            const userDocRef = doc(db, "users", currentUser.uid);
+            const sessionData = { pins: photoPins, route: routeCoordinates };
+            await setDoc(userDocRef, { savedSession: sessionData });
+            alert("Session saved to your account!");
+        } catch (error) {
+            console.error("Error saving to Firestore:", error);
+            alert("Could not save session to your account.");
+        }
+    } else {
+        const sessionData = { pins: photoPins, route: routeCoordinates };
+        localStorage.setItem('mapSessionData', JSON.stringify(sessionData));
+        alert("Session saved locally to this browser.");
+    }
+    dataModal.style.display = 'none';
 }
 
-function loadSession() {
-    const savedData = JSON.parse(localStorage.getItem('mapSessionData'));
-    if (!savedData) {
-        alert("No saved session found.");
-        return;
-    }
-
-    // Clear current map state
+async function loadSession() {
     markers.forEach(marker => marker.remove());
     markers = [];
     photoPins = [];
     routeCoordinates = [];
 
-    // Load data
-    photoPins = savedData.pins || [];
-    routeCoordinates = savedData.route || [];
+    let savedData = null;
+    if (currentUser) {
+        try {
+            const userDocRef = doc(db, "users", currentUser.uid);
+            const docSnap = await getDoc(userDocRef);
+            if (docSnap.exists() && docSnap.data().savedSession) {
+                savedData = docSnap.data().savedSession;
+                alert("Session loaded from your account!");
+            } else {
+                alert("No saved session found in your account.");
+            }
+        } catch (error) {
+            console.error("Error loading from Firestore:", error);
+            alert("Could not load session from your account.");
+        }
+    } else {
+        const localData = JSON.parse(localStorage.getItem('mapSessionData'));
+        if (localData) {
+            savedData = localData;
+            alert("Local session loaded.");
+        } else {
+            alert("No local session found.");
+        }
+    }
 
-    // Redraw on map
+    if (savedData) {
+        photoPins = savedData.pins || [];
+        routeCoordinates = savedData.route || [];
+    }
+    
     photoPins.forEach(pin => addPhotoMarker(pin));
     map.getSource('route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
-
-    alert("Session Loaded!");
-    modal.style.display = 'none';
+    dataModal.style.display = 'none';
 }
 
 function exportGeoJSON() {
     const pinFeatures = photoPins.map(pin => ({
         'type': 'Feature',
-        'geometry': {
-            'type': 'Point',
-            'coordinates': pin.coords
-        },
+        'geometry': { 'type': 'Point', 'coordinates': pin.coords },
         'properties': {
             'title': pin.title,
-            // Note: The image data URL can be very long and isn't standard in GeoJSON.
-            // For true interoperability, you'd upload the image and link to a URL.
             'image_data_url_truncated': pin.image.substring(0, 50) + '...'
         }
     }));
-
     const routeFeature = {
         'type': 'Feature',
-        'geometry': {
-            'type': 'LineString',
-            'coordinates': routeCoordinates
-        },
+        'geometry': { 'type': 'LineString', 'coordinates': routeCoordinates },
         'properties': {}
     };
-
     const geojson = {
         'type': 'FeatureCollection',
         'features': [...pinFeatures, routeFeature]
@@ -306,10 +340,10 @@ function exportGeoJSON() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(geojson, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "map_data.geojson");
+    downloadAnchorNode.setAttribute("download", "garbage_path_data.geojson");
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
-
-    modal.style.display = 'none';
+    dataModal.style.display = 'none';
 }
+
