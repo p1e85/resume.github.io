@@ -5,7 +5,7 @@ mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY2p6ajZvejJmMDZhaTNkc
 const map = new mapboxgl.Map({
     container: 'map', // container ID
     style: 'mapbox://styles/mapbox/streets-v12', // style URL
-    center: [-98.5795, 39.8283], // starting position [lng, lat] (center of USA)
+    center: [-98.5795, 39.8283], // starting position [lng, lat]
     zoom: 3 // starting zoom
 });
 
@@ -17,20 +17,14 @@ const cameraInput = document.getElementById('cameraInput');
 
 let trackingWatcher = null; // To hold the watchPosition ID
 let routeCoordinates = [];   // Array to store tracking coordinates
+let photoPins = [];          // Array to store our photo pin data
 
 // --- 1. Find Location Functionality ---
 findMeBtn.addEventListener('click', () => {
     navigator.geolocation.getCurrentPosition(position => {
         const { latitude, longitude } = position.coords;
-        // Create a marker
-        new mapboxgl.Marker()
-            .setLngLat([longitude, latitude])
-            .addTo(map);
-        // Fly to the user's location
-        map.flyTo({
-            center: [longitude, latitude],
-            zoom: 15
-        });
+        new mapboxgl.Marker().setLngLat([longitude, latitude]).addTo(map);
+        map.flyTo({ center: [longitude, latitude], zoom: 15 });
     }, () => {
         alert("Could not get your location. Please allow location access.");
     }, { enableHighAccuracy: true });
@@ -39,110 +33,161 @@ findMeBtn.addEventListener('click', () => {
 // --- 2. Track Location Functionality ---
 trackBtn.addEventListener('click', () => {
     if (trackingWatcher) {
-        // --- Stop Tracking ---
         navigator.geolocation.clearWatch(trackingWatcher);
         trackingWatcher = null;
         trackBtn.textContent = '🛰️ Start Tracking';
         trackBtn.classList.remove('tracking');
     } else {
-        // --- Start Tracking ---
-        // Clear previous route data
         routeCoordinates = [];
         if (map.getSource('route')) {
-            map.getSource('route').setData({
-                type: 'Feature',
-                properties: {},
-                geometry: { type: 'LineString', coordinates: [] }
-            });
+            map.getSource('route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
         }
-
         trackingWatcher = navigator.geolocation.watchPosition(position => {
             const { latitude, longitude } = position.coords;
             const newCoord = [longitude, latitude];
-
-            // Add new coordinate to our route array
             routeCoordinates.push(newCoord);
-
-            // Center map on the new location
             map.flyTo({ center: newCoord, zoom: 16 });
-
-            // Update the line on the map
             if (map.getSource('route')) {
-                map.getSource('route').setData({
-                    type: 'Feature',
-                    properties: {},
-                    geometry: { type: 'LineString', coordinates: routeCoordinates }
-                });
+                map.getSource('route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
             }
         }, () => {
             alert("Error watching position.");
-        }, { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 });
-
+        }, { enableHighAccuracy: true });
         trackBtn.textContent = '🛑 Stop Tracking';
         trackBtn.classList.add('tracking');
     }
 });
 
-// --- 3. Pin Picture Functionality ---
+// --- 3. Pin Picture Functionality (UPDATED) ---
 pictureBtn.addEventListener('click', () => {
-    // Trigger the hidden file input
     cameraInput.click();
 });
 
 cameraInput.addEventListener('change', (event) => {
-    if (event.target.files && event.target.files[0]) {
-        // We have a picture, now get the location
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Use FileReader to convert image to a Data URL (a text string)
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+        const imageDataUrl = e.target.result;
+
+        // Now get the location
         navigator.geolocation.getCurrentPosition(position => {
             const { latitude, longitude } = position.coords;
-
-            // Create a custom marker for the picture
-            const el = document.createElement('div');
-            el.className = 'marker';
-            el.style.backgroundImage = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="36" height="36" fill="%23FF5722"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')`;
-            el.style.width = '36px';
-            el.style.height = '36px';
-            el.style.backgroundSize = '100%';
+            const coords = [longitude, latitude];
             
-            // Create a popup (optional)
-            const popup = new mapboxgl.Popup({ offset: 25 })
-                .setText('A picture was taken here!');
+            // Create a unique ID for this pin
+            const pinId = `pin-${Date.now()}`;
+            
+            // Store all the pin's info in an object
+            const pinInfo = {
+                id: pinId,
+                coords: coords,
+                image: imageDataUrl,
+                title: 'New Photo' // Default title
+            };
 
+            // Save it to our array and to localStorage
+            photoPins.push(pinInfo);
+            savePinsToLocalStorage();
+            
             // Add the marker to the map
-            new mapboxgl.Marker(el)
-                .setLngLat([longitude, latitude])
-                .setPopup(popup)
-                .addTo(map);
+            addPhotoMarker(pinInfo);
+
         }, () => {
             alert("Could not get location for the picture.");
         }, { enableHighAccuracy: true });
-    }
+    };
+    // Clear the input value to allow taking the same picture again
+    event.target.value = '';
 });
 
+// --- 4. Helper Functions for Photos (NEW) ---
 
-// Add the route source and layer once the map is loaded
+/**
+ * Creates the HTML content for a photo pin's popup.
+ * @param {object} pinInfo - The object containing pin data.
+ * @returns {string} - The HTML string for the popup.
+ */
+function createPhotoPopup(pinInfo) {
+    return `
+        <div>
+            <img src="${pinInfo.image}" alt="User photo" style="width:100%; height:auto; border-radius: 4px;"/>
+            <input type="text" id="title-${pinInfo.id}" value="${pinInfo.title}" placeholder="Enter a title" style="width: 95%; margin-top: 10px;">
+            <button id="save-${pinInfo.id}" style="margin-top: 5px;">Save Title</button>
+        </div>
+    `;
+}
+
+/**
+ * Adds a photo marker and its interactive popup to the map.
+ * @param {object} pinInfo - The object containing pin data.
+ */
+function addPhotoMarker(pinInfo) {
+    const el = document.createElement('div');
+    el.className = 'marker';
+    el.style.backgroundImage = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="36" height="36" fill="%23FF5722"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')`;
+    el.style.width = '36px';
+    el.style.height = '36px';
+    el.style.backgroundSize = '100%';
+    el.style.cursor = 'pointer';
+
+    const popup = new mapboxgl.Popup({ offset: 25 })
+        .setHTML(createPhotoPopup(pinInfo));
+        
+    const marker = new mapboxgl.Marker(el)
+        .setLngLat(pinInfo.coords)
+        .setPopup(popup)
+        .addTo(map);
+
+    // Add a listener for the save button inside the popup
+    popup.on('open', () => {
+        const saveBtn = document.getElementById(`save-${pinInfo.id}`);
+        const titleInput = document.getElementById(`title-${pinInfo.id}`);
+        saveBtn.addEventListener('click', () => {
+            pinInfo.title = titleInput.value;
+            savePinsToLocalStorage();
+            popup.remove(); // Close popup after saving
+            alert("Title saved!");
+        });
+    });
+}
+
+/**
+ * Saves the entire photoPins array to the browser's localStorage.
+ */
+function savePinsToLocalStorage() {
+    localStorage.setItem('photoPins', JSON.stringify(photoPins));
+}
+
+/**
+ * Loads pins from localStorage when the page loads.
+ */
+function loadPinsFromLocalStorage() {
+    const savedPins = JSON.parse(localStorage.getItem('photoPins'));
+    if (savedPins) {
+        photoPins = savedPins;
+        photoPins.forEach(pin => addPhotoMarker(pin));
+    }
+}
+
+// --- Map Load Event ---
 map.on('load', () => {
+    // Add the route source and layer for tracking
     map.addSource('route', {
         'type': 'geojson',
-        'data': {
-            'type': 'Feature',
-            'properties': {},
-            'geometry': {
-                'type': 'LineString',
-                'coordinates': []
-            }
-        }
+        'data': { 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': [] } }
     });
     map.addLayer({
         'id': 'route',
         'type': 'line',
         'source': 'route',
-        'layout': {
-            'line-join': 'round',
-            'line-cap': 'round'
-        },
-        'paint': {
-            'line-color': '#0000ff', // Blue line
-            'line-width': 5
-        }
+        'layout': { 'line-join': 'round', 'line-cap': 'round' },
+        'paint': { 'line-color': '#0000ff', 'line-width': 5 }
     });
+
+    // Load any saved photo pins from previous sessions
+    loadPinsFromLocalStorage();
 });
