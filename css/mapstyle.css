@@ -6,7 +6,7 @@ body {
     overflow: hidden; 
 }
 
-/* --- Map & Main UI Controls --- */
+/* --- Map Container --- */
 #map {
     position: absolute;
     top: 0;
@@ -38,7 +38,7 @@ body {
 
 /* --- General Modal Styles (FIXED) --- */
 .modal-overlay, .modal {
-    display: none; 
+    display: none; /* This is the key: modals are hidden by default */
     position: fixed;
     top: 0;
     left: 0;
@@ -46,8 +46,7 @@ body {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
     z-index: 1000;
-    /* These properties center the .modal-content box */
-    display: flex; 
+    /* Centering properties will apply when JS sets display to 'flex' */
     justify-content: center;
     align-items: center;
 }
@@ -65,7 +64,7 @@ body {
 /* --- Terms of Use Modal --- */
 #termsModal .modal-content {
     max-height: 80vh;
-    display: flex;
+    display: flex; /* We set flex here because the content needs it, not the overlay */
     flex-direction: column;
 }
 
