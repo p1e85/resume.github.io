@@ -3,13 +3,52 @@ body {
     margin: 0;
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    overflow: hidden; 
+    overflow: hidden; /* Prevents scrolling when modals are open */
 }
 
 /* --- Map & Main UI Controls --- */
-/* ... (existing styles are unchanged) ... */
+#map {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+}
 
-/* --- Donate Button --- */
+.controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 10px;
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.controls button {
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.controls button:hover {
+    background-color: #0056b3;
+}
+
+.controls button.tracking {
+    background-color: #dc3545; /* Red for "Stop Tracking" */
+}
+
+/* --- Top-Right Donate Button --- */
 .donate-button {
     position: absolute;
     top: 15px;
@@ -30,11 +69,79 @@ body {
     background-color: rgba(255, 255, 255, 0.4);
 }
 
-/* --- Modals General --- */
-/* ... (existing modal styles are unchanged) ... */
+/* --- General Modal Styles (for all popups) --- */
+.modal-overlay, .modal {
+    display: none; /* Hidden by default, shown by JS */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
 
-/* --- NEW: Auth Modal Specific Styles --- */
+.modal-content {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+/* --- Terms of Use Modal --- */
+#termsModal .modal-content {
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#termsModal h2 {
+    text-align: center;
+    margin-top: 0;
+    color: #333;
+}
+
+.terms-box {
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+    flex-grow: 1;
+}
+
+.agreement-section {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#agreeBtn {
+    padding: 12px;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    background-color: #007bff;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#agreeBtn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+
+/* --- Authentication Modal --- */
 .auth-modal {
+    max-width: 400px; /* Make auth modal smaller */
     text-align: center;
 }
 
@@ -77,9 +184,10 @@ body {
     color: #dc3545;
     margin-top: 15px;
     min-height: 20px;
+    font-size: 14px;
 }
 
-/* --- NEW: User Status Display --- */
+/* --- User Status Display (Top-Left) --- */
 .user-status-display {
     display: none; /* Hidden by default */
     position: absolute;
@@ -103,3 +211,51 @@ body {
     cursor: pointer;
 }
 
+/* --- Data Management Modal --- */
+#dataModal .modal-content {
+    max-width: 500px;
+    text-align: center;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modal-button {
+    width: 100%;
+    padding: 12px;
+    margin: 5px 0;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    color: white;
+    background-color: #007bff;
+    cursor: pointer;
+}
+
+.modal-button.export {
+    background-color: #28a745; /* Green */
+}
+
+.modal-button:hover {
+    opacity: 0.9;
+}
+
+
+/* --- Map-Specific Elements --- */
+.photo-marker {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+}
