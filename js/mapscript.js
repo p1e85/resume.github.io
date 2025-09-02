@@ -31,11 +31,10 @@ let trackingWatcher = null;
 let routeCoordinates = [];
 let photoPins = [];
 let markers = [];
-let map; // <-- Make map a global variable
+let map; 
 
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    // This function runs AFTER the HTML is fully loaded
     
     // --- Element References ---
     const termsModal = document.getElementById('termsModal');
@@ -65,7 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
         termsModal.style.display = 'none';
-        // Auth modal will be handled by onAuthStateChanged
     } else {
         termsModal.style.display = 'flex';
     }
@@ -106,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     signUpBtn.addEventListener('click', async () => {
         try {
-            authError.textContent = ''; // Clear previous errors
+            authError.textContent = '';
             await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
         } catch (error) {
             authError.textContent = error.message;
@@ -115,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loginBtn.addEventListener('click', async () => {
         try {
-            authError.textContent = ''; // Clear previous errors
+            authError.textContent = '';
             await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
         } catch (error) {
             authError.textContent = error.message;
@@ -135,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     pictureBtn.addEventListener('click', () => cameraInput.click());
     cameraInput.addEventListener('change', handlePhoto);
 
-    dataBtn.addEventListener('click', () => dataModal.style.display = 'block');
+    dataBtn.addEventListener('click', () => dataModal.style.display = 'flex');
     closeBtn.addEventListener('click', () => dataModal.style.display = 'none');
     window.addEventListener('click', (event) => {
         if (event.target == dataModal) {
@@ -147,9 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
     exportBtn.addEventListener('click', exportGeoJSON);
 });
 
-// --- Firebase Auth State Listener (runs independently) ---
+// --- Firebase Auth State Listener ---
 onAuthStateChanged(auth, (user) => {
-    // Get fresh references to elements since this can run before or after DOMContentLoaded
     const userStatus = document.getElementById('userStatus'); 
     const userEmail = document.getElementById('userEmail');
     const authModal = document.getElementById('authModal');
@@ -181,14 +178,14 @@ function findMe() {
 }
 
 function toggleTracking() {
-    const trackBtn = document.getElementById('trackBtn'); // Get fresh reference
+    const trackBtn = document.getElementById('trackBtn'); 
     if (trackingWatcher) {
         navigator.geolocation.clearWatch(trackingWatcher);
         trackingWatcher = null;
         trackBtn.textContent = '🛰️ Start Tracking';
         trackBtn.classList.remove('tracking');
     } else {
-        routeCoordinates = []; // Start a new route
+        routeCoordinates = []; 
         trackingWatcher = navigator.geolocation.watchPosition(position => {
             const newCoord = [position.coords.longitude, position.coords.latitude];
             routeCoordinates.push(newCoord);
@@ -322,7 +319,9 @@ async function loadSession() {
     }
     
     photoPins.forEach(pin => addPhotoMarker(pin));
-    map.getSource('route').setData({ type: 'Feature', geometry: { 'type': 'LineString', coordinates: routeCoordinates } });
+    if(map.getSource('route')) {
+        map.getSource('route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
+    }
     dataModal.style.display = 'none';
 }
 
@@ -355,4 +354,3 @@ function exportGeoJSON() {
     downloadAnchorNode.remove();
     dataModal.style.display = 'none';
 }
-
