@@ -1,7 +1,55 @@
-/* Add these styles to your existing style.css file */
+/* --- Global & Body Styles --- */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    overflow: hidden; /* Prevents scrolling when modals are open */
+}
 
-/* NEW: Terms Modal Overlay */
+/* --- Map & Main UI Controls --- */
+#map {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+.controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    display: flex;
+    gap: 10px;
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.controls button {
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.controls button:hover {
+    background-color: #0056b3;
+}
+
+.controls button.tracking {
+    background-color: #dc3545; /* Red for "Stop Tracking" */
+}
+
+/* --- Terms of Use Modal --- */
 .modal-overlay {
+    display: none; /* Hidden by default, shown by JS */
     position: fixed;
     top: 0;
     left: 0;
@@ -9,12 +57,10 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.7);
     z-index: 2000;
-    display: flex;
     justify-content: center;
     align-items: center;
 }
 
-/* Style for the content box inside the overlay */
 #termsModal .modal-content {
     background-color: #fff;
     padding: 25px;
@@ -24,19 +70,21 @@
     max-height: 80vh;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 #termsModal h2 {
     text-align: center;
     margin-top: 0;
+    color: #333;
 }
 
-/* Make the terms text scrollable */
 .terms-box {
     overflow-y: auto;
     border: 1px solid #ccc;
-    padding: 10px;
+    padding: 10px 15px;
     margin-bottom: 15px;
+    background-color: #f9f9f9;
     flex-grow: 1; /* Allows the box to fill available space */
 }
 
@@ -44,6 +92,7 @@
     margin-bottom: 15px;
     display: flex;
     align-items: center;
+    gap: 10px;
 }
 
 #agreeBtn {
@@ -54,10 +103,77 @@
     color: white;
     background-color: #007bff;
     cursor: pointer;
+    transition: background-color 0.2s;
 }
 
-/* Style for the disabled button */
 #agreeBtn:disabled {
     background-color: #cccccc;
     cursor: not-allowed;
+}
+
+/* --- Data Management Modal --- */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 8px;
+    text-align: center;
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modal-button {
+    width: 100%;
+    padding: 12px;
+    margin: 5px 0;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    color: white;
+    background-color: #007bff;
+    cursor: pointer;
+}
+
+.modal-button.export {
+    background-color: #28a745; /* Green */
+}
+
+.modal-button:hover {
+    opacity: 0.9;
+}
+
+/* --- Map-Specific Elements --- */
+.photo-marker {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
 }
