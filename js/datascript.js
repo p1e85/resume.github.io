@@ -11,8 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const editBtn = document.getElementById('editBtn');
     const deleteBtn = document.getElementById('deleteBtn');
     const clearAllBtn = document.getElementById('clearAllBtn');
+    const downloadBtn = document.getElementById('downloadBtn'); // NEW: Get download button
     
-    // NEW: Theme Toggle Elements
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     const body = document.body;
     const themeKey = 'retro-db-theme';
@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Functions ---
     
-    // NEW: Theme Functions
     const applyTheme = (theme) => {
         if (theme === 'amber') {
             body.classList.add('theme-amber');
@@ -37,13 +36,13 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(themeKey, currentTheme);
         applyTheme(currentTheme);
     };
-    // End of NEW Theme Functions
 
     const updateActionButtons = () => {
         const selectedCount = messageList.querySelectorAll('input[type="checkbox"]:checked').length;
         
         editBtn.disabled = selectedCount !== 1;
         deleteBtn.disabled = selectedCount === 0;
+        downloadBtn.disabled = selectedCount === 0; // NEW: Control download button state
         clearAllBtn.disabled = messages.length === 0;
     };
 
@@ -82,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('message').value = data.message;
         } else {
             modalTitle.textContent = "NEW DATA ENTRY";
-            saveBtn.textContent = "> SAVE & DOWNLOAD";
+            saveBtn.textContent = "> SAVE ENTRY"; // UPDATED: Text changed
         }
         modal.classList.remove('hidden');
     };
@@ -117,20 +116,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        const fileContent = `Subject: ${subject}\n\n---\n\n${message}`;
         const newMessageData = { fileName, subject, message };
 
         if (editIndex !== null) {
             messages[editIndex] = newMessageData;
         } else {
             messages.push(newMessageData);
-            downloadTxtFile(fileName, fileContent);
+            // REMOVED: The automatic downloadTxtFile() call was here
         }
 
         localStorage.setItem('retroDbMessages', JSON.stringify(messages));
         renderMessages();
         hideModal();
     };
+
+    // --- Event Handlers for Actions ---
 
     const handleEdit = () => {
         const checkedBox = messageList.querySelector('input[type="checkbox"]:checked');
@@ -141,6 +141,20 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const messageToEdit = messages[editIndex];
         showModal(true, messageToEdit);
+    };
+
+    // NEW: Function to handle downloading selected items
+    const handleDownload = () => {
+        const checkedBoxes = messageList.querySelectorAll('input[type="checkbox"]:checked');
+        
+        checkedBoxes.forEach(box => {
+            const itemDiv = box.closest('.message-item');
+            const index = parseInt(itemDiv.dataset.index, 10);
+            const messageData = messages[index];
+            
+            const fileContent = `Subject: ${messageData.subject}\n\n---\n\n${messageData.message}`;
+            downloadTxtFile(messageData.fileName, fileContent);
+        });
     };
 
     const handleDelete = () => {
@@ -181,6 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
     editBtn.addEventListener('click', handleEdit);
     deleteBtn.addEventListener('click', handleDelete);
     clearAllBtn.addEventListener('click', handleClearAll);
+    downloadBtn.addEventListener('click', handleDownload); // NEW: Listener for download button
 
     messageList.addEventListener('change', (event) => {
         if (event.target.type === 'checkbox') {
@@ -188,7 +203,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // NEW: Theme toggle listener
     themeToggleBtn.addEventListener('click', toggleTheme);
 
     // --- Initial Load ---
@@ -196,4 +210,3 @@ document.addEventListener('DOMContentLoaded', () => {
     applyTheme(savedTheme);
     renderMessages();
 });
-
