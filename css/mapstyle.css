@@ -36,9 +36,9 @@ body {
     background-color: rgba(255, 255, 255, 0.4);
 }
 
-/* --- General Modal Styles (FIXED) --- */
+/* --- General Modal Styles --- */
 .modal-overlay, .modal {
-    display: none; /* This is the key: modals are hidden by default */
+    display: none; 
     position: fixed;
     top: 0;
     left: 0;
@@ -46,7 +46,6 @@ body {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
     z-index: 1000;
-    /* Centering properties will apply when JS sets display to 'flex' */
     justify-content: center;
     align-items: center;
 }
@@ -64,7 +63,7 @@ body {
 /* --- Terms of Use Modal --- */
 #termsModal .modal-content {
     max-height: 80vh;
-    display: flex; /* We set flex here because the content needs it, not the overlay */
+    display: flex; 
     flex-direction: column;
 }
 
@@ -154,10 +153,10 @@ body {
     font-size: 14px;
 }
 
-/* --- Bottom Container for Controls and User Status --- */
+/* --- Bottom Container for Controls and User Status (MODIFIED) --- */
 .bottom-container {
     position: absolute;
-    bottom: 20px;
+    bottom: 30px; /* Raised from 20px to 30px */
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
@@ -264,3 +263,4 @@ body {
     background-position: center;
     cursor: pointer;
 }
+
