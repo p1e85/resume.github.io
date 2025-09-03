@@ -96,6 +96,18 @@
     </div>
 
     <!-- JavaScript Libraries -->
+
+  <script src="https://www.google.com/recaptcha/enterprise.js?render=6Le6KLwrAAAAAAQrEksEM-iYLjKi4tQkPE6x-inP"></script>
+
+<script>
+  function onClick(e) {
+    e.preventDefault();
+    grecaptcha.enterprise.ready(async () => {
+      const token = await grecaptcha.enterprise.execute('6Le6KLwrAAAAAAQrEksEM-iYLjKi4tQkPE6x-inP', {action: 'LOGIN'});
+    });
+  }
+</script>
+
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
     <script src="js/mapscript.js" type="module"></script>
 
