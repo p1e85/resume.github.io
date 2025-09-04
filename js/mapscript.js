@@ -10,13 +10,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCxyFBT_Is-jY2n39Bp-1fW8Nn3PxaSfsc",
-  authDomain: "garbage-path.firebaseapp.com",
-  projectId: "garbage-path",
-  storageBucket: "garbage-path.firebasestorage.app",
-  messagingSenderId: "885911396160",
-  appId: "1:885911396160:web:c37e5128f9c7a3a1be64a5",
-  measurementId: "G-G0SEDXVZ3V"
+  apiKey: "AIzaSyCE1b6VtJjUs0O5YvyLjeslxuHC8UlgJUM",
+  authDomain: "garbagepathv2.firebaseapp.com",
+  projectId: "garbagepathv2",
+  storageBucket: "garbagepathv2.firebasestorage.app",
+  messagingSenderId: "505856089619",
+  appId: "1:505856089619:web:682f58d02be4295be4a9e6",
+  measurementId: "G-SM46WXV0CN"
 };
 
 // Initialize Firebase
