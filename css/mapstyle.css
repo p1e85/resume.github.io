@@ -6,7 +6,7 @@ body {
     overflow: hidden;
 }
 
-/* --- Map Container --- */
+/* --- Map & Containers --- */
 #map {
     position: absolute;
     top: 0;
@@ -15,44 +15,16 @@ body {
     height: 100%;
 }
 
-/* --- Top Bar (Community & Donate) --- */
 .top-bar-container {
     position: absolute;
     top: 15px;
-    left: 15px;
     right: 15px;
     z-index: 10;
     display: flex;
-    justify-content: space-between;
+    gap: 10px;
     align-items: center;
-    pointer-events: none; /* Allows clicks to go through to the map */
 }
 
-.community-button, .donate-button {
-    pointer-events: auto; /* Makes the buttons clickable */
-    background-color: rgba(255, 255, 255, 0.8);
-    color: #333;
-    padding: 8px 12px;
-    border-radius: 20px;
-    text-decoration: none;
-    font-size: 14px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.community-button.off {
-    background-color: rgba(0, 0, 0, 0.4);
-    color: #fff;
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.donate-button:hover, .community-button:hover {
-    background-color: rgba(255, 255, 255, 1);
-}
-
-/* --- Bottom Container (Controls & User Status) --- */
 .bottom-container {
     position: absolute;
     bottom: 30px;
@@ -65,7 +37,7 @@ body {
     gap: 10px;
 }
 
-/* --- Main Controls --- */
+/* --- Buttons --- */
 .controls {
     display: flex;
     gap: 10px;
@@ -90,53 +62,44 @@ body {
     background-color: #0056b3;
 }
 
-.controls button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-}
-
 .controls button.tracking {
     background-color: #dc3545;
 }
 
-/* --- User Status Display --- */
-.user-status-display {
-    display: none; /* Hidden by default until terms are accepted */
-    background-color: rgba(255, 255, 255, 0.8);
+.donate-button {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #333;
     padding: 8px 12px;
-    border-radius: 8px;
+    border-radius: 20px;
+    text-decoration: none;
     font-size: 14px;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: background-color 0.3s;
+}
+.donate-button:hover {
+    background-color: rgba(255, 255, 255, 0.4);
 }
 
-#loggedInContent {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-#logoutBtn {
-    border: none;
-    background-color: #6c757d;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.login-signup-button {
-    border: none;
-    background-color: #007bff;
-    color: white;
-    padding: 5px 15px;
-    border-radius: 5px;
-    cursor: pointer;
+.community-button {
+    padding: 8px 12px;
     font-size: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+    backdrop-filter: blur(5px);
+    transition: background-color 0.3s, color 0.3s;
 }
 
-/* --- General Modal Styles --- */
+.community-button.off {
+    background-color: rgba(108, 117, 125, 0.2);
+    color: #333;
+}
+
+/* --- Modals --- */
 .modal-overlay, .modal {
     display: none;
     position: fixed;
@@ -160,7 +123,17 @@ body {
     position: relative;
 }
 
-/* --- Terms Modal --- */
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Terms Modal */
 #termsModal .modal-content {
     max-height: 80vh;
     display: flex;
@@ -203,7 +176,7 @@ body {
     cursor: not-allowed;
 }
 
-/* --- Auth Modal --- */
+/* Auth Modal */
 .auth-modal {
     max-width: 400px;
     text-align: center;
@@ -235,13 +208,6 @@ body {
 
 .skip-button {
     background-color: #6c757d;
-    color: white;
-    border: none;
-    padding: 12px;
-    width: 100%;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
 }
 
 .error-message {
@@ -251,22 +217,7 @@ body {
     font-size: 14px;
 }
 
-/* --- Data Management Modal --- */
-#dataModal .modal-content {
-    max-width: 500px;
-    text-align: center;
-}
-
-.close-btn {
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    color: #aaa;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
+/* Data & Sessions Modals */
 .modal-button {
     width: 100%;
     padding: 12px;
@@ -279,20 +230,66 @@ body {
     cursor: pointer;
 }
 
-.modal-button.publish {
-    background-color: #ffc107;
-    color: #000;
+.modal-button:hover { opacity: 0.9; }
+.modal-button.publish { background-color: #ffc107; color: #000; }
+.modal-button.export { background-color: #28a745; }
+
+.session-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+    max-height: 40vh;
+    overflow-y: auto;
+    border: 1px solid #eee;
 }
 
-.modal-button.export {
-    background-color: #28a745;
+.session-list li {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.modal-button:hover {
-    opacity: 0.9;
+.session-list li:hover {
+    background-color: #f5f5f5;
 }
 
-/* --- Map-Specific Elements --- */
+.session-list li .session-date {
+    font-size: 0.8em;
+    color: #666;
+}
+
+/* --- User Status Display --- */
+.user-status-display {
+    display: flex;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#loggedInContent, #guestContent {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#logoutBtn, #loginSignupBtn {
+    border: none;
+    background-color: #6c757d;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* --- Map Elements --- */
 .photo-marker {
     width: 40px;
     height: 40px;
@@ -303,4 +300,3 @@ body {
     background-position: center;
     cursor: pointer;
 }
-
