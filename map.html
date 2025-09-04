@@ -9,7 +9,7 @@
 </head>
 <body>
 
-    <!-- NEW: Top Bar Container -->
+    <!-- Top Bar for Community and Donate Buttons -->
     <div class="top-bar-container">
         <button id="communityBtn" class="community-button off">🌎 Community View: OFF</button>
         <a href="https://www.buymeacoffee.com/p1skates" target="_blank" class="donate-button">
@@ -23,7 +23,7 @@
             <h2>Terms of Use</h2>
             <div class="terms-box">
                 <p>Welcome to Garbage Path! By accessing or using our application (the "Service"), you agree to be bound by these Terms of Use.</p>
-                 <p><strong>1. Description of Service:</strong> This Service is for the sole purpose of identifying and documenting refuse, trash, and litter (collectively, "Garbage").</p>
+                <p><strong>1. Description of Service:</strong> This Service is for the sole purpose of identifying and documenting refuse, trash, and litter (collectively, "Garbage").</p>
                 <p><strong>2. Prohibited Content:</strong> You may NOT upload any photograph containing people, illegal activities, or personal information. The focus must be exclusively on Garbage.</p>
                 <p><strong>3. Disclaimer:</strong> This Service is provided "AS IS". Your use of this service is entirely at your own risk. We are not liable for any damages or harm arising from your use of the Service.</p>
             </div>
@@ -58,7 +58,7 @@
     <!-- Map container -->
     <div id='map'></div>
 
-    <!-- Container for all bottom elements -->
+    <!-- Bottom Container for Controls and User Status -->
     <div class="bottom-container">
         <!-- User Status Display -->
         <div id="userStatus" class="user-status-display">
@@ -82,8 +82,11 @@
             <span class="close-btn">&times;</span>
             <h2>Data Management</h2>
             <p>Save your current session to your account, or load a previous one.</p>
-            <button id="saveBtn" class="modal-button">Save Session</button>
-            <button id="loadBtn" class="modal-button">Load Session</button>
+            <button id="saveBtn" class="modal-button">Save Private Session</button>
+            <button id="loadBtn" class="modal-button">Load Private Session</button>
+            <hr>
+            <p>Publish your completed route to the public community map for everyone to see.</p>
+            <button id="publishBtn" class="modal-button publish">🚀 Publish to Community</button>
             <hr>
             <p>Export your pins and route as a GeoJSON file.</p>
             <button id="exportBtn" class="modal-button export">Export as GeoJSON</button>
