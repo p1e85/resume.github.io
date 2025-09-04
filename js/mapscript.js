@@ -65,12 +65,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportBtn = document.getElementById('exportBtn');
     const communityBtn = document.getElementById('communityBtn');
     const publishBtn = document.getElementById('publishBtn');
-    const loginSignupBtn = document.getElementById('loginSignupBtn'); // New button reference
+    const loginSignupBtn = document.getElementById('loginSignupBtn');
 
     // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
         termsModal.style.display = 'none';
-        document.getElementById('userStatus').style.display = 'flex'; // Show status bar
+        document.getElementById('userStatus').style.display = 'flex';
     } else {
         termsModal.style.display = 'flex';
     }
@@ -106,14 +106,14 @@ document.addEventListener('DOMContentLoaded', () => {
     agreeBtn.addEventListener('click', () => {
         termsModal.style.display = 'none';
         sessionStorage.setItem('termsAccepted', 'true');
-        document.getElementById('userStatus').style.display = 'flex'; // Show status bar
+        document.getElementById('userStatus').style.display = 'flex';
         if (!currentUser) {
             authModal.style.display = 'flex';
         }
     });
     
     loginSignupBtn.addEventListener('click', () => {
-        authModal.style.display = 'flex'; // New listener to show modal
+        authModal.style.display = 'flex';
     });
 
     signUpBtn.addEventListener('click', async () => {
@@ -180,9 +180,6 @@ onAuthStateChanged(auth, (user) => {
         currentUser = null;
         if (loggedInContent) loggedInContent.style.display = 'none';
         if (guestContent) guestContent.style.display = 'block';
-        if (authModal && sessionStorage.getItem('termsAccepted') && !sessionStorage.getItem('guestMode')) {
-             // Logic to show modal on initial load could go here if needed, but skip button handles it
-        }
         if (publishBtn) publishBtn.style.display = 'none';
     }
 });
@@ -408,7 +405,7 @@ function clearCommunityRoutes() {
 
 async function publishRoute() {
     if (!currentUser) {
-        return; // Button should be hidden, but as a safeguard
+        return;
     }
     if (routeCoordinates.length < 2 || photoPins.length === 0) {
         alert("You need a tracked route and at least one photo pin to publish.");
@@ -509,6 +506,18 @@ async function loadSession() {
 
 function exportGeoJSON() {
     const dataModal = document.getElementById('dataModal');
+    
+    // Create a clean timestamp for the filename
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const timestamp = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+    const fileName = `garbage_path_data_${timestamp}.geojson`;
+
     const pinFeatures = photoPins.map(pin => ({
         'type': 'Feature',
         'geometry': { 'type': 'Point', 'coordinates': pin.coords },
@@ -530,10 +539,9 @@ function exportGeoJSON() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(geojson, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "garbage_path_data.geojson");
+    downloadAnchorNode.setAttribute("download", fileName); // Use the new dynamic filename
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
     dataModal.style.display = 'none';
 }
-
