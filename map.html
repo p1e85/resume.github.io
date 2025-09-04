@@ -58,7 +58,6 @@
     <!-- Bottom Container -->
     <div class="bottom-container">
         <div id="userStatus" class="user-status-display">
-            <!-- Content changes based on login status -->
             <div id="loggedInContent">
                 <span id="userEmail"></span>
                 <button id="logoutBtn">Log Out</button>
@@ -99,21 +98,17 @@
             <span class="close-btn">&times;</span>
             <h2>Load a Cloud Session</h2>
             <p>Select a previously saved session to load it onto the map.</p>
-            <ul id="sessionList" class="session-list">
-                <!-- Session items will be added here by JavaScript -->
-            </ul>
+            <ul id="sessionList" class="session-list"></ul>
         </div>
     </div>
     
-    <!-- NEW: Modal for Listing LOCALLY Saved Sessions -->
+    <!-- Modal for Listing LOCALLY Saved Sessions -->
     <div id="localSessionsModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
             <h2>Load a Local Session</h2>
             <p>Select a session saved on this browser to load it.</p>
-            <ul id="localSessionList" class="session-list">
-                <!-- Session items will be added here by JavaScript -->
-            </ul>
+            <ul id="localSessionList" class="session-list"></ul>
         </div>
     </div>
 
@@ -123,3 +118,4 @@
 
 </body>
 </html>
+
