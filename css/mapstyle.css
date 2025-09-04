@@ -101,15 +101,20 @@ body {
 
 /* --- User Status Display --- */
 .user-status-display {
-    display: none; /* Hidden by default */
+    display: none; /* Hidden by default until terms are accepted */
     background-color: rgba(255, 255, 255, 0.8);
     padding: 8px 12px;
     border-radius: 8px;
     font-size: 14px;
-    display: flex;
     align-items: center;
     gap: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#loggedInContent {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 #logoutBtn {
@@ -119,6 +124,16 @@ body {
     padding: 5px 10px;
     border-radius: 5px;
     cursor: pointer;
+}
+
+.login-signup-button {
+    border: none;
+    background-color: #007bff;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
 }
 
 /* --- General Modal Styles --- */
@@ -288,3 +303,4 @@ body {
     background-position: center;
     cursor: pointer;
 }
+
