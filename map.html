@@ -9,16 +9,18 @@
 </head>
 <body>
 
-    <!-- Top Bar Container (MODIFIED) -->
+    <!-- Top Bar Container -->
     <div class="top-bar-container">
-        <button id="infoBtn" class="top-bar-button">ℹ️ Info</button> <!-- NEW BUTTON -->
-        <button id="communityBtn" class="community-button off">🌎 Community View: OFF</button>
+        <div class="top-bar-left">
+            <button id="infoBtn" class="top-bar-button">ℹ️ Info</button>
+            <button id="communityBtn" class="community-button off top-bar-button">🌎 Community View: OFF</button>
+        </div>
         <a href="https://www.buymeacoffee.com/p1skates" target="_blank" class="donate-button">
             ☕ Support the Mission
         </a>
     </div>
 
-    <!-- NEW: Info Modal -->
+    <!-- Info Modal -->
     <div id="infoModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -39,8 +41,104 @@
         </div>
     </div>
 
-    <!-- The rest of your HTML file is unchanged -->
-    <!-- ... -->
+    <!-- Terms of Use Modal -->
+    <div id="termsModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Terms of Use</h2>
+            <div class="terms-box">
+                <p>Welcome to Garbage Path! By accessing or using our application (the "Service"), you agree to be bound by these Terms of Use.</p>
+                <p><strong>1. Description of Service:</strong> This Service is for the sole purpose of identifying and documenting refuse, trash, and litter (collectively, "Garbage").</p>
+                <p><strong>2. Prohibited Content:</strong> You may NOT upload any photograph containing people, illegal activities, or personal information. The focus must be exclusively on Garbage.</p>
+                <p><strong>3. Disclaimer:</strong> This Service is provided "AS IS". Your use of this service is entirely at your own risk. We are not liable for any damages or harm arising from your use of the Service.</p>
+            </div>
+            <div class="agreement-section">
+                <input type="checkbox" id="termsCheckbox">
+                <label for="termsCheckbox">I acknowledge and have read the terms of use.</label>
+            </div>
+            <button id="agreeBtn" disabled>I Agree</button>
+        </div>
+    </div>
+    
+    <!-- Authentication Modal -->
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-content auth-modal">
+            <h2>Join Garbage Path</h2>
+            <p>Create an account to save your cleanup routes to the cloud, or continue as a guest.</p>
+            <div class="auth-form">
+                <input type="email" id="emailInput" placeholder="Email">
+                <input type="password" id="passwordInput" placeholder="Password (min. 6 characters)">
+                <button id="signUpBtn">Sign Up</button>
+                <button id="loginBtn">Log In</button>
+            </div>
+            <hr>
+            <button id="skipBtn" class="skip-button">Skip for now</button>
+            <p id="authError" class="error-message"></p>
+        </div>
+    </div>
+    
+    <!-- Map container -->
+    <div id='map'></div>
+
+    <!-- Bottom Container -->
+    <div class="bottom-container">
+        <div id="userStatus" class="user-status-display">
+            <div id="loggedInContent">
+                <span id="userEmail"></span>
+                <button id="logoutBtn">Log Out</button>
+            </div>
+            <div id="guestContent">
+                <button id="loginSignupBtn">Log In / Sign Up</button>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="findMeBtn">📍 Find Me</button>
+            <button id="trackBtn">🛰️ Start Tracking</button>
+            <input type="file" accept="image/*" capture="environment" id="cameraInput" style="display: none;">
+            <button id="pictureBtn">📸 Pin Picture</button>
+            <button id="dataBtn">💾 Data</button>
+        </div>
+    </div>
+
+    <!-- Data Management Modal -->
+    <div id="dataModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Data Management</h2>
+            <p>Save your current session to your account, or load a previous one.</p>
+            <button id="saveBtn" class="modal-button">Save Session</button>
+            <button id="loadBtn" class="modal-button">Load Session</button>
+            <hr>
+            <p>Publish your completed route to the public community map for everyone to see.</p>
+            <button id="publishBtn" class="modal-button publish">🚀 Publish to Community</button>
+            <hr>
+            <p>Export your pins and route as a GeoJSON file.</p>
+            <button id="exportBtn" class="modal-button export">Export as GeoJSON</button>
+        </div>
+    </div>
+    
+    <!-- Modal for Listing CLOUD Saved Sessions -->
+    <div id="sessionsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Load a Cloud Session</h2>
+            <p>Select a previously saved session to load it onto the map.</p>
+            <ul id="sessionList" class="session-list"></ul>
+        </div>
+    </div>
+    
+    <!-- Modal for Listing LOCALLY Saved Sessions -->
+    <div id="localSessionsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Load a Local Session</h2>
+            <p>Select a session saved on this browser to load it.</p>
+            <ul id="localSessionList" class="session-list"></ul>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
+    <script src="js/mapscript.js" type="module"></script>
 
 </body>
 </html>
