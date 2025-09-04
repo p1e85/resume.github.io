@@ -295,3 +295,12 @@ body {
     background-position: center;
     cursor: pointer;
 }
+
+.modal-button.publish {
+    background-color: #ffc107; /* A distinct warning/attention color */
+    color: #000;
+}
+
+.modal-button.export {
+    background-color: #28a745;
+}
