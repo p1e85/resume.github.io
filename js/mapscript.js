@@ -10,8 +10,7 @@ import {
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// --- PASTE YOUR NEW V2 FIREBASE CONFIG HERE ---
-// Make sure this is the config from your V2 project that supports all free tiers
+// --- Garbage Path V2 Firebase Config (UPDATED) ---
 const firebaseConfig = {
   apiKey: "AIzaSyCE1b6VtJjUs0O5YvyLjeslxuHC8UlgJUM",
   authDomain: "garbagepathv2.firebaseapp.com",
@@ -26,7 +25,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 const auth = getAuth();
-const storage = getStorage(); // Initialize Cloud Storage
+const storage = getStorage();
 console.log("Firebase Initialized!");
 
 // --- Global State ---
@@ -265,7 +264,7 @@ async function handlePhoto(event) {
 function addPhotoMarker(pinInfo) {
     const el = document.createElement('div');
     el.className = 'photo-marker';
-    // Use imageURL if it exists (from Firebase), otherwise use the local 'image' data
+    // Use imageURL if it exists (from Firebase), otherwise use the local 'image' data for guest mode
     el.style.backgroundImage = `url(${pinInfo.imageURL || pinInfo.image})`;
 
     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(createPhotoPopupHTML(pinInfo));
@@ -340,27 +339,29 @@ async function fetchAndDisplayCommunityRoutes() {
             });
             communityLayers.push({ id: `community-route-${routeId}`, type: 'layer' });
 
-            routeData.photoPins.forEach(pin => {
-                const el = document.createElement('div');
-                el.className = 'photo-marker';
-                el.style.backgroundImage = `url(${pin.imageURL})`;
-                el.style.borderColor = '#28a745';
+            if (routeData.photoPins) {
+                routeData.photoPins.forEach(pin => {
+                    const el = document.createElement('div');
+                    el.className = 'photo-marker';
+                    el.style.backgroundImage = `url(${pin.imageURL})`;
+                    el.style.borderColor = '#28a745';
 
-                const popup = new mapboxgl.Popup({ offset: 25 })
-                    .setHTML(`
-                        <div>
-                            <img src="${pin.imageURL}" alt="Community photo" style="width:100%; border-radius: 4px;"/>
-                            <p style="margin: 5px 0 0;"><strong>${pin.title}</strong></p>
-                            <small>By: ${routeData.userEmail || 'A user'}</small>
-                        </div>
-                    `);
+                    const popup = new mapboxgl.Popup({ offset: 25 })
+                        .setHTML(`
+                            <div>
+                                <img src="${pin.imageURL}" alt="Community photo" style="width:100%; border-radius: 4px;"/>
+                                <p style="margin: 5px 0 0;"><strong>${pin.title}</strong></p>
+                                <small>By: ${routeData.userEmail || 'A user'}</small>
+                            </div>
+                        `);
 
-                const marker = new mapboxgl.Marker(el)
-                    .setLngLat(pin.coords)
-                    .setPopup(popup)
-                    .addTo(map);
-                communityLayers.push({ id: `community-marker-${pin.id}`, type: 'marker', instance: marker });
-            });
+                    const marker = new mapboxgl.Marker(el)
+                        .setLngLat(pin.coords)
+                        .setPopup(popup)
+                        .addTo(map);
+                    communityLayers.push({ id: `community-marker-${pin.id}`, type: 'marker', instance: marker });
+                });
+            }
         });
     } catch (error) {
         console.error("Error fetching community routes:", error);
@@ -513,3 +514,4 @@ function exportGeoJSON() {
     downloadAnchorNode.remove();
     dataModal.style.display = 'none';
 }
+
