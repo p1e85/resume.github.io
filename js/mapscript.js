@@ -10,7 +10,7 @@ import {
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// --- Garbage Path V2 Firebase Config (UPDATED) ---
+// --- Garbage Path V2 Firebase Config ---
 const firebaseConfig = {
   apiKey: "AIzaSyCE1b6VtJjUs0O5YvyLjeslxuHC8UlgJUM",
   authDomain: "garbagepathv2.firebaseapp.com",
@@ -33,11 +33,11 @@ let currentUser = null;
 let trackingWatcher = null;
 let routeCoordinates = [];
 let photoPins = [];
-let markers = []; // For the user's own session pins
+let markers = [];
 let map;
 let findMeMarker = null;
 let isCommunityViewOn = false;
-let communityLayers = []; // To track community layers/markers for removal
+let communityLayers = [];
 
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -45,14 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Element References ---
     const termsModal = document.getElementById('termsModal');
     const authModal = document.getElementById('authModal');
-    const userStatus = document.getElementById('userStatus');
-    const userEmail = document.getElementById('userEmail');
     const agreeBtn = document.getElementById('agreeBtn');
     const termsCheckbox = document.getElementById('termsCheckbox');
     const signUpBtn = document.getElementById('signUpBtn');
     const loginBtn = document.getElementById('loginBtn');
     const skipBtn = document.getElementById('skipBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
     const emailInput = document.getElementById('emailInput');
     const passwordInput = document.getElementById('passwordInput');
     const authError = document.getElementById('authError');
@@ -68,10 +65,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportBtn = document.getElementById('exportBtn');
     const communityBtn = document.getElementById('communityBtn');
     const publishBtn = document.getElementById('publishBtn');
+    const loginSignupBtn = document.getElementById('loginSignupBtn'); // New button reference
 
     // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
         termsModal.style.display = 'none';
+        document.getElementById('userStatus').style.display = 'flex'; // Show status bar
     } else {
         termsModal.style.display = 'flex';
     }
@@ -81,12 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
     map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [-87.6298, 41.8781], // Chicago, IL
+        center: [-87.6298, 41.8781],
         zoom: 10
     });
 
     map.on('load', () => {
-        // Source for the user's own tracked route
         map.addSource('user-route', {
             'type': 'geojson',
             'data': { 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': [] } }
@@ -108,9 +106,14 @@ document.addEventListener('DOMContentLoaded', () => {
     agreeBtn.addEventListener('click', () => {
         termsModal.style.display = 'none';
         sessionStorage.setItem('termsAccepted', 'true');
+        document.getElementById('userStatus').style.display = 'flex'; // Show status bar
         if (!currentUser) {
             authModal.style.display = 'flex';
         }
+    });
+    
+    loginSignupBtn.addEventListener('click', () => {
+        authModal.style.display = 'flex'; // New listener to show modal
     });
 
     signUpBtn.addEventListener('click', async () => {
@@ -131,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    logoutBtn.addEventListener('click', async () => {
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
         await signOut(auth);
     });
 
@@ -160,25 +163,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- Firebase Auth State Listener ---
 onAuthStateChanged(auth, (user) => {
-    const userStatus = document.getElementById('userStatus');
+    const loggedInContent = document.getElementById('loggedInContent');
+    const guestContent = document.getElementById('guestContent');
     const userEmail = document.getElementById('userEmail');
     const authModal = document.getElementById('authModal');
     const publishBtn = document.getElementById('publishBtn');
 
     if (user) {
         currentUser = user;
-        if(userEmail) userEmail.textContent = `Logged in as: ${user.email}`;
-        if(userStatus) userStatus.style.display = 'flex';
-        if(authModal) authModal.style.display = 'none';
-        if(publishBtn) publishBtn.style.display = 'block';
+        if (userEmail) userEmail.textContent = `Logged in as: ${user.email}`;
+        if (loggedInContent) loggedInContent.style.display = 'flex';
+        if (guestContent) guestContent.style.display = 'none';
+        if (authModal) authModal.style.display = 'none';
+        if (publishBtn) publishBtn.style.display = 'block';
     } else {
         currentUser = null;
-        if(userStatus) userStatus.style.display = 'none';
-        if(userEmail) userEmail.textContent = '';
-        if (authModal && sessionStorage.getItem('termsAccepted')) {
-            authModal.style.display = 'flex';
+        if (loggedInContent) loggedInContent.style.display = 'none';
+        if (guestContent) guestContent.style.display = 'block';
+        if (authModal && sessionStorage.getItem('termsAccepted') && !sessionStorage.getItem('guestMode')) {
+             // Logic to show modal on initial load could go here if needed, but skip button handles it
         }
-        if(publishBtn) publishBtn.style.display = 'none';
+        if (publishBtn) publishBtn.style.display = 'none';
     }
 });
 
@@ -221,18 +226,39 @@ function toggleTracking() {
 }
 
 async function handlePhoto(event) {
-    if (!currentUser) {
-        alert("Please log in to pin photos.");
-        return;
-    }
     const file = event.target.files[0];
     if (!file) return;
 
     const pictureBtn = document.getElementById('pictureBtn');
     const originalButtonText = pictureBtn.innerHTML;
-    pictureBtn.innerHTML = 'Uploading...';
+    pictureBtn.innerHTML = 'Processing...';
     pictureBtn.disabled = true;
 
+    // Guest Mode: Use local data URL
+    if (!currentUser) {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = e => {
+            const imageDataUrl = e.target.result;
+            navigator.geolocation.getCurrentPosition(position => {
+                const coords = [position.coords.longitude, position.coords.latitude];
+                const pinInfo = {
+                    id: `pin-${Date.now()}`,
+                    coords: coords,
+                    image: imageDataUrl, // Local image data
+                    title: 'New Photo'
+                };
+                photoPins.push(pinInfo);
+                addPhotoMarker(pinInfo);
+            }, () => alert("Could not get location."), { enableHighAccuracy: true });
+        };
+        pictureBtn.innerHTML = originalButtonText;
+        pictureBtn.disabled = false;
+        event.target.value = '';
+        return;
+    }
+    
+    // Logged-in User: Upload to Firebase
     try {
         const timestamp = Date.now();
         const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}-${file.name}`);
@@ -244,7 +270,7 @@ async function handlePhoto(event) {
             const pinInfo = {
                 id: `pin-${timestamp}`,
                 coords: coords,
-                imageURL: downloadURL, // Store the URL, not the data
+                imageURL: downloadURL,
                 title: 'New Photo'
             };
             photoPins.push(pinInfo);
@@ -264,7 +290,6 @@ async function handlePhoto(event) {
 function addPhotoMarker(pinInfo) {
     const el = document.createElement('div');
     el.className = 'photo-marker';
-    // Use imageURL if it exists (from Firebase), otherwise use the local 'image' data for guest mode
     el.style.backgroundImage = `url(${pinInfo.imageURL || pinInfo.image})`;
 
     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(createPhotoPopupHTML(pinInfo));
@@ -383,8 +408,7 @@ function clearCommunityRoutes() {
 
 async function publishRoute() {
     if (!currentUser) {
-        alert("You must be logged in to publish a route.");
-        return;
+        return; // Button should be hidden, but as a safeguard
     }
     if (routeCoordinates.length < 2 || photoPins.length === 0) {
         alert("You need a tracked route and at least one photo pin to publish.");
@@ -402,7 +426,6 @@ async function publishRoute() {
         });
         alert("Success! Your route has been published to the community map.");
         
-        // Clear the user's current session data after publishing
         routeCoordinates = [];
         photoPins = [];
         markers.forEach(m => m.remove());
@@ -442,7 +465,6 @@ async function saveSession() {
 
 async function loadSession() {
     const dataModal = document.getElementById('dataModal');
-    // Clear any existing map data before loading
     markers.forEach(marker => marker.remove());
     markers = [];
     photoPins = [];
