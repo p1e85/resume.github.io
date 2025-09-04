@@ -1,6 +1,6 @@
 // --- Firebase SDK Setup ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import {
     getAuth,
@@ -59,13 +59,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const cameraInput = document.getElementById('cameraInput');
     const dataBtn = document.getElementById('dataBtn');
     const dataModal = document.getElementById('dataModal');
-    const closeBtn = dataModal.querySelector('.close-btn');
+    const closeDataModalBtn = dataModal.querySelector('.close-btn');
     const saveBtn = document.getElementById('saveBtn');
     const loadBtn = document.getElementById('loadBtn');
     const exportBtn = document.getElementById('exportBtn');
     const communityBtn = document.getElementById('communityBtn');
     const publishBtn = document.getElementById('publishBtn');
     const loginSignupBtn = document.getElementById('loginSignupBtn');
+    const sessionsModal = document.getElementById('sessionsModal');
+    const sessionList = document.getElementById('sessionList');
+    const sessionsModalCloseBtn = sessionsModal.querySelector('.close-btn');
+    const localSessionsModal = document.getElementById('localSessionsModal');
+    const localSessionsModalCloseBtn = localSessionsModal.querySelector('.close-btn');
 
     // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
@@ -148,12 +153,19 @@ document.addEventListener('DOMContentLoaded', () => {
     cameraInput.addEventListener('change', handlePhoto);
 
     dataBtn.addEventListener('click', () => dataModal.style.display = 'flex');
-    closeBtn.addEventListener('click', () => dataModal.style.display = 'none');
+    closeDataModalBtn.addEventListener('click', () => dataModal.style.display = 'none');
+    
+    sessionsModalCloseBtn.addEventListener('click', () => sessionsModal.style.display = 'none');
+    localSessionsModalCloseBtn.addEventListener('click', () => localSessionsModal.style.display = 'none');
+
     window.addEventListener('click', (event) => {
-        if (event.target == dataModal) {
+        if (event.target == dataModal || event.target == sessionsModal || event.target == localSessionsModal) {
             dataModal.style.display = 'none';
+            sessionsModal.style.display = 'none';
+            localSessionsModal.style.display = 'none';
         }
     });
+
     saveBtn.addEventListener('click', saveSession);
     loadBtn.addEventListener('click', loadSession);
     exportBtn.addEventListener('click', exportGeoJSON);
@@ -188,14 +200,10 @@ onAuthStateChanged(auth, (user) => {
 // --- Functions ---
 
 function findMe() {
-    if (findMeMarker) {
-        findMeMarker.remove();
-    }
+    if (findMeMarker) findMeMarker.remove();
     navigator.geolocation.getCurrentPosition(position => {
         const { latitude, longitude } = position.coords;
-        findMeMarker = new mapboxgl.Marker()
-            .setLngLat([longitude, latitude])
-            .addTo(map);
+        findMeMarker = new mapboxgl.Marker().setLngLat([longitude, latitude]).addTo(map);
         map.flyTo({ center: [longitude, latitude], zoom: 15 });
     }, () => alert("Could not get your location."), { enableHighAccuracy: true });
 }
@@ -231,23 +239,20 @@ async function handlePhoto(event) {
     pictureBtn.innerHTML = 'Processing...';
     pictureBtn.disabled = true;
 
-    // Guest Mode: Use local data URL
-    if (!currentUser) {
+    if (!currentUser) { // Guest Mode: Use local data URL
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = e => {
-            const imageDataUrl = e.target.result;
             navigator.geolocation.getCurrentPosition(position => {
-                const coords = [position.coords.longitude, position.coords.latitude];
                 const pinInfo = {
                     id: `pin-${Date.now()}`,
-                    coords: coords,
-                    image: imageDataUrl, // Local image data
+                    coords: [position.coords.longitude, position.coords.latitude],
+                    image: e.target.result,
                     title: 'New Photo'
                 };
                 photoPins.push(pinInfo);
                 addPhotoMarker(pinInfo);
-            }, () => alert("Could not get location."), { enableHighAccuracy: true });
+            }, () => alert("Could not get location."));
         };
         pictureBtn.innerHTML = originalButtonText;
         pictureBtn.disabled = false;
@@ -255,25 +260,21 @@ async function handlePhoto(event) {
         return;
     }
     
-    // Logged-in User: Upload to Firebase
-    try {
+    try { // Logged-in User: Upload to Firebase
         const timestamp = Date.now();
         const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}-${file.name}`);
         const snapshot = await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(snapshot.ref);
-
         navigator.geolocation.getCurrentPosition(position => {
-            const coords = [position.coords.longitude, position.coords.latitude];
             const pinInfo = {
                 id: `pin-${timestamp}`,
-                coords: coords,
+                coords: [position.coords.longitude, position.coords.latitude],
                 imageURL: downloadURL,
                 title: 'New Photo'
             };
             photoPins.push(pinInfo);
             addPhotoMarker(pinInfo);
-        }, () => alert("Could not get location."), { enableHighAccuracy: true });
-
+        }, () => alert("Could not get location."));
     } catch (error) {
         console.error("Error uploading photo:", error);
         alert("Photo upload failed.");
@@ -288,20 +289,16 @@ function addPhotoMarker(pinInfo) {
     const el = document.createElement('div');
     el.className = 'photo-marker';
     el.style.backgroundImage = `url(${pinInfo.imageURL || pinInfo.image})`;
-
     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(createPhotoPopupHTML(pinInfo));
     const marker = new mapboxgl.Marker(el).setLngLat(pinInfo.coords).setPopup(popup).addTo(map);
     markers.push(marker);
-
     popup.on('open', () => {
         document.getElementById(`save-${pinInfo.id}`).addEventListener('click', () => {
-            const titleInput = document.getElementById(`title-${pinInfo.id}`);
             const pin = photoPins.find(p => p.id === pinInfo.id);
-            if (pin) pin.title = titleInput.value;
+            if (pin) pin.title = document.getElementById(`title-${pinInfo.id}`).value;
             popup.remove();
             alert("Title updated! Remember to save your session.");
         });
-
         document.getElementById(`delete-${pinInfo.id}`).addEventListener('click', () => {
             if (confirm("Are you sure you want to delete this pin?")) {
                 photoPins = photoPins.filter(p => p.id !== pinInfo.id);
@@ -313,24 +310,13 @@ function addPhotoMarker(pinInfo) {
 }
 
 function createPhotoPopupHTML(pinInfo) {
-    return `
-        <div>
-            <img src="${pinInfo.imageURL || pinInfo.image}" alt="User photo" style="width:100%; height:auto; border-radius: 4px;"/>
-            <input type="text" id="title-${pinInfo.id}" value="${pinInfo.title}" placeholder="Enter a title" style="width: 95%; margin-top: 10px;">
-            <div style="display: flex; justify-content: space-between; margin-top: 5px;">
-                <button id="save-${pinInfo.id}">Save Title</button>
-                <button id="delete-${pinInfo.id}" style="background-color: #dc3545;">Delete</button>
-            </div>
-        </div>
-    `;
+    return `<div><img src="${pinInfo.imageURL || pinInfo.image}" alt="User photo" style="width:100%; height:auto; border-radius: 4px;"/><input type="text" id="title-${pinInfo.id}" value="${pinInfo.title}" placeholder="Enter a title" style="width: 95%; margin-top: 10px;"><div style="display: flex; justify-content: space-between; margin-top: 5px;"><button id="save-${pinInfo.id}">Save Title</button><button id="delete-${pinInfo.id}" style="background-color: #dc3545;">Delete</button></div></div>`;
 }
 
-// --- Community Feature Functions ---
-
+// --- Community Functions ---
 async function toggleCommunityView() {
     const communityBtn = document.getElementById('communityBtn');
     isCommunityViewOn = !isCommunityViewOn;
-
     if (isCommunityViewOn) {
         communityBtn.textContent = '🌎 Community View: ON';
         communityBtn.classList.remove('off');
@@ -348,39 +334,17 @@ async function fetchAndDisplayCommunityRoutes() {
         querySnapshot.forEach(doc => {
             const routeData = doc.data();
             const routeId = doc.id;
-
-            map.addSource(`community-route-${routeId}`, {
-                type: 'geojson',
-                data: { type: 'Feature', geometry: { type: 'LineString', coordinates: routeData.routeCoordinates } }
-            });
-            map.addLayer({
-                id: `community-route-${routeId}`,
-                type: 'line',
-                source: `community-route-${routeId}`,
-                paint: { 'line-color': '#28a745', 'line-width': 4, 'line-opacity': 0.7 }
-            });
+            map.addSource(`community-route-${routeId}`, { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: routeData.routeCoordinates } } });
+            map.addLayer({ id: `community-route-${routeId}`, type: 'line', source: `community-route-${routeId}`, paint: { 'line-color': '#28a745', 'line-width': 4, 'line-opacity': 0.7 } });
             communityLayers.push({ id: `community-route-${routeId}`, type: 'layer' });
-
             if (routeData.photoPins) {
                 routeData.photoPins.forEach(pin => {
                     const el = document.createElement('div');
                     el.className = 'photo-marker';
                     el.style.backgroundImage = `url(${pin.imageURL})`;
                     el.style.borderColor = '#28a745';
-
-                    const popup = new mapboxgl.Popup({ offset: 25 })
-                        .setHTML(`
-                            <div>
-                                <img src="${pin.imageURL}" alt="Community photo" style="width:100%; border-radius: 4px;"/>
-                                <p style="margin: 5px 0 0;"><strong>${pin.title}</strong></p>
-                                <small>By: ${routeData.userEmail || 'A user'}</small>
-                            </div>
-                        `);
-
-                    const marker = new mapboxgl.Marker(el)
-                        .setLngLat(pin.coords)
-                        .setPopup(popup)
-                        .addTo(map);
+                    const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<div><img src="${pin.imageURL}" alt="Community photo" style="width:100%; border-radius: 4px;"/><p style="margin: 5px 0 0;"><strong>${pin.title}</strong></p><small>By: ${routeData.userEmail || 'A user'}</small></div>`);
+                    const marker = new mapboxgl.Marker(el).setLngLat(pin.coords).setPopup(popup).addTo(map);
                     communityLayers.push({ id: `community-marker-${pin.id}`, type: 'marker', instance: marker });
                 });
             }
@@ -393,9 +357,8 @@ async function fetchAndDisplayCommunityRoutes() {
 
 function clearCommunityRoutes() {
     communityLayers.forEach(layer => {
-        if (layer.type === 'marker') {
-            layer.instance.remove();
-        } else if (layer.type === 'layer') {
+        if (layer.type === 'marker') layer.instance.remove();
+        else if (layer.type === 'layer') {
             if (map.getLayer(layer.id)) map.removeLayer(layer.id);
             if (map.getSource(layer.id)) map.removeSource(layer.id);
         }
@@ -404,144 +367,156 @@ function clearCommunityRoutes() {
 }
 
 async function publishRoute() {
-    if (!currentUser) {
-        return;
-    }
+    if (!currentUser) return;
     if (routeCoordinates.length < 2 || photoPins.length === 0) {
         alert("You need a tracked route and at least one photo pin to publish.");
         return;
     }
-
-    const dataModal = document.getElementById('dataModal');
     try {
-        await addDoc(collection(db, "publishedRoutes"), {
-            userId: currentUser.uid,
-            userEmail: currentUser.email,
-            timestamp: new Date(),
-            routeCoordinates: routeCoordinates,
-            photoPins: photoPins
-        });
-        alert("Success! Your route has been published to the community map.");
-        
-        routeCoordinates = [];
-        photoPins = [];
-        markers.forEach(m => m.remove());
-        markers = [];
-        if (map.getSource('user-route')) {
-            map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
-        }
-        dataModal.style.display = 'none';
-
+        await addDoc(collection(db, "publishedRoutes"), { userId: currentUser.uid, userEmail: currentUser.email, timestamp: new Date(), routeCoordinates: routeCoordinates, photoPins: photoPins });
+        alert("Success! Your route has been published.");
+        clearCurrentSession();
+        document.getElementById('dataModal').style.display = 'none';
     } catch (error) {
         console.error("Error publishing route:", error);
         alert("There was an error publishing your route.");
     }
 }
 
-// --- Data Management (Private Sessions) ---
-
+// --- Data Management Functions ---
 async function saveSession() {
     const dataModal = document.getElementById('dataModal');
-    if (currentUser) {
+    if (!currentUser) { // Guest Logic
+        const sessionName = prompt("Name this local session:", `Cleanup on ${new Date().toLocaleDateString()}`);
+        if (sessionName) {
+            const guestSessions = JSON.parse(localStorage.getItem('guestSessions')) || [];
+            guestSessions.push({ sessionName, timestamp: new Date().toISOString(), pins: photoPins, route: routeCoordinates });
+            localStorage.setItem('guestSessions', JSON.stringify(guestSessions));
+            alert(`Session "${sessionName}" saved locally.`);
+            dataModal.style.display = 'none';
+        }
+        return;
+    }
+    // Logged-in User Logic
+    const sessionName = prompt("Name this cloud session:", `Cleanup on ${new Date().toLocaleDateString()}`);
+    if (sessionName) {
         try {
-            const userDocRef = doc(db, "users", currentUser.uid);
-            const sessionData = { pins: photoPins, route: routeCoordinates };
-            await setDoc(userDocRef, { savedSession: sessionData });
-            alert("Private session saved to your account!");
+            await addDoc(collection(db, "users", currentUser.uid, "privateSessions"), { sessionName, timestamp: new Date(), pins: photoPins, route: routeCoordinates });
+            alert(`Session "${sessionName}" saved to your account!`);
+            dataModal.style.display = 'none';
         } catch (error) {
-            console.error("Error saving to Firestore:", error);
+            console.error("Error saving session to Firestore:", error);
             alert("Could not save session to your account.");
         }
-    } else {
-        const sessionData = { pins: photoPins, route: routeCoordinates };
-        localStorage.setItem('mapSessionData', JSON.stringify(sessionData));
-        alert("Session saved locally to this browser.");
     }
-    dataModal.style.display = 'none';
 }
 
 async function loadSession() {
-    const dataModal = document.getElementById('dataModal');
+    if (!currentUser) { // Guest Logic
+        populateLocalSessionList();
+        document.getElementById('localSessionsModal').style.display = 'flex';
+        return;
+    }
+    // Logged-in User Logic
+    await populateSessionList();
+    document.getElementById('sessionsModal').style.display = 'flex';
+}
+
+function populateLocalSessionList() {
+    const localSessionList = document.getElementById('localSessionList');
+    const guestSessions = JSON.parse(localStorage.getItem('guestSessions')) || [];
+    localSessionList.innerHTML = '';
+    if (guestSessions.length === 0) {
+        localSessionList.innerHTML = '<li>No locally saved sessions found.</li>';
+        return;
+    }
+    guestSessions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach((sessionData, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${sessionData.sessionName}</span><span class="session-date">${new Date(sessionData.timestamp).toLocaleDateString()}</span>`;
+        li.addEventListener('click', () => loadSpecificLocalSession(index));
+        localSessionList.appendChild(li);
+    });
+}
+
+function loadSpecificLocalSession(sessionIndex) {
+    const guestSessions = JSON.parse(localStorage.getItem('guestSessions')) || [];
+    const sessionData = guestSessions[sessionIndex];
+    if (sessionData) {
+        clearCurrentSession();
+        displaySessionData(sessionData);
+        alert(`Local session "${sessionData.sessionName}" loaded!`);
+        document.getElementById('localSessionsModal').style.display = 'none';
+    }
+}
+
+async function populateSessionList() {
+    const sessionList = document.getElementById('sessionList');
+    sessionList.innerHTML = '<li>Loading...</li>';
+    try {
+        const q = query(collection(db, "users", currentUser.uid, "privateSessions"), orderBy("timestamp", "desc"));
+        const querySnapshot = await getDocs(q);
+        sessionList.innerHTML = '';
+        if (querySnapshot.empty) {
+            sessionList.innerHTML = '<li>No saved cloud sessions found.</li>';
+            return;
+        }
+        querySnapshot.forEach(doc => {
+            const sessionData = doc.data();
+            const li = document.createElement('li');
+            li.innerHTML = `<span>${sessionData.sessionName}</span><span class="session-date">${new Date(sessionData.timestamp.seconds * 1000).toLocaleDateString()}</span>`;
+            li.addEventListener('click', () => loadSpecificSession(doc.id));
+            sessionList.appendChild(li);
+        });
+    } catch (error) {
+        console.error("Error fetching sessions:", error);
+        sessionList.innerHTML = '<li>Could not load sessions.</li>';
+    }
+}
+
+async function loadSpecificSession(sessionId) {
+    try {
+        const docSnap = await getDoc(doc(db, "users", currentUser.uid, "privateSessions", sessionId));
+        if (docSnap.exists()) {
+            clearCurrentSession();
+            const sessionData = docSnap.data();
+            displaySessionData(sessionData);
+            alert(`Session "${sessionData.sessionName}" loaded!`);
+            document.getElementById('sessionsModal').style.display = 'none';
+        }
+    } catch (error) {
+        console.error("Error loading specific session:", error);
+        alert("Failed to load the session.");
+    }
+}
+
+function clearCurrentSession() {
     markers.forEach(marker => marker.remove());
     markers = [];
     photoPins = [];
     routeCoordinates = [];
+    if(map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
+}
 
-    let savedData = null;
-    if (currentUser) {
-        try {
-            const userDocRef = doc(db, "users", currentUser.uid);
-            const docSnap = await getDoc(userDocRef);
-            if (docSnap.exists() && docSnap.data().savedSession) {
-                savedData = docSnap.data().savedSession;
-                alert("Private session loaded from your account!");
-            } else {
-                alert("No saved private session found in your account.");
-            }
-        } catch (error) {
-            console.error("Error loading from Firestore:", error);
-            alert("Could not load session from your account.");
-        }
-    } else {
-        const localData = JSON.parse(localStorage.getItem('mapSessionData'));
-        if (localData) {
-            savedData = localData;
-            alert("Local session loaded.");
-        } else {
-            alert("No local session found.");
-        }
-    }
-
-    if (savedData) {
-        photoPins = savedData.pins || [];
-        routeCoordinates = savedData.route || [];
-    }
-    
+function displaySessionData(data) {
+    photoPins = data.pins || [];
+    routeCoordinates = data.route || [];
     photoPins.forEach(pin => addPhotoMarker(pin));
-    if(map.getSource('user-route')) {
-        map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
-    }
-    dataModal.style.display = 'none';
+    if(map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
 }
 
 function exportGeoJSON() {
-    const dataModal = document.getElementById('dataModal');
-    
-    // Create a clean timestamp for the filename
     const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    const timestamp = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+    const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
     const fileName = `garbage_path_data_${timestamp}.geojson`;
-
-    const pinFeatures = photoPins.map(pin => ({
-        'type': 'Feature',
-        'geometry': { 'type': 'Point', 'coordinates': pin.coords },
-        'properties': {
-            'title': pin.title,
-            'image_url': pin.imageURL || 'local_data'
-        }
-    }));
-    const routeFeature = {
-        'type': 'Feature',
-        'geometry': { 'type': 'LineString', 'coordinates': routeCoordinates },
-        'properties': {}
-    };
-    const geojson = {
-        'type': 'FeatureCollection',
-        'features': [...pinFeatures, routeFeature]
-    };
-
+    const pinFeatures = photoPins.map(pin => ({ type: 'Feature', geometry: { type: 'Point', coordinates: pin.coords }, properties: { title: pin.title, image_url: pin.imageURL || 'local_data' } }));
+    const routeFeature = { type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates }, properties: {} };
+    const geojson = { type: 'FeatureCollection', features: [...pinFeatures, routeFeature] };
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(geojson, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", fileName); // Use the new dynamic filename
+    downloadAnchorNode.setAttribute("download", fileName);
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
-    dataModal.style.display = 'none';
+    document.getElementById('dataModal').style.display = 'none';
 }
