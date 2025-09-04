@@ -13,12 +13,13 @@ import {
 // --- PASTE YOUR NEW V2 FIREBASE CONFIG HERE ---
 // Make sure this is the config from your V2 project that supports all free tiers
 const firebaseConfig = {
-  apiKey: "YOUR_V2_API_KEY",
-  authDomain: "YOUR_V2_AUTH_DOMAIN",
-  projectId: "YOUR_V2_PROJECT_ID",
-  storageBucket: "YOUR_V2_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_V2_SENDER_ID",
-  appId: "YOUR_V2_APP_ID"
+  apiKey: "AIzaSyCE1b6VtJjUs0O5YvyLjeslxuHC8UlgJUM",
+  authDomain: "garbagepathv2.firebaseapp.com",
+  projectId: "garbagepathv2",
+  storageBucket: "garbagepathv2.firebasestorage.app",
+  messagingSenderId: "505856089619",
+  appId: "1:505856089619:web:682f58d02be4295be4a9e6",
+  measurementId: "G-SM46WXV0CN"
 };
 
 // Initialize Firebase
