@@ -62,8 +62,14 @@
     <div class="bottom-container">
         <!-- User Status Display -->
         <div id="userStatus" class="user-status-display">
-            <span id="userEmail"></span>
-            <button id="logoutBtn">Log Out</button>
+            <!-- Content changes based on login state -->
+            <div id="loggedInContent">
+                <span id="userEmail"></span>
+                <button id="logoutBtn">Log Out</button>
+            </div>
+            <div id="guestContent">
+                <button id="loginSignupBtn" class="login-signup-button">Log In / Sign Up</button>
+            </div>
         </div>
 
         <!-- Main UI controls -->
@@ -99,3 +105,4 @@
 
 </body>
 </html>
+
