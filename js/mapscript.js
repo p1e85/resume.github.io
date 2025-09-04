@@ -1,6 +1,6 @@
 // --- Firebase SDK Setup ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import {
     getAuth,
@@ -70,15 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const sessionsModalCloseBtn = sessionsModal.querySelector('.close-btn');
     const localSessionsModal = document.getElementById('localSessionsModal');
     const localSessionsModalCloseBtn = localSessionsModal.querySelector('.close-btn');
-    const userStatus = document.getElementById('userStatus');
-    const loggedInContent = document.getElementById('loggedInContent');
-    const guestContent = document.getElementById('guestContent');
-    const userEmail = document.getElementById('userEmail');
+    const infoBtn = document.getElementById('infoBtn');
+    const infoModal = document.getElementById('infoModal');
+    const infoModalCloseBtn = infoModal.querySelector('.close-btn');
 
     // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
         termsModal.style.display = 'none';
-        userStatus.style.display = 'flex';
+        document.getElementById('userStatus').style.display = 'flex';
     } else {
         termsModal.style.display = 'flex';
     }
@@ -106,24 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Firebase Auth State Listener (MOVED INSIDE) ---
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            currentUser = user;
-            userEmail.textContent = `Logged in as: ${user.email}`;
-            loggedInContent.style.display = 'flex';
-            guestContent.style.display = 'none';
-            authModal.style.display = 'none';
-            publishBtn.style.display = 'block';
-        } else {
-            currentUser = null;
-            loggedInContent.style.display = 'none';
-            guestContent.style.display = 'block';
-            publishBtn.style.display = 'none';
-        }
-    });
-
     // --- Event Listeners ---
+    infoBtn.addEventListener('click', () => infoModal.style.display = 'flex');
+    infoModalCloseBtn.addEventListener('click', () => infoModal.style.display = 'none');
+
     termsCheckbox.addEventListener('change', () => {
         agreeBtn.disabled = !termsCheckbox.checked;
     });
@@ -131,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     agreeBtn.addEventListener('click', () => {
         termsModal.style.display = 'none';
         sessionStorage.setItem('termsAccepted', 'true');
-        userStatus.style.display = 'flex';
+        document.getElementById('userStatus').style.display = 'flex';
         if (!currentUser) {
             authModal.style.display = 'flex';
         }
@@ -179,10 +164,11 @@ document.addEventListener('DOMContentLoaded', () => {
     localSessionsModalCloseBtn.addEventListener('click', () => localSessionsModal.style.display = 'none');
 
     window.addEventListener('click', (event) => {
-        if (event.target == dataModal || event.target == sessionsModal || event.target == localSessionsModal) {
+        if (event.target == dataModal || event.target == sessionsModal || event.target == localSessionsModal || event.target == infoModal) {
             dataModal.style.display = 'none';
             sessionsModal.style.display = 'none';
             localSessionsModal.style.display = 'none';
+            infoModal.style.display = 'none';
         }
     });
 
@@ -193,7 +179,32 @@ document.addEventListener('DOMContentLoaded', () => {
     publishBtn.addEventListener('click', publishRoute);
 });
 
+// --- Firebase Auth State Listener ---
+onAuthStateChanged(auth, (user) => {
+    const loggedInContent = document.getElementById('loggedInContent');
+    const guestContent = document.getElementById('guestContent');
+    const userEmail = document.getElementById('userEmail');
+    const authModal = document.getElementById('authModal');
+    const publishBtn = document.getElementById('publishBtn');
+
+    if (user) {
+        currentUser = user;
+        if (userEmail) userEmail.textContent = `Logged in as: ${user.email}`;
+        if (loggedInContent) loggedInContent.style.display = 'flex';
+        if (guestContent) guestContent.style.display = 'none';
+        if (authModal) authModal.style.display = 'none';
+        if (publishBtn) publishBtn.style.display = 'block';
+    } else {
+        currentUser = null;
+        if (loggedInContent) loggedInContent.style.display = 'none';
+        if (guestContent) guestContent.style.display = 'block';
+        if (publishBtn) publishBtn.style.display = 'none';
+    }
+});
+
+
 // --- Functions ---
+
 function findMe() {
     if (findMeMarker) findMeMarker.remove();
     navigator.geolocation.getCurrentPosition(position => {
@@ -234,7 +245,7 @@ async function handlePhoto(event) {
     pictureBtn.innerHTML = 'Processing...';
     pictureBtn.disabled = true;
 
-    if (!currentUser) { // Guest Mode
+    if (!currentUser) { // Guest Mode: Use local data URL
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = e => {
@@ -255,7 +266,7 @@ async function handlePhoto(event) {
         return;
     }
     
-    try { // Logged-in User
+    try { // Logged-in User: Upload to Firebase
         const timestamp = Date.now();
         const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}-${file.name}`);
         const snapshot = await uploadBytes(storageRef, file);
@@ -329,15 +340,9 @@ async function fetchAndDisplayCommunityRoutes() {
         querySnapshot.forEach(doc => {
             const routeData = doc.data();
             const routeId = doc.id;
-            
-            // DEFENSIVE CHECK: Ensure routeCoordinates exists and is not empty
-            if (routeData.routeCoordinates && routeData.routeCoordinates.length > 0) {
-                const originalCoords = routeData.routeCoordinates.map(coord => [coord.lng, coord.lat]);
-                map.addSource(`community-route-${routeId}`, { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: originalCoords } } });
-                map.addLayer({ id: `community-route-${routeId}`, type: 'line', source: `community-route-${routeId}`, paint: { 'line-color': '#28a745', 'line-width': 4, 'line-opacity': 0.7 } });
-                communityLayers.push({ id: `community-route-${routeId}`, type: 'layer' });
-            }
-            
+            map.addSource(`community-route-${routeId}`, { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: routeData.routeCoordinates } } });
+            map.addLayer({ id: `community-route-${routeId}`, type: 'line', source: `community-route-${routeId}`, paint: { 'line-color': '#28a745', 'line-width': 4, 'line-opacity': 0.7 } });
+            communityLayers.push({ id: `community-route-${routeId}`, type: 'layer' });
             if (routeData.photoPins) {
                 routeData.photoPins.forEach(pin => {
                     const el = document.createElement('div');
@@ -373,9 +378,8 @@ async function publishRoute() {
         alert("You need a tracked route and at least one photo pin to publish.");
         return;
     }
-    const transformedCoords = routeCoordinates.map(coord => ({ lng: coord[0], lat: coord[1] }));
     try {
-        await addDoc(collection(db, "publishedRoutes"), { userId: currentUser.uid, userEmail: currentUser.email, timestamp: new Date(), routeCoordinates: transformedCoords, photoPins: photoPins });
+        await addDoc(collection(db, "publishedRoutes"), { userId: currentUser.uid, userEmail: currentUser.email, timestamp: new Date(), routeCoordinates: routeCoordinates, photoPins: photoPins });
         alert("Success! Your route has been published.");
         clearCurrentSession();
         document.getElementById('dataModal').style.display = 'none';
@@ -403,8 +407,7 @@ async function saveSession() {
     const sessionName = prompt("Name this cloud session:", `Cleanup on ${new Date().toLocaleDateString()}`);
     if (sessionName) {
         try {
-            const transformedCoords = routeCoordinates.map(coord => ({ lng: coord[0], lat: coord[1] }));
-            await addDoc(collection(db, "users", currentUser.uid, "privateSessions"), { sessionName, timestamp: new Date(), pins: photoPins, route: transformedCoords });
+            await addDoc(collection(db, "users", currentUser.uid, "privateSessions"), { sessionName, timestamp: new Date(), pins: photoPins, route: routeCoordinates });
             alert(`Session "${sessionName}" saved to your account!`);
             dataModal.style.display = 'none';
         } catch (error) {
@@ -501,13 +504,8 @@ function clearCurrentSession() {
 }
 
 function displaySessionData(data) {
-    if (data.route && data.route[0] && typeof data.route[0].lat !== 'undefined') {
-        routeCoordinates = data.route.map(coord => [coord.lng, coord.lat]);
-    } else {
-        routeCoordinates = data.route || [];
-    }
     photoPins = data.pins || [];
-    
+    routeCoordinates = data.route || [];
     photoPins.forEach(pin => addPhotoMarker(pin));
     if(map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
 }
@@ -528,4 +526,3 @@ function exportGeoJSON() {
     downloadAnchorNode.remove();
     document.getElementById('dataModal').style.display = 'none';
 }
-
