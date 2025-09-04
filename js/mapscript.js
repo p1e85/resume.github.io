@@ -1,6 +1,6 @@
 // --- Firebase SDK Setup ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import {
     getAuth,
@@ -329,10 +329,15 @@ async function fetchAndDisplayCommunityRoutes() {
         querySnapshot.forEach(doc => {
             const routeData = doc.data();
             const routeId = doc.id;
-            const originalCoords = routeData.routeCoordinates.map(coord => [coord.lng, coord.lat]);
-            map.addSource(`community-route-${routeId}`, { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: originalCoords } } });
-            map.addLayer({ id: `community-route-${routeId}`, type: 'line', source: `community-route-${routeId}`, paint: { 'line-color': '#28a745', 'line-width': 4, 'line-opacity': 0.7 } });
-            communityLayers.push({ id: `community-route-${routeId}`, type: 'layer' });
+            
+            // DEFENSIVE CHECK: Ensure routeCoordinates exists and is not empty
+            if (routeData.routeCoordinates && routeData.routeCoordinates.length > 0) {
+                const originalCoords = routeData.routeCoordinates.map(coord => [coord.lng, coord.lat]);
+                map.addSource(`community-route-${routeId}`, { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: originalCoords } } });
+                map.addLayer({ id: `community-route-${routeId}`, type: 'line', source: `community-route-${routeId}`, paint: { 'line-color': '#28a745', 'line-width': 4, 'line-opacity': 0.7 } });
+                communityLayers.push({ id: `community-route-${routeId}`, type: 'layer' });
+            }
+            
             if (routeData.photoPins) {
                 routeData.photoPins.forEach(pin => {
                     const el = document.createElement('div');
@@ -496,8 +501,7 @@ function clearCurrentSession() {
 }
 
 function displaySessionData(data) {
-    // FIX for loading data from Firestore
-    if (data.route && typeof data.route[0].lat !== 'undefined') {
+    if (data.route && data.route[0] && typeof data.route[0].lat !== 'undefined') {
         routeCoordinates = data.route.map(coord => [coord.lng, coord.lat]);
     } else {
         routeCoordinates = data.route || [];
