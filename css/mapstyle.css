@@ -15,12 +15,43 @@ body {
     height: 100%;
 }
 
-/* --- Top-Right Donate Button --- */
-.donate-button {
+/* --- NEW: Top Bar Container --- */
+.top-bar-container {
     position: absolute;
     top: 15px;
+    left: 15px;
     right: 15px;
     z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* --- Community Button --- */
+.community-button {
+    flex-grow: 1; /* Allows the button to fill available space */
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    background-color: #28a745; /* Green for "ON" state */
+    color: white;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.community-button.off {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #333;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+/* --- Top-Right Donate Button (MODIFIED) --- */
+.donate-button {
+    /* REMOVED absolute positioning */
     background-color: rgba(255, 255, 255, 0.2);
     color: #333;
     padding: 8px 12px;
@@ -31,6 +62,7 @@ body {
     -webkit-backdrop-filter: blur(5px);
     border: 1px solid rgba(255, 255, 255, 0.3);
     transition: background-color 0.3s;
+    white-space: nowrap; /* Prevents text from wrapping */
 }
 .donate-button:hover {
     background-color: rgba(255, 255, 255, 0.4);
@@ -263,4 +295,3 @@ body {
     background-position: center;
     cursor: pointer;
 }
-
