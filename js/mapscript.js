@@ -42,16 +42,12 @@ let isSignUpMode = true;
 
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-
-    // --- Element References ---
+    // A lot of element references are needed here, let's keep them inside
     const termsModal = document.getElementById('termsModal');
     const authModal = document.getElementById('authModal');
     const agreeBtn = document.getElementById('agreeBtn');
     const termsCheckbox = document.getElementById('termsCheckbox');
     const skipBtn = document.getElementById('skipBtn');
-    const emailInput = document.getElementById('emailInput');
-    const passwordInput = document.getElementById('passwordInput');
-    const authError = document.getElementById('authError');
     const findMeBtn = document.getElementById('findMeBtn');
     const trackBtn = document.getElementById('trackBtn');
     const pictureBtn = document.getElementById('pictureBtn');
@@ -87,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [-87.6298, 41.8781], // Chicago, IL
+        center: [-87.6298, 41.8781],
         zoom: 10
     });
 
@@ -108,64 +104,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Event Listeners ---
     infoBtn.addEventListener('click', () => infoModal.style.display = 'flex');
     infoModalCloseBtn.addEventListener('click', () => infoModal.style.display = 'none');
-
-    termsCheckbox.addEventListener('change', () => {
-        agreeBtn.disabled = !termsCheckbox.checked;
-    });
-
+    termsCheckbox.addEventListener('change', () => agreeBtn.disabled = !termsCheckbox.checked);
     agreeBtn.addEventListener('click', () => {
         termsModal.style.display = 'none';
         sessionStorage.setItem('termsAccepted', 'true');
         document.getElementById('userStatus').style.display = 'flex';
-        if (!currentUser) {
-            authModal.style.display = 'flex';
-        }
+        if (!currentUser) authModal.style.display = 'flex';
     });
-    
-    loginSignupBtn.addEventListener('click', () => {
-        authModal.style.display = 'flex';
-    });
-
+    loginSignupBtn.addEventListener('click', () => authModal.style.display = 'flex');
     document.getElementById('switchAuthModeLink').addEventListener('click', (e) => {
         e.preventDefault();
         isSignUpMode = !isSignUpMode;
         updateAuthModalUI();
     });
-
     authActionBtn.addEventListener('click', async () => {
-        if (isSignUpMode) {
-            await handleSignUp();
-        } else {
-            await handleLogIn();
-        }
+        if (isSignUpMode) await handleSignUp();
+        else await handleLogIn();
     });
-
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-        await signOut(auth);
-    });
-
-    skipBtn.addEventListener('click', () => {
-        authModal.style.display = 'none';
-    });
-
+    document.getElementById('logoutBtn').addEventListener('click', async () => await signOut(auth));
+    skipBtn.addEventListener('click', () => authModal.style.display = 'none');
     findMeBtn.addEventListener('click', findMe);
     trackBtn.addEventListener('click', toggleTracking);
     pictureBtn.addEventListener('click', () => cameraInput.click());
     cameraInput.addEventListener('change', handlePhoto);
-
     dataBtn.addEventListener('click', () => dataModal.style.display = 'flex');
     closeDataModalBtn.addEventListener('click', () => dataModal.style.display = 'none');
-    
     sessionsModalCloseBtn.addEventListener('click', () => sessionsModal.style.display = 'none');
     localSessionsModalCloseBtn.addEventListener('click', () => localSessionsModal.style.display = 'none');
-
     window.addEventListener('click', (event) => {
         const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal];
-        if (modals.includes(event.target)) {
-            modals.forEach(m => m.style.display = 'none');
-        }
+        if (modals.includes(event.target)) modals.forEach(m => m.style.display = 'none');
     });
-
     saveBtn.addEventListener('click', saveSession);
     loadBtn.addEventListener('click', loadSession);
     exportBtn.addEventListener('click', exportGeoJSON);
@@ -181,9 +150,7 @@ onAuthStateChanged(auth, (user) => {
     const userEmail = document.getElementById('userEmail');
     const authModal = document.getElementById('authModal');
     const publishBtn = document.getElementById('publishBtn');
-
     if(userStatus) userStatus.style.display = 'flex';
-
     if (user) {
         currentUser = user;
         if (userEmail) userEmail.textContent = `Logged in`;
@@ -199,8 +166,22 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-
 // --- Functions ---
+
+// --- Data Conversion Helpers ---
+function convertRouteForFirestore(coordsArray) {
+    return coordsArray.map(coord => ({ lng: coord[0], lat: coord[1] }));
+}
+function convertRouteFromFirestore(coordsObjects) {
+    return coordsObjects.map(coord => [coord.lng, coord.lat]);
+}
+function convertPinsForFirestore(pinsArray) {
+    return pinsArray.map(pin => ({ ...pin, coords: { lng: pin.coords[0], lat: pin.coords[1] } }));
+}
+function convertPinsFromFirestore(pinsObjects) {
+    if (!pinsObjects) return [];
+    return pinsObjects.map(pin => ({ ...pin, coords: [pin.coords.lng, pin.coords.lat] }));
+}
 
 function updateAuthModalUI() {
     const authForm = document.getElementById('authForm');
@@ -208,19 +189,16 @@ function updateAuthModalUI() {
     const authSubtitle = document.getElementById('authSubtitle');
     const authActionBtn = document.getElementById('authActionBtn');
     document.getElementById('authError').textContent = '';
-
     if (isSignUpMode) {
         authTitle.textContent = 'Create an Account';
         authSubtitle.innerHTML = 'Or <a href="#" id="switchAuthModeLink">log in to an existing account.</a>';
         authActionBtn.textContent = 'Sign Up';
-        authForm.classList.add('signup-mode');
-        authForm.classList.remove('login-mode');
+        authForm.classList.add('signup-mode'); authForm.classList.remove('login-mode');
     } else {
         authTitle.textContent = 'Log In';
         authSubtitle.innerHTML = 'Or <a href="#" id="switchAuthModeLink">create a new account.</a>';
         authActionBtn.textContent = 'Log In';
-        authForm.classList.add('login-mode');
-        authForm.classList.remove('signup-mode');
+        authForm.classList.add('login-mode'); authForm.classList.remove('signup-mode');
     }
     document.getElementById('switchAuthModeLink').addEventListener('click', (e) => {
         e.preventDefault();
@@ -235,22 +213,13 @@ async function handleSignUp() {
     const username = document.getElementById('usernameInput').value;
     const authError = document.getElementById('authError');
     authError.textContent = '';
-
     if (!username || username.trim().length < 3) {
-        authError.textContent = 'Please enter a username (at least 3 characters).';
-        return;
+        authError.textContent = 'Username must be at least 3 characters.'; return;
     }
-
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        await setDoc(doc(db, "users", user.uid), {
-            username: username,
-            email: user.email
-        });
-    } catch (error) {
-        authError.textContent = error.message;
-    }
+        await setDoc(doc(db, "users", userCredential.user.uid), { username: username, email: userCredential.user.email });
+    } catch (error) { authError.textContent = error.message; }
 }
 
 async function handleLogIn() {
@@ -258,12 +227,9 @@ async function handleLogIn() {
     const password = document.getElementById('passwordInput').value;
     const authError = document.getElementById('authError');
     authError.textContent = '';
-
     try {
         await signInWithEmailAndPassword(auth, email, password);
-    } catch (error) {
-        authError.textContent = error.message;
-    }
+    } catch (error) { authError.textContent = error.message; }
 }
 
 function findMe() {
@@ -287,9 +253,7 @@ function toggleTracking() {
         trackingWatcher = navigator.geolocation.watchPosition(position => {
             const newCoord = [position.coords.longitude, position.coords.latitude];
             routeCoordinates.push(newCoord);
-            if (map.getSource('user-route')) {
-                map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
-            }
+            if (map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
             map.flyTo({ center: newCoord, zoom: 16 });
         }, () => alert("Error watching position."), { enableHighAccuracy: true });
         trackBtn.textContent = '🛑 Stop Tracking';
@@ -300,28 +264,21 @@ function toggleTracking() {
 async function handlePhoto(event) {
     const file = event.target.files[0];
     if (!file) return;
-
     const pictureBtn = document.getElementById('pictureBtn');
     const originalButtonText = pictureBtn.innerHTML;
     pictureBtn.innerHTML = 'Processing...';
     pictureBtn.disabled = true;
-
     if (!currentUser) {
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = e => {
-            navigator.geolocation.getCurrentPosition(position => {
-                const pinInfo = { id: `pin-${Date.now()}`, coords: [position.coords.longitude, position.coords.latitude], image: e.target.result, title: 'New Photo' };
-                photoPins.push(pinInfo);
-                addPhotoMarker(pinInfo);
-            }, () => alert("Could not get location."));
-        };
-        pictureBtn.innerHTML = originalButtonText;
-        pictureBtn.disabled = false;
-        event.target.value = '';
+        reader.onload = e => navigator.geolocation.getCurrentPosition(position => {
+            const pinInfo = { id: `pin-${Date.now()}`, coords: [position.coords.longitude, position.coords.latitude], image: e.target.result, title: 'New Photo' };
+            photoPins.push(pinInfo);
+            addPhotoMarker(pinInfo);
+        }, () => alert("Could not get location."));
+        pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
         return;
     }
-    
     try {
         const timestamp = Date.now();
         const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}-${file.name}`);
@@ -332,14 +289,8 @@ async function handlePhoto(event) {
             photoPins.push(pinInfo);
             addPhotoMarker(pinInfo);
         }, () => alert("Could not get location."));
-    } catch (error) {
-        console.error("Error uploading photo:", error);
-        alert("Photo upload failed.");
-    } finally {
-        pictureBtn.innerHTML = originalButtonText;
-        pictureBtn.disabled = false;
-        event.target.value = '';
-    }
+    } catch (error) { console.error("Error uploading photo:", error); alert("Photo upload failed."); }
+    finally { pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = ''; }
 }
 
 function addPhotoMarker(pinInfo) {
@@ -370,7 +321,6 @@ function createPhotoPopupHTML(pinInfo) {
     return `<div><img src="${pinInfo.imageURL || pinInfo.image}" alt="User photo" style="width:100%; height:auto; border-radius: 4px;"/><input type="text" id="title-${pinInfo.id}" value="${pinInfo.title}" placeholder="Enter a title" style="width: 95%; margin-top: 10px;"><div style="display: flex; justify-content: space-between; margin-top: 5px;"><button id="save-${pinInfo.id}">Save Title</button><button id="delete-${pinInfo.id}" style="background-color: #dc3545;">Delete</button></div></div>`;
 }
 
-// --- Community Functions ---
 async function toggleCommunityView() {
     const communityBtn = document.getElementById('communityBtn');
     isCommunityViewOn = !isCommunityViewOn;
@@ -393,11 +343,13 @@ async function fetchAndDisplayCommunityRoutes() {
         querySnapshot.forEach(doc => {
             const routeData = doc.data();
             const routeId = doc.id;
-            map.addSource(`community-route-${routeId}`, { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: routeData.routeCoordinates } } });
+            const mapboxCoords = convertRouteFromFirestore(routeData.route);
+            const mapboxPins = convertPinsFromFirestore(routeData.pins);
+            map.addSource(`community-route-${routeId}`, { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: mapboxCoords } } });
             map.addLayer({ id: `community-route-${routeId}`, type: 'line', source: `community-route-${routeId}`, paint: { 'line-color': '#28a745', 'line-width': 4, 'line-opacity': 0.7 } });
             communityLayers.push({ id: `community-route-${routeId}`, type: 'layer' });
-            if (routeData.photoPins) {
-                routeData.photoPins.forEach(pin => {
+            if (mapboxPins) {
+                mapboxPins.forEach(pin => {
                     const el = document.createElement('div');
                     el.className = 'photo-marker';
                     el.style.backgroundImage = `url(${pin.imageURL})`;
@@ -408,10 +360,7 @@ async function fetchAndDisplayCommunityRoutes() {
                 });
             }
         });
-    } catch (error) {
-        console.error("Error fetching community routes:", error);
-        alert("Could not load community data.");
-    }
+    } catch (error) { console.error("Error fetching community routes:", error); alert("Could not load community data."); }
 }
 
 function clearCommunityRoutes() {
@@ -428,26 +377,22 @@ function clearCommunityRoutes() {
 async function publishRoute() {
     if (!currentUser) return;
     if (routeCoordinates.length < 2 || photoPins.length === 0) {
-        alert("You need a tracked route and at least one photo pin to publish.");
-        return;
+        alert("You need a tracked route and at least one photo pin to publish."); return;
     }
     try {
         const userDocRef = doc(db, "users", currentUser.uid);
         const docSnap = await getDoc(userDocRef);
         if (!docSnap.exists()) throw new Error("Could not find user profile.");
         const username = docSnap.data().username;
-        
-        await addDoc(collection(db, "publishedRoutes"), { userId: currentUser.uid, username: username, timestamp: new Date(), routeCoordinates: routeCoordinates, photoPins: photoPins });
+        const firestoreReadyPins = convertPinsForFirestore(photoPins);
+        const firestoreReadyRoute = convertRouteForFirestore(routeCoordinates);
+        await addDoc(collection(db, "publishedRoutes"), { userId: currentUser.uid, username: username, timestamp: new Date(), route: firestoreReadyRoute, pins: firestoreReadyPins });
         alert("Success! Your route has been published.");
         clearCurrentSession();
         document.getElementById('dataModal').style.display = 'none';
-    } catch (error) {
-        console.error("Error publishing route:", error);
-        alert("There was an error publishing your route.");
-    }
+    } catch (error) { console.error("Error publishing route:", error); alert("There was an error publishing your route."); }
 }
 
-// --- Data Management Functions ---
 async function saveSession() {
     const dataModal = document.getElementById('dataModal');
     if (!currentUser) {
@@ -464,13 +409,12 @@ async function saveSession() {
     const sessionName = prompt("Name this cloud session:", `Cleanup on ${new Date().toLocaleDateString()}`);
     if (sessionName) {
         try {
-            await addDoc(collection(db, "users", currentUser.uid, "privateSessions"), { sessionName, timestamp: new Date(), pins: photoPins, route: routeCoordinates });
+            const firestoreReadyPins = convertPinsForFirestore(photoPins);
+            const firestoreReadyRoute = convertRouteForFirestore(routeCoordinates);
+            await addDoc(collection(db, "users", currentUser.uid, "privateSessions"), { sessionName, timestamp: new Date(), pins: firestoreReadyPins, route: firestoreReadyRoute });
             alert(`Session "${sessionName}" saved to your account!`);
             dataModal.style.display = 'none';
-        } catch (error) {
-            console.error("Error saving session to Firestore:", error);
-            alert("Could not save session to your account.");
-        }
+        } catch (error) { console.error("Error saving session to Firestore:", error); alert("Could not save session to your account."); }
     }
 }
 
@@ -489,8 +433,7 @@ function populateLocalSessionList() {
     const guestSessions = JSON.parse(localStorage.getItem('guestSessions')) || [];
     localSessionList.innerHTML = '';
     if (guestSessions.length === 0) {
-        localSessionList.innerHTML = '<li>No locally saved sessions found.</li>';
-        return;
+        localSessionList.innerHTML = '<li>No locally saved sessions found.</li>'; return;
     }
     guestSessions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach((sessionData, index) => {
         const li = document.createElement('li');
@@ -519,8 +462,7 @@ async function populateSessionList() {
         const querySnapshot = await getDocs(q);
         sessionList.innerHTML = '';
         if (querySnapshot.empty) {
-            sessionList.innerHTML = '<li>No saved cloud sessions found.</li>';
-            return;
+            sessionList.innerHTML = '<li>No saved cloud sessions found.</li>'; return;
         }
         querySnapshot.forEach(doc => {
             const sessionData = doc.data();
@@ -529,10 +471,7 @@ async function populateSessionList() {
             li.addEventListener('click', () => loadSpecificSession(doc.id));
             sessionList.appendChild(li);
         });
-    } catch (error) {
-        console.error("Error fetching sessions:", error);
-        sessionList.innerHTML = '<li>Could not load sessions.</li>';
-    }
+    } catch (error) { console.error("Error fetching sessions:", error); sessionList.innerHTML = '<li>Could not load sessions.</li>'; }
 }
 
 async function loadSpecificSession(sessionId) {
@@ -541,14 +480,16 @@ async function loadSpecificSession(sessionId) {
         if (docSnap.exists()) {
             clearCurrentSession();
             const sessionData = docSnap.data();
-            displaySessionData(sessionData);
+            const convertedData = {
+                ...sessionData,
+                pins: convertPinsFromFirestore(sessionData.pins),
+                route: convertRouteFromFirestore(sessionData.route)
+            };
+            displaySessionData(convertedData);
             alert(`Session "${sessionData.sessionName}" loaded!`);
             document.getElementById('sessionsModal').style.display = 'none';
         }
-    } catch (error) {
-        console.error("Error loading specific session:", error);
-        alert("Failed to load the session.");
-    }
+    } catch (error) { console.error("Error loading specific session:", error); alert("Failed to load the session."); }
 }
 
 function clearCurrentSession() {
@@ -582,3 +523,4 @@ function exportGeoJSON() {
     downloadAnchorNode.remove();
     document.getElementById('dataModal').style.display = 'none';
 }
+
