@@ -137,7 +137,7 @@ body {
     max-width: 600px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     position: relative;
-    max-height: 85vh; /* Prevent modal from being too tall */
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
 }
@@ -161,7 +161,7 @@ body {
     margin-bottom: 10px;
 }
 #infoModal .modal-content > h4, #infoModal .modal-content > p {
-    flex-shrink: 0; /* Prevent text from shrinking */
+    flex-shrink: 0;
 }
 
 
@@ -208,11 +208,27 @@ body {
     text-align: center;
 }
 
+#authSubtitle a {
+    color: #007bff;
+    text-decoration: none;
+    cursor: pointer;
+}
+#authSubtitle a:hover {
+    text-decoration: underline;
+}
+
 .auth-form {
     display: flex;
     flex-direction: column;
     gap: 10px;
     margin: 20px 0;
+}
+
+.auth-form.login-mode #usernameInput {
+    display: none;
+}
+.auth-form.signup-mode #usernameInput {
+    display: block;
 }
 
 .auth-form input {
@@ -222,7 +238,7 @@ body {
     border-radius: 5px;
 }
 
-.auth-form button {
+#authActionBtn {
     padding: 12px;
     font-size: 16px;
     border: none;
@@ -283,14 +299,14 @@ body {
     background-color: #f5f5f5;
 }
 
-.session-list li .session-date {
+.session-list .session-date {
     font-size: 0.8em;
     color: #666;
 }
 
 /* --- User Status Display --- */
 .user-status-display {
-    display: flex;
+    display: none;
     background-color: rgba(255, 255, 255, 0.8);
     padding: 8px 12px;
     border-radius: 8px;
