@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
     localSessionsModalCloseBtn.addEventListener('click', () => localSessionsModal.style.display = 'none');
 
     window.addEventListener('click', (event) => {
-        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal];
+        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal];
         if (modals.includes(event.target)) {
             modals.forEach(m => m.style.display = 'none');
         }
@@ -175,11 +175,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- Firebase Auth State Listener ---
 onAuthStateChanged(auth, (user) => {
+    const userStatus = document.getElementById('userStatus');
     const loggedInContent = document.getElementById('loggedInContent');
     const guestContent = document.getElementById('guestContent');
     const userEmail = document.getElementById('userEmail');
     const authModal = document.getElementById('authModal');
     const publishBtn = document.getElementById('publishBtn');
+
+    if(userStatus) userStatus.style.display = 'flex';
 
     if (user) {
         currentUser = user;
