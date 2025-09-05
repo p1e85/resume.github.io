@@ -42,7 +42,7 @@ let isSignUpMode = true;
 
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    // A lot of element references are needed here, let's keep them inside
+
     const termsModal = document.getElementById('termsModal');
     const authModal = document.getElementById('authModal');
     const agreeBtn = document.getElementById('agreeBtn');
@@ -142,18 +142,36 @@ document.addEventListener('DOMContentLoaded', () => {
     publishBtn.addEventListener('click', publishRoute);
 });
 
-// --- Firebase Auth State Listener ---
-onAuthStateChanged(auth, (user) => {
+// --- Firebase Auth State Listener (MODIFIED) ---
+onAuthStateChanged(auth, async (user) => {
     const userStatus = document.getElementById('userStatus');
     const loggedInContent = document.getElementById('loggedInContent');
     const guestContent = document.getElementById('guestContent');
-    const userEmail = document.getElementById('userEmail');
+    const userEmailSpan = document.getElementById('userEmail');
     const authModal = document.getElementById('authModal');
     const publishBtn = document.getElementById('publishBtn');
+    
     if(userStatus) userStatus.style.display = 'flex';
+
     if (user) {
         currentUser = user;
-        if (userEmail) userEmail.textContent = `Logged in`;
+        
+        // NEW: Fetch user's profile to get their username
+        try {
+            const userDocRef = doc(db, "users", user.uid);
+            const docSnap = await getDoc(userDocRef);
+            if (docSnap.exists()) {
+                const username = docSnap.data().username;
+                if (userEmailSpan) userEmailSpan.textContent = `Logged in as: ${username}`;
+            } else {
+                // Fallback in case profile doesn't exist yet
+                if (userEmailSpan) userEmailSpan.textContent = `Logged in`;
+            }
+        } catch (error) {
+            console.error("Error fetching username:", error);
+            if (userEmailSpan) userEmailSpan.textContent = `Logged in`;
+        }
+
         if (loggedInContent) loggedInContent.style.display = 'flex';
         if (guestContent) guestContent.style.display = 'none';
         if (authModal) authModal.style.display = 'none';
@@ -166,21 +184,37 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
+
 // --- Functions ---
 
-// --- Data Conversion Helpers ---
+// Data Conversion Helpers
 function convertRouteForFirestore(coordsArray) {
     return coordsArray.map(coord => ({ lng: coord[0], lat: coord[1] }));
 }
 function convertRouteFromFirestore(coordsObjects) {
+    if (!coordsObjects) return [];
     return coordsObjects.map(coord => [coord.lng, coord.lat]);
 }
 function convertPinsForFirestore(pinsArray) {
-    return pinsArray.map(pin => ({ ...pin, coords: { lng: pin.coords[0], lat: pin.coords[1] } }));
+    return pinsArray.map(pin => {
+        const newPin = { ...pin };
+        // Ensure coords is always an object for Firestore
+        if (Array.isArray(newPin.coords)) {
+            newPin.coords = { lng: newPin.coords[0], lat: newPin.coords[1] };
+        }
+        return newPin;
+    });
 }
 function convertPinsFromFirestore(pinsObjects) {
     if (!pinsObjects) return [];
-    return pinsObjects.map(pin => ({ ...pin, coords: [pin.coords.lng, pin.coords.lat] }));
+    return pinsObjects.map(pin => {
+        const newPin = { ...pin };
+        // Ensure coords is always an array for Mapbox
+        if (newPin.coords && typeof newPin.coords === 'object' && !Array.isArray(newPin.coords)) {
+            newPin.coords = [newPin.coords.lng, newPin.coords.lat];
+        }
+        return newPin;
+    });
 }
 
 function updateAuthModalUI() {
@@ -497,7 +531,7 @@ function clearCurrentSession() {
     markers = [];
     photoPins = [];
     routeCoordinates = [];
-    if (map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
+    if (map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', 'coordinates': [] } });
 }
 
 function displaySessionData(data) {
@@ -523,4 +557,3 @@ function exportGeoJSON() {
     downloadAnchorNode.remove();
     document.getElementById('dataModal').style.display = 'none';
 }
-
