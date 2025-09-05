@@ -25,18 +25,16 @@
         <div class="modal-content">
             <span class="close-btn">&times;</span>
             <h2>About Garbage Path</h2>
-            
             <h4>The Mission (Why)</h4>
-            <p>Garbage Path transforms the chore of cleaning up our neighborhoods into a visible and rewarding achievement. By tracking your cleanup routes and pinning the litter you collect, you create a tangible record of your positive impact. Share your efforts on the community map to inspire others, see our collective progress, and help identify areas that need our attention the most. You are not alone in caring for our environment—together, we can make a difference.</p>
-            
+            <p>Garbage Path transforms the chore of cleaning up our neighborhoods into a visible and rewarding achievement. By tracking your cleanup routes and pinning the litter you collect, you create a tangible record of your positive impact. Share your efforts on the community map to inspire others, see our collective progress, and help identify areas that need our attention the most.</p>
             <h4>How to Use the App</h4>
             <ol class="info-list">
-                <li><strong>Sign Up or Skip:</strong> Create an account to save your data to the cloud, or 'Skip' to use the app as a guest (your data will be saved only on this browser).</li>
+                <li><strong>Join or Skip:</strong> Create an account with a public username to save your data to the cloud, or 'Skip' to use the app as a guest.</li>
                 <li><strong>Track a Route:</strong> Press 'Start Tracking' to draw your path on the map as you walk.</li>
-                <li><strong>Pin Garbage:</strong> When you find litter, press 'Pin Picture' to take a photo. This will drop a pin at your location.</li>
-                <li><strong>Save/Load:</strong> Use the 'Data' button to save your current session or load a previous one. You can save multiple named sessions.</li>
-                <li><strong>Publish:</strong> When logged in, you can use the 'Publish to Community' button to share your completed route with everyone.</li>
-                <li><strong>Community View:</strong> Toggle the 'Community View' button to see all the routes published by other users!</li>
+                <li><strong>Pin Garbage:</strong> When you find litter, press 'Pin Picture' to take a photo.</li>
+                <li><strong>Save/Load:</strong> Use the 'Data' button to save your current session or load previous ones.</li>
+                <li><strong>Publish:</strong> When logged in, 'Publish to Community' shares your route for everyone to see.</li>
+                <li><strong>Community View:</strong> Toggle 'Community View' to see routes published by other users!</li>
             </ol>
         </div>
     </div>
@@ -46,10 +44,10 @@
         <div class="modal-content">
             <h2>Terms of Use</h2>
             <div class="terms-box">
-                <p>Welcome to Garbage Path! By accessing or using our application (the "Service"), you agree to be bound by these Terms of Use.</p>
-                <p><strong>1. Description of Service:</strong> This Service is for the sole purpose of identifying and documenting refuse, trash, and litter (collectively, "Garbage").</p>
-                <p><strong>2. Prohibited Content:</strong> You may NOT upload any photograph containing people, illegal activities, or personal information. The focus must be exclusively on Garbage.</p>
-                <p><strong>3. Disclaimer:</strong> This Service is provided "AS IS". Your use of this service is entirely at your own risk. We are not liable for any damages or harm arising from your use of the Service.</p>
+                <p>Welcome to Garbage Path! By using our Service, you agree to these terms.</p>
+                <p><strong>1. Intended Use:</strong> This Service is for the sole purpose of documenting refuse, trash, and litter ("Garbage").</p>
+                <p><strong>2. Prohibited Content:</strong> You may NOT upload any photograph containing people, illegal activities, or private information. All photos must be of Garbage.</p>
+                <p><strong>3. Disclaimer:</strong> Your use of this service is entirely at your own risk.</p>
             </div>
             <div class="agreement-section">
                 <input type="checkbox" id="termsCheckbox">
@@ -58,24 +56,24 @@
             <button id="agreeBtn" disabled>I Agree</button>
         </div>
     </div>
-    
-    <!-- Authentication Modal -->
+
+    <!-- Authentication Modal (MODIFIED) -->
     <div id="authModal" class="modal-overlay">
         <div class="modal-content auth-modal">
-            <h2>Join Garbage Path</h2>
-            <p>Create an account to save your cleanup routes to the cloud, or continue as a guest.</p>
-            <div class="auth-form">
-                <input type="email" id="emailInput" placeholder="Email">
+            <h2 id="authTitle">Create an Account</h2>
+            <p id="authSubtitle">Or <a href="#" id="switchAuthModeLink">log in to an existing account.</a></p>
+            <div id="authForm" class="auth-form signup-mode">
+                <input type="text" id="usernameInput" placeholder="Public Username">
+                <input type="email" id="emailInput" placeholder="Email (for login)">
                 <input type="password" id="passwordInput" placeholder="Password (min. 6 characters)">
-                <button id="signUpBtn">Sign Up</button>
-                <button id="loginBtn">Log In</button>
+                <button id="authActionBtn">Sign Up</button>
             </div>
             <hr>
             <button id="skipBtn" class="skip-button">Skip for now</button>
             <p id="authError" class="error-message"></p>
         </div>
     </div>
-    
+
     <!-- Map container -->
     <div id='map'></div>
 
@@ -115,7 +113,7 @@
             <button id="exportBtn" class="modal-button export">Export as GeoJSON</button>
         </div>
     </div>
-    
+
     <!-- Modal for Listing CLOUD Saved Sessions -->
     <div id="sessionsModal" class="modal">
         <div class="modal-content">
@@ -125,7 +123,7 @@
             <ul id="sessionList" class="session-list"></ul>
         </div>
     </div>
-    
+
     <!-- Modal for Listing LOCALLY Saved Sessions -->
     <div id="localSessionsModal" class="modal">
         <div class="modal-content">
