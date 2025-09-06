@@ -1,6 +1,6 @@
 // --- Firebase SDK Setup ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import {
     getAuth,
@@ -70,6 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoModal = document.getElementById('infoModal');
     const infoModalCloseBtn = infoModal.querySelector('.close-btn');
     const authActionBtn = document.getElementById('authActionBtn');
+    const managePublicationsBtn = document.getElementById('managePublicationsBtn');
+    const publishedRoutesModal = document.getElementById('publishedRoutesModal');
+    const publishedRoutesModalCloseBtn = publishedRoutesModal.querySelector('.close-btn');
 
     // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
@@ -132,15 +135,27 @@ document.addEventListener('DOMContentLoaded', () => {
     closeDataModalBtn.addEventListener('click', () => dataModal.style.display = 'none');
     sessionsModalCloseBtn.addEventListener('click', () => sessionsModal.style.display = 'none');
     localSessionsModalCloseBtn.addEventListener('click', () => localSessionsModal.style.display = 'none');
+    publishedRoutesModalCloseBtn.addEventListener('click', () => publishedRoutesModal.style.display = 'none');
+    
     window.addEventListener('click', (event) => {
-        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal];
+        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal];
         if (modals.includes(event.target)) modals.forEach(m => m.style.display = 'none');
     });
+    
     saveBtn.addEventListener('click', saveSession);
     loadBtn.addEventListener('click', loadSession);
     exportBtn.addEventListener('click', exportGeoJSON);
     communityBtn.addEventListener('click', toggleCommunityView);
     publishBtn.addEventListener('click', publishRoute);
+    
+    managePublicationsBtn.addEventListener('click', () => {
+        if (!currentUser) {
+            alert("You must be logged in to manage your publications.");
+            return;
+        }
+        populatePublishedRoutesList();
+        publishedRoutesModal.style.display = 'flex';
+    });
 });
 
 // --- Firebase Auth State Listener ---
@@ -151,7 +166,10 @@ onAuthStateChanged(auth, async (user) => {
     const userEmailSpan = document.getElementById('userEmail');
     const authModal = document.getElementById('authModal');
     const publishBtn = document.getElementById('publishBtn');
+    const managePublicationsBtn = document.getElementById('managePublicationsBtn');
+    
     if(userStatus) userStatus.style.display = 'flex';
+
     if (user) {
         currentUser = user;
         try {
@@ -171,13 +189,16 @@ onAuthStateChanged(auth, async (user) => {
         if (guestContent) guestContent.style.display = 'none';
         if (authModal) authModal.style.display = 'none';
         if (publishBtn) publishBtn.style.display = 'block';
+        if (managePublicationsBtn) managePublicationsBtn.style.display = 'block';
     } else {
         currentUser = null;
         if (loggedInContent) loggedInContent.style.display = 'none';
         if (guestContent) guestContent.style.display = 'block';
         if (publishBtn) publishBtn.style.display = 'none';
+        if (managePublicationsBtn) managePublicationsBtn.style.display = 'none';
     }
 });
+
 
 // --- Functions ---
 function convertRouteForFirestore(coordsArray) {
@@ -564,5 +585,57 @@ function exportGeoJSON() {
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
     document.getElementById('dataModal').style.display = 'none';
+}
+
+async function populatePublishedRoutesList() {
+    const publishedRoutesList = document.getElementById('publishedRoutesList');
+    publishedRoutesList.innerHTML = '<li>Loading your publications...</li>';
+    try {
+        const routesRef = collection(db, "publishedRoutes");
+        const q = query(routesRef, where("userId", "==", currentUser.uid), orderBy("timestamp", "desc"));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            publishedRoutesList.innerHTML = '<li>You have not published any routes yet.</li>';
+            return;
+        }
+        publishedRoutesList.innerHTML = '';
+        querySnapshot.forEach(doc => {
+            const routeData = doc.data();
+            const li = document.createElement('li');
+            const contentDiv = document.createElement('div');
+            contentDiv.style.flexGrow = '1';
+            contentDiv.innerHTML = `<span>Route published on</span><br><small class="session-date">${new Date(routeData.timestamp.seconds * 1000).toLocaleString()}</small>`;
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.className = 'delete-session-btn';
+            li.appendChild(contentDiv);
+            li.appendChild(deleteBtn);
+            deleteBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                deletePublishedRoute(doc.id);
+            });
+            publishedRoutesList.appendChild(li);
+        });
+    } catch (error) {
+        console.error("Error fetching published routes:", error);
+        publishedRoutesList.innerHTML = '<li>Could not load your publications.</li>';
+    }
+}
+
+async function deletePublishedRoute(routeId) {
+    if (confirm(`Are you sure you want to permanently delete this published route from the community map? This action cannot be undone.`)) {
+        try {
+            await deleteDoc(doc(db, "publishedRoutes", routeId));
+            alert(`Your route has been deleted from the community map.`);
+            populatePublishedRoutesList();
+            if (isCommunityViewOn) {
+                clearCommunityRoutes();
+                fetchAndDisplayCommunityRoutes();
+            }
+        } catch (error) {
+            console.error("Error deleting published route:", error);
+            alert("Failed to delete the route. Please check the console for errors.");
+        }
+    }
 }
 
