@@ -7,7 +7,8 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
-    onAuthStateChanged
+    onAuthStateChanged,
+    deleteUser
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 // --- Garbage Path V2 Firebase Config ---
@@ -80,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveProfileBtn = document.getElementById('saveProfileBtn');
     const publicProfileModal = document.getElementById('publicProfileModal');
     const publicProfileModalCloseBtn = publicProfileModal.querySelector('.close-btn');
+    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
 
     // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
@@ -199,6 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         profileModal.style.display = 'flex';
     });
     saveProfileBtn.addEventListener('click', saveProfile);
+    deleteAccountBtn.addEventListener('click', handleAccountDeletion);
 });
 
 // --- Firebase Auth State Listener ---
@@ -784,6 +787,55 @@ async function showPublicProfile(userId) {
     } catch (error) {
         console.error("Error fetching public profile:", error);
         alert("There was an error loading the user's profile.");
+    }
+}
+async function handleAccountDeletion() {
+    if (!currentUser) return;
+
+    const confirmation1 = confirm("DANGER: Are you absolutely sure you want to permanently delete your account? This action cannot be undone.");
+    if (!confirmation1) return;
+
+    const confirmation2 = confirm("All of your private saved sessions and public routes will be deleted forever. Are you still sure?");
+    if (!confirmation2) return;
+
+    try {
+        console.log("Starting account deletion process for user:", currentUser.uid);
+
+        const privateSessionsQuery = query(collection(db, "users", currentUser.uid, "privateSessions"));
+        const privateSessionsSnapshot = await getDocs(privateSessionsQuery);
+        const privateDeletePromises = [];
+        privateSessionsSnapshot.forEach(doc => {
+            privateDeletePromises.push(deleteDoc(doc.ref));
+        });
+        await Promise.all(privateDeletePromises);
+        console.log("Private sessions deleted.");
+
+        const publishedRoutesQuery = query(collection(db, "publishedRoutes"), where("userId", "==", currentUser.uid));
+        const publishedRoutesSnapshot = await getDocs(publishedRoutesQuery);
+        const publicDeletePromises = [];
+        publishedRoutesSnapshot.forEach(doc => {
+            publicDeletePromises.push(deleteDoc(doc.ref));
+        });
+        await Promise.all(publicDeletePromises);
+        console.log("Published routes deleted.");
+
+        await deleteDoc(doc(db, "users", currentUser.uid));
+        console.log("User profile document deleted.");
+
+        await deleteUser(currentUser);
+        
+        alert("Your account and all associated data have been permanently deleted.");
+        // UI update is handled by onAuthStateChanged
+        document.getElementById('profileModal').style.display = 'none';
+
+
+    } catch (error) {
+        console.error("Error deleting account:", error);
+        if (error.code === 'auth/requires-recent-login') {
+            alert("This is a sensitive operation and requires you to have logged in recently. Please log out and log back in to delete your account.");
+        } else {
+            alert("An error occurred while deleting your account. Please check the console for details.");
+        }
     }
 }
 
