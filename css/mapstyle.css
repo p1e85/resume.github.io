@@ -261,11 +261,13 @@ body {
 .auth-form {
     display: flex; flex-direction: column; gap: 10px; margin: 20px 0;
 }
-.auth-form.login-mode #usernameInput {
+.auth-form.login-mode #usernameInput,
+.auth-form.login-mode #ageGateContainer {
     display: none;
 }
-.auth-form.signup-mode #usernameInput {
-    display: block;
+.auth-form.signup-mode #usernameInput,
+.auth-form.signup-mode #ageGateContainer {
+    display: flex;
 }
 .auth-form input {
     padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px;
@@ -273,6 +275,20 @@ body {
 #authActionBtn {
     padding: 12px; font-size: 16px; border: none; border-radius: 5px;
     color: white; background-color: #007bff; cursor: pointer;
+    transition: background-color 0.2s;
+}
+#authActionBtn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+.age-gate-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 5px 0;
+    font-size: 0.9em;
+    color: #333;
 }
 .skip-button {
     background-color: #6c757d; color: white; border: none; padding: 12px;
