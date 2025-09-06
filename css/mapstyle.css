@@ -178,6 +178,9 @@ body {
     opacity: 0.9;
 }
 
+.modal-button.edit-profile {
+    background-color: #5a6268;
+}
 .modal-button.manage {
     background-color: #17a2b8;
 }
@@ -299,6 +302,31 @@ body {
     background-color: #c82333;
 }
 
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+.profile-form label {
+    text-align: left;
+    font-weight: bold;
+    margin-bottom: -10px;
+}
+.profile-form input,
+.profile-form textarea {
+    width: 95%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: inherit;
+}
+.profile-form textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
 /* --- User Status & Photo Markers --- */
 .user-status-display {
     display: none;
@@ -319,3 +347,4 @@ body {
     border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
     background-size: cover; background-position: center; cursor: pointer;
 }
+
