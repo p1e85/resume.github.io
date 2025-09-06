@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const managePublicationsBtn = document.getElementById('managePublicationsBtn');
     const publishedRoutesModal = document.getElementById('publishedRoutesModal');
     const publishedRoutesModalCloseBtn = publishedRoutesModal.querySelector('.close-btn');
+    const viewTermsLink = document.getElementById('viewTermsLink');
 
     // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
@@ -92,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     map.on('load', () => {
-        // Source for the user's own tracked route line
         map.addSource('user-route', {
             'type': 'geojson',
             'data': { 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': [] } }
@@ -104,8 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
             'layout': { 'line-join': 'round', 'line-cap': 'round' },
             'paint': { 'line-color': '#007bff', 'line-width': 5 }
         });
-
-        // Source and layer for the moving user location icon
         map.addSource('user-location-point', {
             'type': 'geojson',
             'data': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [] } }
@@ -114,28 +112,24 @@ document.addEventListener('DOMContentLoaded', () => {
             'id': 'user-location-pulse',
             'type': 'circle',
             'source': 'user-location-point',
-            'paint': {
-                'circle-radius': 15,
-                'circle-color': '#007bff',
-                'circle-opacity': 0.2
-            }
+            'paint': { 'circle-radius': 15, 'circle-color': '#007bff', 'circle-opacity': 0.2 }
         });
         map.addLayer({
             'id': 'user-location-dot',
             'type': 'circle',
             'source': 'user-location-point',
-            'paint': {
-                'circle-radius': 6,
-                'circle-color': '#fff',
-                'circle-stroke-width': 2,
-                'circle-stroke-color': '#007bff'
-            }
+            'paint': { 'circle-radius': 6, 'circle-color': '#fff', 'circle-stroke-width': 2, 'circle-stroke-color': '#007bff' }
         });
     });
 
     // --- Event Listeners ---
     infoBtn.addEventListener('click', () => infoModal.style.display = 'flex');
     infoModalCloseBtn.addEventListener('click', () => infoModal.style.display = 'none');
+    viewTermsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        infoModal.style.display = 'none';
+        termsModal.style.display = 'flex';
+    });
     termsCheckbox.addEventListener('change', () => agreeBtn.disabled = !termsCheckbox.checked);
     agreeBtn.addEventListener('click', () => {
         termsModal.style.display = 'none';
@@ -568,120 +562,120 @@ async function populateSessionList() {
             deleteBtn.textContent = 'Delete';
             deleteBtn.className = 'delete-session-btn';
             li.appendChild(contentDiv);
-li.appendChild(deleteBtn);
-contentDiv.addEventListener('click', () => loadSpecificSession(doc.id));
-deleteBtn.addEventListener('click', (event) => {
-event.stopPropagation();
-deletePrivateSession(doc.id, sessionData.sessionName);
-});
-sessionList.appendChild(li);
-});
-} catch (error) { console.error("Error fetching sessions:", error); sessionList.innerHTML = '<li>Could not load sessions.</li>'; }
+            li.appendChild(deleteBtn);
+            contentDiv.addEventListener('click', () => loadSpecificSession(doc.id));
+            deleteBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                deletePrivateSession(doc.id, sessionData.sessionName);
+            });
+            sessionList.appendChild(li);
+        });
+    } catch (error) { console.error("Error fetching sessions:", error); sessionList.innerHTML = '<li>Could not load sessions.</li>'; }
 }
 async function deletePrivateSession(sessionId, sessionName) {
-if (confirm(`Are you sure you want to delete the cloud session "${sessionName}"? This cannot be undone.`)) {
-try {
-await deleteDoc(doc(db, "users", currentUser.uid, "privateSessions", sessionId));
-alert(`Session "${sessionName}" has been deleted.`);
-populateSessionList();
-} catch (error) {
-console.error("Error deleting session:", error);
-alert("Failed to delete the session. Please try again.");
-}
-}
+    if (confirm(`Are you sure you want to delete the cloud session "${sessionName}"? This cannot be undone.`)) {
+        try {
+            await deleteDoc(doc(db, "users", currentUser.uid, "privateSessions", sessionId));
+            alert(`Session "${sessionName}" has been deleted.`);
+            populateSessionList();
+        } catch (error) {
+            console.error("Error deleting session:", error);
+            alert("Failed to delete the session. Please try again.");
+        }
+    }
 }
 async function loadSpecificSession(sessionId) {
-try {
-const docSnap = await getDoc(doc(db, "users", currentUser.uid, "privateSessions", sessionId));
-if (docSnap.exists()) {
-clearCurrentSession();
-const sessionData = docSnap.data();
-const convertedData = { ...sessionData, pins: convertPinsFromFirestore(sessionData.pins), route: convertRouteFromFirestore(sessionData.route) };
-displaySessionData(convertedData);
-alert(`Session "${sessionData.sessionName}" loaded!`);
-document.getElementById('sessionsModal').style.display = 'none';
-}
-} catch (error) { console.error("Error loading specific session:", error); alert("Failed to load the session."); }
+    try {
+        const docSnap = await getDoc(doc(db, "users", currentUser.uid, "privateSessions", sessionId));
+        if (docSnap.exists()) {
+            clearCurrentSession();
+            const sessionData = docSnap.data();
+            const convertedData = { ...sessionData, pins: convertPinsFromFirestore(sessionData.pins), route: convertRouteFromFirestore(sessionData.route) };
+            displaySessionData(convertedData);
+            alert(`Session "${sessionData.sessionName}" loaded!`);
+            document.getElementById('sessionsModal').style.display = 'none';
+        }
+    } catch (error) { console.error("Error loading specific session:", error); alert("Failed to load the session."); }
 }
 function clearCurrentSession() {
-markers.forEach(marker => marker.remove());
-markers = [];
-photoPins = [];
-routeCoordinates = [];
-if (map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
+    markers.forEach(marker => marker.remove());
+    markers = [];
+    photoPins = [];
+    routeCoordinates = [];
+    if (map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
 }
 function displaySessionData(data) {
-photoPins = data.pins || [];
-routeCoordinates = data.route || [];
-photoPins.forEach(pin => addPhotoMarker(pin));
-if(map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
+    photoPins = data.pins || [];
+    routeCoordinates = data.route || [];
+    photoPins.forEach(pin => addPhotoMarker(pin));
+    if(map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
 }
 function exportGeoJSON() {
-const now = new Date();
-const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
-const fileName = `garbage_path_data_${timestamp}.geojson`;
-const pinFeatures = photoPins.map(pin => ({ type: 'Feature', geometry: { type: 'Point', coordinates: pin.coords }, properties: { title: pin.title, image_url: pin.imageURL || 'local_data' } }));
-const routeFeature = { type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates }, properties: {} };
-const geojson = { type: 'FeatureCollection', features: [...pinFeatures, routeFeature] };
-const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(geojson, null, 2));
-const downloadAnchorNode = document.createElement('a');
-downloadAnchorNode.setAttribute("href", dataStr);
-downloadAnchorNode.setAttribute("download", fileName);
-document.body.appendChild(downloadAnchorNode);
-downloadAnchorNode.click();
-downloadAnchorNode.remove();
-document.getElementById('dataModal').style.display = 'none';
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
+    const fileName = `garbage_path_data_${timestamp}.geojson`;
+    const pinFeatures = photoPins.map(pin => ({ type: 'Feature', geometry: { type: 'Point', coordinates: pin.coords }, properties: { title: pin.title, image_url: pin.imageURL || 'local_data' } }));
+    const routeFeature = { type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates }, properties: {} };
+    const geojson = { type: 'FeatureCollection', features: [...pinFeatures, routeFeature] };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(geojson, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", fileName);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    document.getElementById('dataModal').style.display = 'none';
 }
 
 async function populatePublishedRoutesList() {
-const publishedRoutesList = document.getElementById('publishedRoutesList');
-publishedRoutesList.innerHTML = '<li>Loading your publications...</li>';
-try {
-const routesRef = collection(db, "publishedRoutes");
-const q = query(routesRef, where("userId", "==", currentUser.uid), orderBy("timestamp", "desc"));
-const querySnapshot = await getDocs(q);
-if (querySnapshot.empty) {
-publishedRoutesList.innerHTML = '<li>You have not published any routes yet.</li>';
-return;
-}
-publishedRoutesList.innerHTML = '';
-querySnapshot.forEach(doc => {
-const routeData = doc.data();
-const li = document.createElement('li');
-const contentDiv = document.createElement('div');
-contentDiv.style.flexGrow = '1';
-contentDiv.innerHTML = `<span>Route published on</span><br><small class="session-date">${new Date(routeData.timestamp.seconds * 1000).toLocaleString()}</small>`;
-const deleteBtn = document.createElement('button');
-deleteBtn.textContent = 'Delete';
-deleteBtn.className = 'delete-session-btn';
-li.appendChild(contentDiv);
-li.appendChild(deleteBtn);
-deleteBtn.addEventListener('click', (event) => {
-event.stopPropagation();
-deletePublishedRoute(doc.id);
-});
-publishedRoutesList.appendChild(li);
-});
-} catch (error) {
-console.error("Error fetching published routes:", error);
-publishedRoutesList.innerHTML = '<li>Could not load your publications.</li>';
-}
+    const publishedRoutesList = document.getElementById('publishedRoutesList');
+    publishedRoutesList.innerHTML = '<li>Loading your publications...</li>';
+    try {
+        const routesRef = collection(db, "publishedRoutes");
+        const q = query(routesRef, where("userId", "==", currentUser.uid), orderBy("timestamp", "desc"));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            publishedRoutesList.innerHTML = '<li>You have not published any routes yet.</li>';
+            return;
+        }
+        publishedRoutesList.innerHTML = '';
+        querySnapshot.forEach(doc => {
+            const routeData = doc.data();
+            const li = document.createElement('li');
+            const contentDiv = document.createElement('div');
+            contentDiv.style.flexGrow = '1';
+            contentDiv.innerHTML = `<span>Route published on</span><br><small class="session-date">${new Date(routeData.timestamp.seconds * 1000).toLocaleString()}</small>`;
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.className = 'delete-session-btn';
+            li.appendChild(contentDiv);
+            li.appendChild(deleteBtn);
+            deleteBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                deletePublishedRoute(doc.id);
+            });
+            publishedRoutesList.appendChild(li);
+        });
+    } catch (error) {
+        console.error("Error fetching published routes:", error);
+        publishedRoutesList.innerHTML = '<li>Could not load your publications.</li>';
+    }
 }
 
 async function deletePublishedRoute(routeId) {
-if (confirm(`Are you sure you want to permanently delete this published route from the community map? This action cannot be undone.`)) {
-try {
-await deleteDoc(doc(db, "publishedRoutes", routeId));
-alert(`Your route has been deleted from the community map.`);
-populatePublishedRoutesList();
-if (isCommunityViewOn) {
-clearCommunityRoutes();
-fetchAndDisplayCommunityRoutes();
-}
-} catch (error) {
-console.error("Error deleting published route:", error);
-alert("Failed to delete the route. Please check the console for errors.");
-}
-}
+    if (confirm(`Are you sure you want to permanently delete this published route from the community map? This action cannot be undone.`)) {
+        try {
+            await deleteDoc(doc(db, "publishedRoutes", routeId));
+            alert(`Your route has been deleted from the community map.`);
+            populatePublishedRoutesList();
+            if (isCommunityViewOn) {
+                clearCommunityRoutes();
+                fetchAndDisplayCommunityRoutes();
+            }
+        } catch (error) {
+            console.error("Error deleting published route:", error);
+            alert("Failed to delete the route. Please check the console for errors.");
+        }
+    }
 }
 
