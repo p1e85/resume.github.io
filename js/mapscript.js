@@ -41,9 +41,11 @@ let communityLayers = [];
 let isSignUpMode = true;
 
 // --- Main App Initialization ---
+// This listener ensures the entire HTML document is loaded before the script runs.
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- Element References ---
+    // All getElementById calls are safely placed inside here.
     const termsModal = document.getElementById('termsModal');
     const authModal = document.getElementById('authModal');
     const agreeBtn = document.getElementById('agreeBtn');
@@ -733,3 +735,4 @@ async function saveProfile() {
         alert("There was an error saving your profile. Please try again.");
     }
 }
+
