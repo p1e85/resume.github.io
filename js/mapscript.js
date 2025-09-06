@@ -82,6 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const publicProfileModal = document.getElementById('publicProfileModal');
     const publicProfileModalCloseBtn = publicProfileModal.querySelector('.close-btn');
     const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+    const ageCheckbox = document.getElementById('ageCheckbox');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const usernameInput = document.getElementById('usernameInput');
 
     // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
@@ -131,6 +135,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Event Listeners ---
+    const validateSignUpForm = () => {
+        const isEmailValid = emailInput.value.includes('@');
+        const isPasswordValid = passwordInput.value.length >= 6;
+        const isUsernameValid = usernameInput.value.trim().length >= 3;
+        const isAgeChecked = ageCheckbox.checked;
+        if (isSignUpMode) {
+            authActionBtn.disabled = !(isEmailValid && isPasswordValid && isUsernameValid && isAgeChecked);
+        } else {
+            authActionBtn.disabled = !(isEmailValid && isPasswordValid);
+        }
+    };
+    emailInput.addEventListener('input', validateSignUpForm);
+    passwordInput.addEventListener('input', validateSignUpForm);
+    usernameInput.addEventListener('input', validateSignUpForm);
+    ageCheckbox.addEventListener('change', validateSignUpForm);
+
     infoBtn.addEventListener('click', () => infoModal.style.display = 'flex');
     infoModalCloseBtn.addEventListener('click', () => infoModal.style.display = 'none');
     viewTermsLink.addEventListener('click', (e) => {
@@ -281,7 +301,13 @@ function updateAuthModalUI() {
     const authTitle = document.getElementById('authTitle');
     const authSubtitle = document.getElementById('authSubtitle');
     const authActionBtn = document.getElementById('authActionBtn');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const usernameInput = document.getElementById('usernameInput');
+    const ageCheckbox = document.getElementById('ageCheckbox');
+    
     document.getElementById('authError').textContent = '';
+    
     if (isSignUpMode) {
         authTitle.textContent = 'Create an Account';
         authSubtitle.innerHTML = 'Or <a href="#" id="switchAuthModeLink">log in to an existing account.</a>';
@@ -293,6 +319,18 @@ function updateAuthModalUI() {
         authActionBtn.textContent = 'Log In';
         authForm.classList.add('login-mode'); authForm.classList.remove('signup-mode');
     }
+
+    const isEmailValid = emailInput.value.includes('@');
+    const isPasswordValid = passwordInput.value.length >= 6;
+    const isUsernameValid = usernameInput.value.trim().length >= 3;
+    const isAgeChecked = ageCheckbox.checked;
+    
+    if (isSignUpMode) {
+        authActionBtn.disabled = !(isEmailValid && isPasswordValid && isUsernameValid && isAgeChecked);
+    } else {
+        authActionBtn.disabled = !(isEmailValid && isPasswordValid);
+    }
+
     document.getElementById('switchAuthModeLink').addEventListener('click', (e) => {
         e.preventDefault();
         isSignUpMode = !isSignUpMode;
@@ -303,8 +341,14 @@ async function handleSignUp() {
     const email = document.getElementById('emailInput').value;
     const password = document.getElementById('passwordInput').value;
     const username = document.getElementById('usernameInput').value;
+    const ageCheckbox = document.getElementById('ageCheckbox');
     const authError = document.getElementById('authError');
     authError.textContent = '';
+    
+    if (!ageCheckbox.checked) {
+        authError.textContent = 'You must certify that you are 18 or older to sign up.';
+        return;
+    }
     if (!username || username.trim().length < 3) {
         authError.textContent = 'Username must be at least 3 characters.'; return;
     }
@@ -461,13 +505,12 @@ async function fetchAndDisplayCommunityRoutes() {
                         </div>`;
                     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(popupHTML);
                     popup.on('open', () => {
-                        const profileLink = document.querySelector(`.profile-link[data-userid="${routeData.userId}"]`);
-                        if (profileLink) {
-                            profileLink.addEventListener('click', (e) => {
+                        document.querySelectorAll('.profile-link').forEach(link => {
+                            link.addEventListener('click', (e) => {
                                 e.preventDefault();
-                                showPublicProfile(routeData.userId);
+                                showPublicProfile(e.target.dataset.userid);
                             });
-                        }
+                        });
                     });
                     const marker = new mapboxgl.Marker(el).setLngLat(pin.coords).setPopup(popup).addTo(map);
                     communityLayers.push({ id: `community-marker-${pin.id}`, type: 'marker', instance: marker });
@@ -825,10 +868,8 @@ async function handleAccountDeletion() {
         await deleteUser(currentUser);
         
         alert("Your account and all associated data have been permanently deleted.");
-        // UI update is handled by onAuthStateChanged
         document.getElementById('profileModal').style.display = 'none';
-
-
+        
     } catch (error) {
         console.error("Error deleting account:", error);
         if (error.code === 'auth/requires-recent-login') {
