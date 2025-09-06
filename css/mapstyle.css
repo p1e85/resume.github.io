@@ -127,6 +127,7 @@ body {
     z-index: 1000;
     justify-content: center;
     align-items: center;
+    display: none; /* Default state is hidden */
 }
 
 .modal-content {
@@ -156,7 +157,7 @@ body {
     flex-direction: column;
 }
 
-.terms-box, .info-list {
+.terms-box {
     overflow-y: auto;
     border: 1px solid #ccc;
     padding: 10px 15px;
@@ -246,7 +247,7 @@ body {
     font-size: 14px;
 }
 
-#dataModal .modal-content, #sessionsModal .modal-content, #localSessionsModal .modal-content {
+#dataModal .modal-content, #sessionsModal .modal-content, #localSessionsModal .modal-content, #publishedRoutesModal .modal-content {
     max-width: 500px;
     text-align: center;
 }
@@ -261,6 +262,9 @@ body {
     color: white;
     background-color: #007bff;
     cursor: pointer;
+}
+.modal-button.manage {
+    background-color: #17a2b8;
 }
 .modal-button.publish {
     background-color: #ffc107;
@@ -313,8 +317,8 @@ body {
     cursor: pointer;
 }
 
-/* --- Saved Sessions List Modal --- */
-#sessionList, #localSessionList {
+/* --- Saved Sessions List Modals --- */
+#sessionList, #localSessionList, #publishedRoutesList {
     list-style: none;
     padding: 0;
     margin-top: 20px;
@@ -323,10 +327,9 @@ body {
     border: 1px solid #eee;
 }
 
-#sessionList li, #localSessionList li {
+#sessionList li, #localSessionList li, #publishedRoutesList li {
     padding: 15px;
     border-bottom: 1px solid #eee;
-    cursor: pointer;
     text-align: left;
     display: flex;
     justify-content: space-between;
@@ -334,11 +337,16 @@ body {
     gap: 10px;
 }
 
-#sessionList li:hover, #localSessionList li:hover {
-    background-color: #f5f5f5;
+#publishedRoutesList li {
+    cursor: default;
 }
 
-#sessionList .session-date, #localSessionList .session-date {
+#sessionList li:hover, #localSessionList li:hover {
+    background-color: #f5f5f5;
+    cursor: pointer;
+}
+
+#sessionList .session-date, #localSessionList .session-date, #publishedRoutesList .session-date {
     font-size: 0.8em;
     color: #666;
     white-space: nowrap;
