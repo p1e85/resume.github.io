@@ -191,6 +191,12 @@ body {
 .modal-button.export {
     background-color: #28a745;
 }
+.delete-account-button {
+    background-color: #dc3545;
+}
+.delete-account-button:hover {
+    background-color: #c82333;
+}
 
 
 /* --- Specific Modals & Lists --- */
