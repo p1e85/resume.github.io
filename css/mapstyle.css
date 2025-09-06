@@ -230,6 +230,7 @@ body {
 }
 .info-list {
     padding-left: 20px;
+    text-align: left;
 }
 .info-list li {
     margin-bottom: 10px;
@@ -369,6 +370,11 @@ body {
     display: none;
 }
 
+.safety-modal {
+    max-width: 480px;
+    text-align: center;
+}
+
 /* --- User Status & Photo Markers --- */
 .user-status-display {
     display: none;
@@ -389,4 +395,3 @@ body {
     border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
     background-size: cover; background-position: center; cursor: pointer;
 }
-
