@@ -1,6 +1,6 @@
 // --- Firebase SDK Setup ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import {
     getAuth,
@@ -43,6 +43,7 @@ let isSignUpMode = true;
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
 
+    // --- Element References ---
     const termsModal = document.getElementById('termsModal');
     const authModal = document.getElementById('authModal');
     const agreeBtn = document.getElementById('agreeBtn');
@@ -142,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
     publishBtn.addEventListener('click', publishRoute);
 });
 
-// --- Firebase Auth State Listener (MODIFIED) ---
+// --- Firebase Auth State Listener ---
 onAuthStateChanged(auth, async (user) => {
     const userStatus = document.getElementById('userStatus');
     const loggedInContent = document.getElementById('loggedInContent');
@@ -150,13 +151,9 @@ onAuthStateChanged(auth, async (user) => {
     const userEmailSpan = document.getElementById('userEmail');
     const authModal = document.getElementById('authModal');
     const publishBtn = document.getElementById('publishBtn');
-    
     if(userStatus) userStatus.style.display = 'flex';
-
     if (user) {
         currentUser = user;
-        
-        // NEW: Fetch user's profile to get their username
         try {
             const userDocRef = doc(db, "users", user.uid);
             const docSnap = await getDoc(userDocRef);
@@ -164,14 +161,12 @@ onAuthStateChanged(auth, async (user) => {
                 const username = docSnap.data().username;
                 if (userEmailSpan) userEmailSpan.textContent = `Logged in as: ${username}`;
             } else {
-                // Fallback in case profile doesn't exist yet
                 if (userEmailSpan) userEmailSpan.textContent = `Logged in`;
             }
         } catch (error) {
             console.error("Error fetching username:", error);
             if (userEmailSpan) userEmailSpan.textContent = `Logged in`;
         }
-
         if (loggedInContent) loggedInContent.style.display = 'flex';
         if (guestContent) guestContent.style.display = 'none';
         if (authModal) authModal.style.display = 'none';
@@ -184,10 +179,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-
 // --- Functions ---
-
-// Data Conversion Helpers
 function convertRouteForFirestore(coordsArray) {
     return coordsArray.map(coord => ({ lng: coord[0], lat: coord[1] }));
 }
@@ -198,7 +190,6 @@ function convertRouteFromFirestore(coordsObjects) {
 function convertPinsForFirestore(pinsArray) {
     return pinsArray.map(pin => {
         const newPin = { ...pin };
-        // Ensure coords is always an object for Firestore
         if (Array.isArray(newPin.coords)) {
             newPin.coords = { lng: newPin.coords[0], lat: newPin.coords[1] };
         }
@@ -209,14 +200,12 @@ function convertPinsFromFirestore(pinsObjects) {
     if (!pinsObjects) return [];
     return pinsObjects.map(pin => {
         const newPin = { ...pin };
-        // Ensure coords is always an array for Mapbox
         if (newPin.coords && typeof newPin.coords === 'object' && !Array.isArray(newPin.coords)) {
             newPin.coords = [newPin.coords.lng, newPin.coords.lat];
         }
         return newPin;
     });
 }
-
 function updateAuthModalUI() {
     const authForm = document.getElementById('authForm');
     const authTitle = document.getElementById('authTitle');
@@ -240,7 +229,6 @@ function updateAuthModalUI() {
         updateAuthModalUI();
     });
 }
-
 async function handleSignUp() {
     const email = document.getElementById('emailInput').value;
     const password = document.getElementById('passwordInput').value;
@@ -255,7 +243,6 @@ async function handleSignUp() {
         await setDoc(doc(db, "users", userCredential.user.uid), { username: username, email: userCredential.user.email });
     } catch (error) { authError.textContent = error.message; }
 }
-
 async function handleLogIn() {
     const email = document.getElementById('emailInput').value;
     const password = document.getElementById('passwordInput').value;
@@ -265,7 +252,6 @@ async function handleLogIn() {
         await signInWithEmailAndPassword(auth, email, password);
     } catch (error) { authError.textContent = error.message; }
 }
-
 function findMe() {
     if (findMeMarker) findMeMarker.remove();
     navigator.geolocation.getCurrentPosition(position => {
@@ -274,7 +260,6 @@ function findMe() {
         map.flyTo({ center: [longitude, latitude], zoom: 15 });
     }, () => alert("Could not get your location."), { enableHighAccuracy: true });
 }
-
 function toggleTracking() {
     const trackBtn = document.getElementById('trackBtn');
     if (trackingWatcher) {
@@ -294,7 +279,6 @@ function toggleTracking() {
         trackBtn.classList.add('tracking');
     }
 }
-
 async function handlePhoto(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -326,7 +310,6 @@ async function handlePhoto(event) {
     } catch (error) { console.error("Error uploading photo:", error); alert("Photo upload failed."); }
     finally { pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = ''; }
 }
-
 function addPhotoMarker(pinInfo) {
     const el = document.createElement('div');
     el.className = 'photo-marker';
@@ -350,11 +333,9 @@ function addPhotoMarker(pinInfo) {
         });
     });
 }
-
 function createPhotoPopupHTML(pinInfo) {
     return `<div><img src="${pinInfo.imageURL || pinInfo.image}" alt="User photo" style="width:100%; height:auto; border-radius: 4px;"/><input type="text" id="title-${pinInfo.id}" value="${pinInfo.title}" placeholder="Enter a title" style="width: 95%; margin-top: 10px;"><div style="display: flex; justify-content: space-between; margin-top: 5px;"><button id="save-${pinInfo.id}">Save Title</button><button id="delete-${pinInfo.id}" style="background-color: #dc3545;">Delete</button></div></div>`;
 }
-
 async function toggleCommunityView() {
     const communityBtn = document.getElementById('communityBtn');
     isCommunityViewOn = !isCommunityViewOn;
@@ -368,7 +349,6 @@ async function toggleCommunityView() {
         clearCommunityRoutes();
     }
 }
-
 async function fetchAndDisplayCommunityRoutes() {
     try {
         const q = query(collection(db, "publishedRoutes"), orderBy("timestamp", "desc"));
@@ -396,7 +376,6 @@ async function fetchAndDisplayCommunityRoutes() {
         });
     } catch (error) { console.error("Error fetching community routes:", error); alert("Could not load community data."); }
 }
-
 function clearCommunityRoutes() {
     communityLayers.forEach(layer => {
         if (layer.type === 'marker') layer.instance.remove();
@@ -407,7 +386,6 @@ function clearCommunityRoutes() {
     });
     communityLayers = [];
 }
-
 async function publishRoute() {
     if (!currentUser) return;
     if (routeCoordinates.length < 2 || photoPins.length === 0) {
@@ -426,7 +404,6 @@ async function publishRoute() {
         document.getElementById('dataModal').style.display = 'none';
     } catch (error) { console.error("Error publishing route:", error); alert("There was an error publishing your route."); }
 }
-
 async function saveSession() {
     const dataModal = document.getElementById('dataModal');
     if (!currentUser) {
@@ -451,7 +428,6 @@ async function saveSession() {
         } catch (error) { console.error("Error saving session to Firestore:", error); alert("Could not save session to your account."); }
     }
 }
-
 async function loadSession() {
     if (!currentUser) {
         populateLocalSessionList();
@@ -461,7 +437,6 @@ async function loadSession() {
     await populateSessionList();
     document.getElementById('sessionsModal').style.display = 'flex';
 }
-
 function populateLocalSessionList() {
     const localSessionList = document.getElementById('localSessionList');
     const guestSessions = JSON.parse(localStorage.getItem('guestSessions')) || [];
@@ -471,12 +446,31 @@ function populateLocalSessionList() {
     }
     guestSessions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach((sessionData, index) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>${sessionData.sessionName}</span><span class="session-date">${new Date(sessionData.timestamp).toLocaleDateString()}</span>`;
-        li.addEventListener('click', () => loadSpecificLocalSession(index));
+        const contentDiv = document.createElement('div');
+        contentDiv.style.flexGrow = '1';
+        contentDiv.innerHTML = `<span>${sessionData.sessionName}</span><br><small class="session-date">${new Date(sessionData.timestamp).toLocaleDateString()}</small>`;
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.className = 'delete-session-btn';
+        li.appendChild(contentDiv);
+        li.appendChild(deleteBtn);
+        contentDiv.addEventListener('click', () => loadSpecificLocalSession(index));
+        deleteBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            deleteLocalSession(index, sessionData.sessionName);
+        });
         localSessionList.appendChild(li);
     });
 }
-
+function deleteLocalSession(sessionIndex, sessionName) {
+    if (confirm(`Are you sure you want to delete the local session "${sessionName}"? This cannot be undone.`)) {
+        let guestSessions = JSON.parse(localStorage.getItem('guestSessions')) || [];
+        guestSessions.splice(sessionIndex, 1);
+        localStorage.setItem('guestSessions', JSON.stringify(guestSessions));
+        alert(`Session "${sessionName}" has been deleted.`);
+        populateLocalSessionList();
+    }
+}
 function loadSpecificLocalSession(sessionIndex) {
     const guestSessions = JSON.parse(localStorage.getItem('guestSessions')) || [];
     const sessionData = guestSessions[sessionIndex];
@@ -487,7 +481,6 @@ function loadSpecificLocalSession(sessionIndex) {
         document.getElementById('localSessionsModal').style.display = 'none';
     }
 }
-
 async function populateSessionList() {
     const sessionList = document.getElementById('sessionList');
     sessionList.innerHTML = '<li>Loading...</li>';
@@ -501,46 +494,61 @@ async function populateSessionList() {
         querySnapshot.forEach(doc => {
             const sessionData = doc.data();
             const li = document.createElement('li');
-            li.innerHTML = `<span>${sessionData.sessionName}</span><span class="session-date">${new Date(sessionData.timestamp.seconds * 1000).toLocaleDateString()}</span>`;
-            li.addEventListener('click', () => loadSpecificSession(doc.id));
+            const contentDiv = document.createElement('div');
+            contentDiv.style.flexGrow = '1';
+            contentDiv.innerHTML = `<span>${sessionData.sessionName}</span><br><small class="session-date">${new Date(sessionData.timestamp.seconds * 1000).toLocaleDateString()}</small>`;
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.className = 'delete-session-btn';
+            li.appendChild(contentDiv);
+            li.appendChild(deleteBtn);
+            contentDiv.addEventListener('click', () => loadSpecificSession(doc.id));
+            deleteBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                deletePrivateSession(doc.id, sessionData.sessionName);
+            });
             sessionList.appendChild(li);
         });
     } catch (error) { console.error("Error fetching sessions:", error); sessionList.innerHTML = '<li>Could not load sessions.</li>'; }
 }
-
+async function deletePrivateSession(sessionId, sessionName) {
+    if (confirm(`Are you sure you want to delete the cloud session "${sessionName}"? This cannot be undone.`)) {
+        try {
+            await deleteDoc(doc(db, "users", currentUser.uid, "privateSessions", sessionId));
+            alert(`Session "${sessionName}" has been deleted.`);
+            populateSessionList();
+        } catch (error) {
+            console.error("Error deleting session:", error);
+            alert("Failed to delete the session. Please try again.");
+        }
+    }
+}
 async function loadSpecificSession(sessionId) {
     try {
         const docSnap = await getDoc(doc(db, "users", currentUser.uid, "privateSessions", sessionId));
         if (docSnap.exists()) {
             clearCurrentSession();
             const sessionData = docSnap.data();
-            const convertedData = {
-                ...sessionData,
-                pins: convertPinsFromFirestore(sessionData.pins),
-                route: convertRouteFromFirestore(sessionData.route)
-            };
+            const convertedData = { ...sessionData, pins: convertPinsFromFirestore(sessionData.pins), route: convertRouteFromFirestore(sessionData.route) };
             displaySessionData(convertedData);
             alert(`Session "${sessionData.sessionName}" loaded!`);
             document.getElementById('sessionsModal').style.display = 'none';
         }
     } catch (error) { console.error("Error loading specific session:", error); alert("Failed to load the session."); }
 }
-
 function clearCurrentSession() {
     markers.forEach(marker => marker.remove());
     markers = [];
     photoPins = [];
     routeCoordinates = [];
-    if (map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', 'coordinates': [] } });
+    if (map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
 }
-
 function displaySessionData(data) {
     photoPins = data.pins || [];
     routeCoordinates = data.route || [];
     photoPins.forEach(pin => addPhotoMarker(pin));
-    if(map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
+if(map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
 }
-
 function exportGeoJSON() {
     const now = new Date();
     const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
@@ -557,3 +565,4 @@ function exportGeoJSON() {
     downloadAnchorNode.remove();
     document.getElementById('dataModal').style.display = 'none';
 }
+
