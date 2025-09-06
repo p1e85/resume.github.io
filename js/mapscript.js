@@ -328,7 +328,7 @@ function toggleTracking() {
             const newCoord = [position.coords.longitude, position.coords.latitude];
             routeCoordinates.push(newCoord);
             if (map.getSource('user-route')) {
-                map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
+                map.getSource('user-route').setData({ type: 'Feature', geometry: { 'type': 'LineString', coordinates: routeCoordinates } });
             }
             if (userLocationSource) {
                 userLocationSource.setData({ 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': newCoord } });
@@ -678,4 +678,3 @@ async function deletePublishedRoute(routeId) {
         }
     }
 }
-
