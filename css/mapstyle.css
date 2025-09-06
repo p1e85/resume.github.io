@@ -3,10 +3,18 @@ body {
     margin: 0;
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    overflow: hidden;
+    overflow: hidden; /* Prevents scrolling when modals are open */
 }
 
 /* --- Map & Containers --- */
+#map {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+}
+
 .top-bar-container {
     position: absolute;
     top: 15px;
@@ -26,7 +34,7 @@ body {
 
 .bottom-container {
     position: absolute;
-    bottom: 30px;
+    bottom: 30px; /* Raised slightly */
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
@@ -34,14 +42,6 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 10px;
-}
-
-#map {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
 }
 
 /* --- Buttons --- */
@@ -78,24 +78,39 @@ body {
     font-size: 14px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 20px;
-    background-color: rgba(108, 117, 125, 0.2);
+    background-color: rgba(255, 255, 255, 0.2);
     color: #333;
     cursor: pointer;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-    transition: background-color 0.3s, color 0.3s;
+    transition: background-color 0.3s;
 }
 .top-bar-button:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.4);
 }
 
 .community-button {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    cursor: pointer;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    transition: background-color 0.3s, color 0.3s;
     background-color: #28a745;
     color: white;
 }
+.community-button:hover {
+    opacity: 0.9;
+}
 .community-button.off {
-    background-color: rgba(108, 117, 125, 0.2);
+    background-color: rgba(255, 255, 255, 0.2);
     color: #333;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.community-button.off:hover {
+    background-color: rgba(255, 255, 255, 0.4);
 }
 
 .donate-button {
@@ -107,7 +122,6 @@ body {
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
     transition: background-color 0.3s;
 }
 .donate-button:hover {
@@ -115,7 +129,7 @@ body {
 }
 
 
-/* --- Modals General --- */
+/* --- Modals --- */
 .modal-overlay, .modal {
     display: none;
     position: fixed;
@@ -127,7 +141,9 @@ body {
     z-index: 1000;
     justify-content: center;
     align-items: center;
-    display: none; /* Default state is hidden */
+}
+.modal-overlay {
+    display: flex;
 }
 
 .modal-content {
@@ -150,108 +166,6 @@ body {
     cursor: pointer;
 }
 
-/* --- Specific Modals --- */
-#termsModal .modal-content, #infoModal .modal-content {
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.terms-box {
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 10px 15px;
-    margin-bottom: 15px;
-    background-color: #f9f9f9;
-    flex-grow: 1;
-}
-
-.info-list {
-    text-align: left;
-    padding-left: 30px;
-}
-.info-list li {
-    margin-bottom: 10px;
-}
-
-.agreement-section {
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-#agreeBtn {
-    padding: 12px;
-    font-size: 18px;
-    border: none;
-    border-radius: 5px;
-    color: white;
-    background-color: #007bff;
-    cursor: pointer;
-}
-#agreeBtn:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-}
-
-.auth-modal {
-    max-width: 400px;
-    text-align: center;
-}
-#authSubtitle a {
-    color: #007bff;
-    text-decoration: none;
-    cursor: pointer;
-}
-#authSubtitle a:hover {
-    text-decoration: underline;
-}
-.auth-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin: 20px 0;
-}
-.auth-form.login-mode #usernameInput { display: none; }
-.auth-form.signup-mode #usernameInput { display: block; }
-.auth-form input {
-    padding: 12px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-#authActionBtn {
-    padding: 12px;
-    font-size: 16px;
-    border: none;
-    border-radius: 5px;
-    color: white;
-    background-color: #007bff;
-    cursor: pointer;
-}
-.skip-button {
-    background-color: #6c757d;
-    color: white;
-    border: none;
-    padding: 12px;
-    width: 100%;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-}
-.error-message {
-    color: #dc3545;
-    margin-top: 15px;
-    min-height: 20px;
-    font-size: 14px;
-}
-
-#dataModal .modal-content, #sessionsModal .modal-content, #localSessionsModal .modal-content, #publishedRoutesModal .modal-content {
-    max-width: 500px;
-    text-align: center;
-}
-
 .modal-button {
     width: 100%;
     padding: 12px;
@@ -263,6 +177,10 @@ body {
     background-color: #007bff;
     cursor: pointer;
 }
+.modal-button:hover {
+    opacity: 0.9;
+}
+
 .modal-button.manage {
     background-color: #17a2b8;
 }
@@ -273,11 +191,105 @@ body {
 .modal-button.export {
     background-color: #28a745;
 }
-.modal-button:hover {
-    opacity: 0.9;
+
+
+/* --- Specific Modals & Lists --- */
+#termsModal .modal-content, #infoModal .modal-content {
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+.terms-box {
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+    flex-grow: 1;
+}
+.agreement-section {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+#agreeBtn {
+    padding: 12px; font-size: 18px; border: none; border-radius: 5px;
+    color: white; background-color: #007bff; cursor: pointer;
+    transition: background-color 0.2s;
+}
+#agreeBtn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+.info-list {
+    padding-left: 20px;
+}
+.info-list li {
+    margin-bottom: 10px;
 }
 
-/* --- User Status --- */
+.auth-modal {
+    max-width: 400px;
+    text-align: center;
+}
+#authSubtitle a {
+    color: #007bff; text-decoration: none; cursor: pointer;
+}
+#authSubtitle a:hover {
+    text-decoration: underline;
+}
+.auth-form {
+    display: flex; flex-direction: column; gap: 10px; margin: 20px 0;
+}
+.auth-form.login-mode #usernameInput {
+    display: none;
+}
+.auth-form.signup-mode #usernameInput {
+    display: block;
+}
+.auth-form input {
+    padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px;
+}
+#authActionBtn {
+    padding: 12px; font-size: 16px; border: none; border-radius: 5px;
+    color: white; background-color: #007bff; cursor: pointer;
+}
+.skip-button {
+    background-color: #6c757d; color: white; border: none; padding: 12px;
+    width: 100%; border-radius: 5px; font-size: 16px; cursor: pointer;
+}
+.error-message {
+    color: #dc3545; margin-top: 15px; min-height: 20px; font-size: 14px;
+}
+
+#sessionList, #localSessionList, #publishedRoutesList {
+    list-style: none; padding: 0; margin-top: 20px;
+    max-height: 40vh; overflow-y: auto; border: 1px solid #eee;
+}
+#sessionList li, #localSessionList li, #publishedRoutesList li {
+    padding: 15px; border-bottom: 1px solid #eee; text-align: left;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+}
+#publishedRoutesList li {
+    cursor: default;
+}
+#sessionList li:hover, #localSessionList li:hover {
+    background-color: #f5f5f5; cursor: pointer;
+}
+.session-date {
+    font-size: 0.8em; color: #666; white-space: nowrap;
+}
+.delete-session-btn {
+    padding: 5px 10px; font-size: 12px; border: none;
+    background-color: #dc3545; color: white; border-radius: 5px;
+    cursor: pointer; transition: background-color 0.2s;
+}
+.delete-session-btn:hover {
+    background-color: #c82333;
+}
+
+/* --- User Status & Photo Markers --- */
 .user-status-display {
     display: none;
     background-color: rgba(255, 255, 255, 0.8);
@@ -288,82 +300,13 @@ body {
     gap: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-#loggedInContent, #guestContent {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
 #logoutBtn, #loginSignupBtn {
-    border: none;
-    background-color: #6c757d;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
+    border: none; background-color: #6c757d; color: white;
+    padding: 5px 10px; border-radius: 5px; cursor: pointer;
 }
-#loginSignupBtn {
-    background-color: #007bff;
-}
-
-/* --- Map Elements --- */
 .photo-marker {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-    background-size: cover;
-    background-position: center;
-    cursor: pointer;
-}
-
-/* --- Saved Sessions List Modals --- */
-#sessionList, #localSessionList, #publishedRoutesList {
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
-    max-height: 40vh;
-    overflow-y: auto;
-    border: 1px solid #eee;
-}
-
-#sessionList li, #localSessionList li, #publishedRoutesList li {
-    padding: 15px;
-    border-bottom: 1px solid #eee;
-    text-align: left;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-}
-
-#publishedRoutesList li {
-    cursor: default;
-}
-
-#sessionList li:hover, #localSessionList li:hover {
-    background-color: #f5f5f5;
-    cursor: pointer;
-}
-
-#sessionList .session-date, #localSessionList .session-date, #publishedRoutesList .session-date {
-    font-size: 0.8em;
-    color: #666;
-    white-space: nowrap;
-}
-
-.delete-session-btn {
-    padding: 5px 10px;
-    font-size: 12px;
-    border: none;
-    background-color: #dc3545;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.delete-session-btn:hover {
-    background-color: #c82333;
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    background-size: cover; background-position: center; cursor: pointer;
 }
 
