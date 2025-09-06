@@ -143,16 +143,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     saveBtn.addEventListener('click', saveSession);
-    loadBtn.addEventListener('click', loadSession);
+
+    // MODIFIED: loadBtn listener to close data modal
+    loadBtn.addEventListener('click', () => {
+        dataModal.style.display = 'none';
+        loadSession();
+    });
+
     exportBtn.addEventListener('click', exportGeoJSON);
     communityBtn.addEventListener('click', toggleCommunityView);
     publishBtn.addEventListener('click', publishRoute);
     
+    // MODIFIED: managePublicationsBtn listener to close data modal
     managePublicationsBtn.addEventListener('click', () => {
         if (!currentUser) {
             alert("You must be logged in to manage your publications.");
             return;
         }
+        dataModal.style.display = 'none'; // Close the current modal
         populatePublishedRoutesList();
         publishedRoutesModal.style.display = 'flex';
     });
