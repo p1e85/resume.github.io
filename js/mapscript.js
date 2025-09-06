@@ -78,6 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileModal = document.getElementById('profileModal');
     const profileModalCloseBtn = profileModal.querySelector('.close-btn');
     const saveProfileBtn = document.getElementById('saveProfileBtn');
+    const publicProfileModal = document.getElementById('publicProfileModal');
+    const publicProfileModalCloseBtn = publicProfileModal.querySelector('.close-btn');
 
     // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
@@ -163,9 +165,10 @@ document.addEventListener('DOMContentLoaded', () => {
     localSessionsModalCloseBtn.addEventListener('click', () => localSessionsModal.style.display = 'none');
     publishedRoutesModalCloseBtn.addEventListener('click', () => publishedRoutesModal.style.display = 'none');
     profileModalCloseBtn.addEventListener('click', () => profileModal.style.display = 'none');
+    publicProfileModalCloseBtn.addEventListener('click', () => publicProfileModal.style.display = 'none');
     
     window.addEventListener('click', (event) => {
-        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal, profileModal];
+        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal, profileModal, publicProfileModal];
         if (modals.includes(event.target)) modals.forEach(m => m.style.display = 'none');
     });
     
@@ -447,7 +450,22 @@ async function fetchAndDisplayCommunityRoutes() {
                     el.className = 'photo-marker';
                     el.style.backgroundImage = `url(${pin.imageURL})`;
                     el.style.borderColor = '#28a745';
-                    const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<div><img src="${pin.imageURL}" alt="Community photo" style="width:100%; border-radius: 4px;"/><p style="margin: 5px 0 0;"><strong>${pin.title}</strong></p><small>By: ${routeData.username || 'A user'}</small></div>`);
+                    const popupHTML = `
+                        <div>
+                            <img src="${pin.imageURL}" alt="Community photo" style="width:100%; border-radius: 4px;"/>
+                            <p style="margin: 5px 0 0;"><strong>${pin.title}</strong></p>
+                            <small>By: <a href="#" class="profile-link" data-userid="${routeData.userId}">${routeData.username || 'A user'}</a></small>
+                        </div>`;
+                    const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(popupHTML);
+                    popup.on('open', () => {
+                        const profileLink = document.querySelector(`.profile-link[data-userid="${routeData.userId}"]`);
+                        if (profileLink) {
+                            profileLink.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                showPublicProfile(routeData.userId);
+                            });
+                        }
+                    });
                     const marker = new mapboxgl.Marker(el).setLngLat(pin.coords).setPopup(popup).addTo(map);
                     communityLayers.push({ id: `community-marker-${pin.id}`, type: 'marker', instance: marker });
                 });
@@ -731,6 +749,41 @@ async function saveProfile() {
     } catch (error) {
         console.error("Error saving profile:", error);
         alert("There was an error saving your profile. Please try again.");
+    }
+}
+
+async function showPublicProfile(userId) {
+    if (!userId) return;
+
+    try {
+        const userDocRef = doc(db, "users", userId);
+        const docSnap = await getDoc(userDocRef);
+
+        if (docSnap.exists()) {
+            const profileData = docSnap.data();
+            const publicProfileModal = document.getElementById('publicProfileModal');
+            const profileSupportBtn = document.getElementById('profileSupportBtn');
+            
+            document.getElementById('profileUsername').textContent = profileData.username || 'Anonymous User';
+            document.getElementById('profileLocation').textContent = profileData.location || '';
+            document.getElementById('profileBio').textContent = profileData.bio || 'This user has not written a bio yet.';
+            
+            if (profileData.buyMeACoffeeLink) {
+                profileSupportBtn.style.display = 'block';
+                profileSupportBtn.onclick = () => {
+                    window.open(profileData.buyMeACoffeeLink, '_blank');
+                };
+            } else {
+                profileSupportBtn.style.display = 'none';
+            }
+            
+            publicProfileModal.style.display = 'flex';
+        } else {
+            alert("Could not find this user's profile.");
+        }
+    } catch (error) {
+        console.error("Error fetching public profile:", error);
+        alert("There was an error loading the user's profile.");
     }
 }
 
