@@ -327,6 +327,26 @@ body {
     resize: vertical;
 }
 
+.profile-modal {
+    max-width: 450px;
+    text-align: center;
+}
+.profile-location {
+    font-style: italic;
+    color: #6c757d;
+    margin-top: -10px;
+}
+.profile-bio {
+    margin-top: 20px;
+    white-space: pre-wrap;
+}
+.support-button {
+    background-color: #ffc107;
+    color: #000;
+    margin-top: 20px;
+    display: none;
+}
+
 /* --- User Status & Photo Markers --- */
 .user-status-display {
     display: none;
