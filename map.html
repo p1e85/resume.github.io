@@ -46,6 +46,7 @@
         <div class="modal-content">
             <h2>Terms of Use</h2>
             <div class="terms-box">
+                <p><strong>AGE REQUIREMENT:</strong> You must be 18 years of age or older to create an account and use this Service. By using this Service, you represent and warrant that you are 18 years of age or older.</p>
                 <p>Welcome to Garbage Path! By accessing or using our application (the "Service"), you agree to be bound by these Terms of Use.</p>
                 <p><strong>1. Description of Service:</strong> This Service is for the sole purpose of identifying and documenting refuse, trash, and litter (collectively, "Garbage").</p>
                 <p><strong>2. Prohibited Content:</strong> You may NOT upload any photograph containing people, illegal activities, or personal information. The focus must be exclusively on Garbage.</p>
@@ -68,7 +69,11 @@
                 <input type="text" id="usernameInput" placeholder="Public Username">
                 <input type="email" id="emailInput" placeholder="Email (for login)">
                 <input type="password" id="passwordInput" placeholder="Password (min. 6 characters)">
-                <button id="authActionBtn">Sign Up</button>
+                <div id="ageGateContainer" class="age-gate-container">
+                    <input type="checkbox" id="ageCheckbox">
+                    <label for="ageCheckbox">I certify that I am 18 years of age or older.</label>
+                </div>
+                <button id="authActionBtn" disabled>Sign Up</button>
             </div>
             <hr>
             <button id="skipBtn" class="skip-button">Skip for now</button>
