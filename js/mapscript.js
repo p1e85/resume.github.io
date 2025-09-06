@@ -86,6 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailInput = document.getElementById('emailInput');
     const passwordInput = document.getElementById('passwordInput');
     const usernameInput = document.getElementById('usernameInput');
+    const safetyModal = document.getElementById('safetyModal');
+    const safetyModalOkBtn = document.getElementById('safetyModalOkBtn');
+    const safetyModalCloseBtn = safetyModal.querySelector('.close-btn');
 
     // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
@@ -179,6 +182,12 @@ document.addEventListener('DOMContentLoaded', () => {
     skipBtn.addEventListener('click', () => authModal.style.display = 'none');
     findMeBtn.addEventListener('click', findMe);
     trackBtn.addEventListener('click', toggleTracking);
+    safetyModalOkBtn.addEventListener('click', () => {
+        safetyModal.style.display = 'none';
+        sessionStorage.setItem('safetyWarningSeen', 'true');
+        startTracking();
+    });
+    safetyModalCloseBtn.addEventListener('click', () => safetyModal.style.display = 'none');
     pictureBtn.addEventListener('click', () => cameraInput.click());
     cameraInput.addEventListener('change', handlePhoto);
     dataBtn.addEventListener('click', () => dataModal.style.display = 'flex');
@@ -190,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
     publicProfileModalCloseBtn.addEventListener('click', () => publicProfileModal.style.display = 'none');
     
     window.addEventListener('click', (event) => {
-        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal, profileModal, publicProfileModal];
+        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal, profileModal, publicProfileModal, safetyModal];
         if (modals.includes(event.target)) modals.forEach(m => m.style.display = 'none');
     });
     
@@ -376,10 +385,9 @@ function findMe() {
 }
 
 function toggleTracking() {
-    const trackBtn = document.getElementById('trackBtn');
-    const userLocationSource = map.getSource('user-location-point');
-
     if (trackingWatcher) {
+        const trackBtn = document.getElementById('trackBtn');
+        const userLocationSource = map.getSource('user-location-point');
         navigator.geolocation.clearWatch(trackingWatcher);
         trackingWatcher = null;
         trackBtn.textContent = '🛰️ Start Tracking';
@@ -388,24 +396,33 @@ function toggleTracking() {
             userLocationSource.setData({ 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [] } });
         }
     } else {
-        routeCoordinates = [];
-        navigator.geolocation.getCurrentPosition(position => {
-            map.flyTo({ center: [position.coords.longitude, position.coords.latitude], zoom: 16 });
-        });
-        trackingWatcher = navigator.geolocation.watchPosition(position => {
-            const newCoord = [position.coords.longitude, position.coords.latitude];
-            routeCoordinates.push(newCoord);
-            if (map.getSource('user-route')) {
-                map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
-            }
-            if (userLocationSource) {
-                userLocationSource.setData({ 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': newCoord } });
-            }
-        }, () => alert("Error watching position."), { enableHighAccuracy: true });
-        
-        trackBtn.textContent = '🛑 Stop Tracking';
-        trackBtn.classList.add('tracking');
+        if (sessionStorage.getItem('safetyWarningSeen')) {
+            startTracking();
+        } else {
+            document.getElementById('safetyModal').style.display = 'flex';
+        }
     }
+}
+
+function startTracking() {
+    const trackBtn = document.getElementById('trackBtn');
+    const userLocationSource = map.getSource('user-location-point');
+    routeCoordinates = [];
+    navigator.geolocation.getCurrentPosition(position => {
+        map.flyTo({ center: [position.coords.longitude, position.coords.latitude], zoom: 16 });
+    });
+    trackingWatcher = navigator.geolocation.watchPosition(position => {
+        const newCoord = [position.coords.longitude, position.coords.latitude];
+        routeCoordinates.push(newCoord);
+        if (map.getSource('user-route')) {
+            map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
+        }
+        if (userLocationSource) {
+            userLocationSource.setData({ 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': newCoord } });
+        }
+    }, () => alert("Error watching position."), { enableHighAccuracy: true });
+    trackBtn.textContent = '🛑 Stop Tracking';
+    trackBtn.classList.add('tracking');
 }
 
 async function handlePhoto(event) {
@@ -879,4 +896,3 @@ async function handleAccountDeletion() {
         }
     }
 }
-
