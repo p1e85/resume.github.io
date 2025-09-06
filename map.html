@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Garbage Path - Map Tracker</title>
-    <!-- NEW: Add an icon for the browser tab -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♻️</text></svg>">
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />
     <link rel="stylesheet" href="css/mapstyle.css">
@@ -28,7 +27,7 @@
             <span class="close-btn">&times;</span>
             <h2>About Garbage Path</h2>
             <h4>The Mission (Why)</h4>
-            <p>Garbage Path transforms the chore of cleaning up our neighborhoods into a visible and rewarding achievement. By tracking your cleanup routes and pinning the litter you collect, you create a tangible record of your positive impact. Share your efforts on the community map to inspire others, see our collective progress, and help identify areas that need our attention the most. You are not alone in caring for our environment—together, we can make a difference.</p>
+            <p>Garbage Path transforms the chore of cleaning up our neighborhoods into a visible and rewarding achievement. By tracking your cleanup routes and pinning the litter you collect, you create a tangible record of your positive impact. Share your efforts on the community map to inspire others, see our collective progress, and help identify areas that need our attention the most.</p>
             <h4>How to Use the App</h4>
             <ol class="info-list">
                 <li><strong>Sign Up or Skip:</strong> Create an account to save your data to the cloud, or 'Skip' to use the app as a guest (your data will be saved only on this browser).</li>
@@ -38,6 +37,7 @@
                 <li><strong>Publish:</strong> When logged in, you can use the 'Publish to Community' button to share your completed route with everyone.</li>
                 <li><strong>Community View:</strong> Toggle the 'Community View' button to see all the routes published by other users!</li>
             </ol>
+            <p class="tos-link-container">You can review the full <a href="#" id="viewTermsLink">Terms of Use</a> at any time.</p>
         </div>
     </div>
     
@@ -81,9 +81,7 @@
 
     <!-- Bottom Container -->
     <div class="bottom-container">
-        <!-- User Status Display -->
         <div id="userStatus" class="user-status-display">
-            <!-- Content is dynamically set by JS -->
             <div id="loggedInContent">
                 <span id="userEmail"></span>
                 <button id="logoutBtn">Log Out</button>
@@ -93,8 +91,6 @@
                 <button id="loginSignupBtn">Log In / Sign Up</button>
             </div>
         </div>
-
-        <!-- Main UI controls -->
         <div class="controls">
             <button id="findMeBtn">📍 Find Me</button>
             <button id="trackBtn">🛰️ Start Tracking</button>
@@ -128,9 +124,7 @@
             <span class="close-btn">&times;</span>
             <h2>Load a Private Session</h2>
             <p>Select a previously saved session to load it onto the map.</p>
-            <ul id="sessionList" class="session-list">
-                <p>No saved sessions found.</p>
-            </ul>
+            <ul id="sessionList" class="session-list"></ul>
         </div>
     </div>
 
@@ -140,9 +134,7 @@
             <span class="close-btn">&times;</span>
             <h2>Load a Local Session</h2>
             <p>Select a session saved on this browser to load it.</p>
-            <ul id="localSessionList" class="session-list">
-                <p>No locally saved sessions found.</p>
-            </ul>
+            <ul id="localSessionList" class="session-list"></ul>
         </div>
     </div>
 
