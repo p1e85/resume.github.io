@@ -76,6 +76,24 @@
         </div>
     </div>
     
+    <!-- Modal for Editing User Profile -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Edit Your Public Profile</h2>
+            <p>This information will be visible to other users when they click your username on the community map.</p>
+            <div class="profile-form">
+                <label for="bioInput">Short Bio</label>
+                <textarea id="bioInput" placeholder="Tell the community a little about yourself..." maxlength="150"></textarea>
+                <label for="locationInput">Location</label>
+                <input type="text" id="locationInput" placeholder="e.g., Chicago, IL" maxlength="50">
+                <label for="coffeeLinkInput">"Buy Me a Coffee" Link</label>
+                <input type="url" id="coffeeLinkInput" placeholder="https://www.buymeacoffee.com/yourname">
+                <button id="saveProfileBtn" class="modal-button">Save Profile</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Map container -->
     <div id='map'></div>
 
@@ -106,6 +124,7 @@
             <span class="close-btn">&times;</span>
             <h2>Data Management</h2>
             <p>Manage your private sessions or your public contributions.</p>
+            <button id="editProfileBtn" class="modal-button edit-profile">👤 Edit My Profile</button>
             <button id="saveBtn" class="modal-button">Save Private Session</button>
             <button id="loadBtn" class="modal-button">Load Private Session</button>
             <button id="managePublicationsBtn" class="modal-button manage">Manage My Publications</button>
@@ -154,3 +173,4 @@
 
 </body>
 </html>
+
