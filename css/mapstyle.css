@@ -34,7 +34,7 @@ body {
 
 .bottom-container {
     position: absolute;
-    bottom: 30px; /* Raised slightly */
+    bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
@@ -131,7 +131,7 @@ body {
 
 /* --- Modals --- */
 .modal-overlay, .modal {
-    display: none; /* CORRECTED: This ensures all modals are hidden by default */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -142,7 +142,6 @@ body {
     justify-content: center;
     align-items: center;
 }
-/* REMOVED the conflicting .modal-overlay { display: flex; } rule */
 
 .modal-content {
     background-color: #fff;
@@ -225,6 +224,19 @@ body {
 }
 .info-list li {
     margin-bottom: 10px;
+}
+.tos-link-container {
+    margin-top: 20px;
+    font-size: 0.9em;
+    color: #666;
+    text-align: center;
+}
+.tos-link-container a {
+    color: #007bff;
+    text-decoration: none;
+}
+.tos-link-container a:hover {
+    text-decoration: underline;
 }
 
 .auth-modal {
