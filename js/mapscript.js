@@ -1,6 +1,6 @@
 // --- Firebase SDK Setup ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, orderBy, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import {
     getAuth,
@@ -74,6 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const publishedRoutesModal = document.getElementById('publishedRoutesModal');
     const publishedRoutesModalCloseBtn = publishedRoutesModal.querySelector('.close-btn');
     const viewTermsLink = document.getElementById('viewTermsLink');
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    const profileModal = document.getElementById('profileModal');
+    const profileModalCloseBtn = profileModal.querySelector('.close-btn');
+    const saveProfileBtn = document.getElementById('saveProfileBtn');
 
     // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
@@ -158,9 +162,10 @@ document.addEventListener('DOMContentLoaded', () => {
     sessionsModalCloseBtn.addEventListener('click', () => sessionsModal.style.display = 'none');
     localSessionsModalCloseBtn.addEventListener('click', () => localSessionsModal.style.display = 'none');
     publishedRoutesModalCloseBtn.addEventListener('click', () => publishedRoutesModal.style.display = 'none');
+    profileModalCloseBtn.addEventListener('click', () => profileModal.style.display = 'none');
     
     window.addEventListener('click', (event) => {
-        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal];
+        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal, profileModal];
         if (modals.includes(event.target)) modals.forEach(m => m.style.display = 'none');
     });
     
@@ -181,6 +186,16 @@ document.addEventListener('DOMContentLoaded', () => {
         populatePublishedRoutesList();
         publishedRoutesModal.style.display = 'flex';
     });
+    editProfileBtn.addEventListener('click', () => {
+        if (!currentUser) {
+            alert("You must be logged in to edit your profile.");
+            return;
+        }
+        dataModal.style.display = 'none';
+        loadProfileForEditing();
+        profileModal.style.display = 'flex';
+    });
+    saveProfileBtn.addEventListener('click', saveProfile);
 });
 
 // --- Firebase Auth State Listener ---
@@ -192,6 +207,7 @@ onAuthStateChanged(auth, async (user) => {
     const authModal = document.getElementById('authModal');
     const publishBtn = document.getElementById('publishBtn');
     const managePublicationsBtn = document.getElementById('managePublicationsBtn');
+    const editProfileBtn = document.getElementById('editProfileBtn');
     
     if(userStatus) userStatus.style.display = 'flex';
 
@@ -215,12 +231,14 @@ onAuthStateChanged(auth, async (user) => {
         if (authModal) authModal.style.display = 'none';
         if (publishBtn) publishBtn.style.display = 'block';
         if (managePublicationsBtn) managePublicationsBtn.style.display = 'block';
+        if (editProfileBtn) editProfileBtn.style.display = 'block';
     } else {
         currentUser = null;
         if (loggedInContent) loggedInContent.style.display = 'none';
         if (guestContent) guestContent.style.display = 'block';
         if (publishBtn) publishBtn.style.display = 'none';
         if (managePublicationsBtn) managePublicationsBtn.style.display = 'none';
+        if (editProfileBtn) editProfileBtn.style.display = 'none';
     }
 });
 
@@ -328,7 +346,7 @@ function toggleTracking() {
             const newCoord = [position.coords.longitude, position.coords.latitude];
             routeCoordinates.push(newCoord);
             if (map.getSource('user-route')) {
-                map.getSource('user-route').setData({ type: 'Feature', geometry: { 'type': 'LineString', coordinates: routeCoordinates } });
+                map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
             }
             if (userLocationSource) {
                 userLocationSource.setData({ 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': newCoord } });
@@ -676,5 +694,42 @@ async function deletePublishedRoute(routeId) {
             console.error("Error deleting published route:", error);
             alert("Failed to delete the route. Please check the console for errors.");
         }
+    }
+}
+
+async function loadProfileForEditing() {
+    if (!currentUser) return;
+    try {
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const docSnap = await getDoc(userDocRef);
+        if (docSnap.exists()) {
+            const profileData = docSnap.data();
+            document.getElementById('bioInput').value = profileData.bio || '';
+            document.getElementById('locationInput').value = profileData.location || '';
+            document.getElementById('coffeeLinkInput').value = profileData.buyMeACoffeeLink || '';
+        }
+    } catch (error) {
+        console.error("Error loading profile data:", error);
+        alert("Could not load your profile data.");
+    }
+}
+
+async function saveProfile() {
+    if (!currentUser) return;
+    const bio = document.getElementById('bioInput').value;
+    const location = document.getElementById('locationInput').value;
+    const coffeeLink = document.getElementById('coffeeLinkInput').value;
+    try {
+        const userDocRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userDocRef, {
+            bio: bio,
+            location: location,
+            buyMeACoffeeLink: coffeeLink
+        });
+        alert("Your profile has been updated successfully!");
+        document.getElementById('profileModal').style.display = 'none';
+    } catch (error) {
+        console.error("Error saving profile:", error);
+        alert("There was an error saving your profile. Please try again.");
     }
 }
