@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
     const createBtn = document.getElementById('createBtn');
-    const dataModal = document.getElementById('dataModal'); // Renamed for clarity
+    const dataModal = document.getElementById('dataModal');
     const cancelBtn = document.getElementById('cancelBtn');
     const dataForm = document.getElementById('dataForm');
     const messageList = document.getElementById('messageList');
@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const body = document.body;
     const themeKey = 'retro-db-theme';
 
-    // NEW: Info Modal elements
     const infoBtn = document.getElementById('infoBtn');
     const infoModal = document.getElementById('infoModal');
     const closeInfoBtn = document.getElementById('closeInfoBtn');
@@ -105,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editIndex = null;
     };
     
-    // NEW: Info Modal Functions
+    // Info Modal Functions
     const showInfoModal = () => {
         infoModal.classList.remove('hidden');
     };
@@ -163,17 +162,48 @@ document.addEventListener('DOMContentLoaded', () => {
         showDataModal(true, messageToEdit);
     };
 
+    // UPDATED: handleDownload function with new logic
     const handleDownload = () => {
         const checkedBoxes = messageList.querySelectorAll('input[type="checkbox"]:checked');
-        
-        checkedBoxes.forEach(box => {
+        const selectedCount = checkedBoxes.length;
+
+        if (selectedCount === 0) {
+            return; // Should not happen since button is disabled, but good practice
+        }
+
+        if (selectedCount === 1) {
+            // If only one is selected, download it as a single file (original behavior)
+            const box = checkedBoxes[0];
             const itemDiv = box.closest('.message-item');
             const index = parseInt(itemDiv.dataset.index, 10);
             const messageData = messages[index];
             
             const fileContent = `Subject: ${messageData.subject}\n\n---\n\n${messageData.message}`;
             downloadTxtFile(messageData.fileName, fileContent);
-        });
+
+        } else {
+            // If multiple are selected, compile them into one file
+            let combinedContent = `// RETRO-DB BATCH EXPORT\n// EXPORTED ON: ${new Date().toLocaleString()}\n\n`;
+
+            checkedBoxes.forEach(box => {
+                const itemDiv = box.closest('.message-item');
+                const index = parseInt(itemDiv.dataset.index, 10);
+                const messageData = messages[index];
+
+                combinedContent += `========================================\n`;
+                combinedContent += `FILENAME: ${messageData.fileName}.txt\n`;
+                combinedContent += `SUBJECT:  ${messageData.subject}\n`;
+                combinedContent += `----------------------------------------\n\n`;
+                combinedContent += `${messageData.message}\n\n`;
+            });
+
+            // Create a generic, timestamped filename for the batch export
+            const today = new Date();
+            const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            const filename = `retro-db-export-${dateString}`;
+            
+            downloadTxtFile(filename, combinedContent);
+        }
     };
 
     const handleDelete = () => {
@@ -224,7 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     themeToggleBtn.addEventListener('click', toggleTheme);
 
-    // NEW: Event listeners for the info modal
     infoBtn.addEventListener('click', showInfoModal);
     closeInfoBtn.addEventListener('click', hideInfoModal);
     infoModal.addEventListener('click', (event) => {
