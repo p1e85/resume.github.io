@@ -50,6 +50,21 @@ const mapStyles = [
 ];
 let currentStyleIndex = 0;
 
+const allBadges = {
+    first_find: { name: 'First Find', icon: '🗑️', description: 'Pinned your very first piece of litter.' },
+    collector: { name: 'Collector', icon: '🛍️', description: 'Pinned a total of 50 items.' },
+    super_collector: { name: 'Super Collector', icon: '🏆', description: 'Pinned a total of 250 items.' },
+    eagle_eye: { name: 'Eagle Eye', icon: '🦅', description: 'Pinned 1000 items. A true garbage spotter!' },
+    first_steps: { name: 'First Steps', icon: '👟', description: 'Completed your first route over 1km.' },
+    explorer: { name: 'Explorer', icon: '🗺️', description: 'Walked a total of 25 kilometers.' },
+    trailblazer: { name: 'Trailblazer', icon: '⛰️', description: 'Walked a total of 100 kilometers.' },
+    marathoner: { name: 'Marathoner', icon: '🏃', description: 'Walked over 42.2km in a single session.' },
+    initiate: { name: 'Initiate', icon: '🌱', description: 'Published your first route to the community.' },
+    activist: { name: 'Activist', icon: '🌍', description: 'Published 10 routes to the community.' },
+    guardian: { name: 'Guardian', icon: '🛡️', description: 'Published 50 routes to the community.' },
+    community_pillar: { name: 'Community Pillar', icon: '🏛️', description: 'Published 100 routes. You are a legend!' }
+};
+
 
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -379,8 +394,6 @@ function updateAuthModalUI() {
         updateAuthModalUI();
     });
 }
-
-// MODIFIED: handleSignUp to include new leaderboard fields
 async function handleSignUp() {
     const email = document.getElementById('emailInput').value;
     const password = document.getElementById('passwordInput').value;
@@ -398,18 +411,16 @@ async function handleSignUp() {
     }
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        // Add all fields for a new user, including the scoreboard and badge map
         await setDoc(doc(db, "users", userCredential.user.uid), {
             username: username,
             email: userCredential.user.email,
             totalPins: 0,
-            totalDistance: 0, // in meters
+            totalDistance: 0,
             totalRoutes: 0,
-            badges: {} // Initialize an empty map for achievements
+            badges: {}
         });
     } catch (error) { authError.textContent = error.message; }
 }
-
 async function handleLogIn() {
     const email = document.getElementById('emailInput').value;
     const password = document.getElementById('passwordInput').value;
@@ -900,11 +911,30 @@ async function showPublicProfile(userId) {
             const profileData = docSnap.data();
             const publicProfileModal = document.getElementById('publicProfileModal');
             const profileSupportBtn = document.getElementById('profileSupportBtn');
+            const profileAchievementsContainer = document.getElementById('profileAchievements');
             
             document.getElementById('profileUsername').textContent = profileData.username || 'Anonymous User';
             document.getElementById('profileLocation').textContent = profileData.location || '';
             document.getElementById('profileBio').textContent = profileData.bio || 'This user has not written a bio yet.';
             
+            profileAchievementsContainer.innerHTML = '';
+            const userBadges = profileData.badges || {};
+            let earnedBadgesCount = 0;
+            for (const badgeKey in allBadges) {
+                if (userBadges[badgeKey] === true) {
+                    earnedBadgesCount++;
+                    const badgeInfo = allBadges[badgeKey];
+                    const badgeElement = document.createElement('div');
+                    badgeElement.className = 'badge-item';
+                    badgeElement.textContent = badgeInfo.icon;
+                    badgeElement.title = `${badgeInfo.name}: ${badgeInfo.description}`;
+                    profileAchievementsContainer.appendChild(badgeElement);
+                }
+            }
+            if (earnedBadgesCount === 0) {
+                profileAchievementsContainer.innerHTML = '<p class="no-badges-message">This user hasn\'t earned any badges yet.</p>';
+            }
+
             if (profileData.buyMeACoffeeLink) {
                 profileSupportBtn.style.display = 'block';
                 profileSupportBtn.onclick = () => {
