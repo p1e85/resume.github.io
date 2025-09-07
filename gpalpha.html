@@ -6,20 +6,22 @@
     <title>Garbage Path - Map Tracker</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♻️</text></svg>">
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />
-    <link rel="stylesheet" href="css/mapalphastyle.css">
+    <link rel="stylesheet" href="css/mapstyle.css">
 </head>
 <body>
 
-    <!-- Top Bar Container -->
+    <!-- Top Bar Container (MODIFIED) -->
     <div class="top-bar-container">
-        <div class="top-bar-left">
-            <button id="infoBtn" class="top-bar-button">ℹ️ Info</button>
-            <button id="communityBtn" class="community-button off">🌎 Community View: OFF</button>
-            <button id="changeStyleBtn" class="top-bar-button">🎨 Change Style</button>
+        <div class="top-row">
+            <div class="top-bar-left">
+                <button id="infoBtn" class="top-bar-button">ℹ️ Info</button>
+                <button id="changeStyleBtn" class="top-bar-button">🎨 Change Style</button>
+            </div>
+            <a href="https://www.buymeacoffee.com/p1skates" target="_blank" class="donate-button">
+                ☕ Support the Mission
+            </a>
         </div>
-        <a href="https://www.buymeacoffee.com/p1skates" target="_blank" class="donate-button">
-            ☕ Support the Mission
-        </a>
+        <button id="communityBtn" class="community-button off">🌎 Community View: OFF</button>
     </div>
 
     <!-- Info Modal -->
@@ -203,7 +205,7 @@
 
     <!-- JavaScript Libraries -->
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
-    <script src="js/mapalphascript.js" type="module"></script>
+    <script src="js/mapscript.js" type="module"></script>
 
 </body>
 </html>
