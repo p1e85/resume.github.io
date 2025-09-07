@@ -4,108 +4,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>P1 Meme Maker</title>
-    <!-- Tailwind CSS for rapid UI development -->
+    <!-- Tailwind CSS for layout -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts for custom meme text and UI -->
+    <!-- Google Fonts for retro pixelated look and classic meme font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Link to your custom stylesheet -->
-    <link rel="stylesheet" href="css/memestyles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- Link to your new custom stylesheet -->
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-900 text-white flex flex-col min-h-screen">
+<body>
 
-    <header class="bg-gray-800 shadow-lg">
-        <div class="container mx-auto px-4 py-4">
-            <h1 class="text-3xl font-bold text-center tracking-wider meme-font text-indigo-400">P1 MEME MAKER</h1>
+    <header>
+        <div class="header-content">
+            <h1>P1 MEME WORKBENCH v1.3</h1>
         </div>
     </header>
 
-    <main class="flex-grow container mx-auto px-4 py-8">
+    <main class="container mx-auto px-4 py-8">
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- Controls Panel -->
-            <div class="w-full lg:w-1/3 bg-gray-800 p-6 rounded-2xl shadow-2xl space-y-6 self-start">
+            <div class="amiga-window w-full lg:w-1/3 self-start">
                 
                 <!-- Upload Section -->
-                <div>
-                    <label for="image-upload" class="block text-lg font-semibold mb-2 text-indigo-300">1. Upload Your Image</label>
-                    <input type="file" id="image-upload" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:rounded-full file:border-0 file:bg-gray-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-200 hover:file:bg-gray-600">
+                <div class="amiga-section">
+                    <label for="image-upload">1. Load Image_</label>
+                    <input type="file" id="image-upload" accept="image/*">
                 </div>
 
                 <!-- Text Section -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-3 text-indigo-300">2. Add Your Text</h3>
-                    <div class="space-y-4">
-                        <input type="text" id="top-text-input" placeholder="Top Text" class="w-full bg-gray-700 border-2 border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
-                        <input type="text" id="bottom-text-input" placeholder="Bottom Text" class="w-full bg-gray-700 border-2 border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
-                    </div>
+                <div class="amiga-section">
+                    <label>2. Add Text</label>
+                    <input type="text" id="top-text-input" placeholder="Top Text" class="w-full">
+                    <input type="text" id="bottom-text-input" placeholder="Bottom Text" class="w-full mt-2">
                 </div>
 
                 <!-- Styling Section -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-3 text-indigo-300">3. Customize Style</h3>
+                <div class="amiga-section">
+                    <label>3. Customize Gadgets</label>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label for="text-color-input" class="block text-sm font-medium mb-1">Text Color</label>
-                            <input type="color" id="text-color-input" value="#FFFFFF" class="w-full h-10 p-1 bg-gray-700 border-2 border-gray-600 rounded-lg cursor-pointer">
+                            <label for="text-color-input">Text Color</label>
+                            <input type="color" id="text-color-input" value="#FFFFFF">
                         </div>
                         <div>
-                            <label for="outline-color-input" class="block text-sm font-medium mb-1">Outline Color</label>
-                            <input type="color" id="outline-color-input" value="#000000" class="w-full h-10 p-1 bg-gray-700 border-2 border-gray-600 rounded-lg cursor-pointer">
+                            <label for="outline-color-input">Outline</label>
+                            <input type="color" id="outline-color-input" value="#000000">
                         </div>
                     </div>
                     <!-- Text Size Slider -->
                     <div class="mt-4">
-                        <label for="text-size-slider" class="block text-sm font-medium mb-2">Text Size</label>
-                        <div class="flex items-center gap-3">
-                            <span class="text-xs font-semibold">A</span>
-                            <input type="range" id="text-size-slider" min="2" max="15" value="8" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
-                            <span class="text-xl font-semibold">A</span>
-                        </div>
+                        <label for="text-size-slider">Text Size</label>
+                        <input type="range" id="text-size-slider" min="2" max="15" value="8" class="w-full">
                     </div>
                 </div>
                 
                 <!-- Filters Section -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-3 text-indigo-300">4. Apply Filters</h3>
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-3">
-                            <label for="brightness-slider" class="w-24 text-sm">Brightness</label>
-                            <input type="range" id="brightness-slider" min="0" max="200" value="100" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <label for="contrast-slider" class="w-24 text-sm">Contrast</label>
-                            <input type="range" id="contrast-slider" min="0" max="200" value="100" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <label for="saturate-slider" class="w-24 text-sm">Saturation</label>
-                            <input type="range" id="saturate-slider" min="0" max="200" value="100" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 pt-2">
-                             <button id="grayscale-btn" class="filter-btn w-full bg-gray-700 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">Grayscale</button>
-                             <button id="sepia-btn" class="filter-btn w-full bg-gray-700 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">Sepia</button>
-                        </div>
-                        <button id="reset-filters-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 mt-2">Reset Filters</button>
+                <div class="amiga-section">
+                    <label>4. Image FX</label>
+                    <div class="flex items-center gap-3">
+                        <label for="brightness-slider" class="w-28">Brightness</label>
+                        <input type="range" id="brightness-slider" min="0" max="200" value="100" class="w-full">
                     </div>
+                    <div class="flex items-center gap-3 mt-2">
+                        <label for="contrast-slider" class="w-28">Contrast</label>
+                        <input type="range" id="contrast-slider" min="0" max="200" value="100" class="w-full">
+                    </div>
+                    <div class="flex items-center gap-3 mt-2">
+                        <label for="saturate-slider" class="w-28">Saturation</label>
+                        <input type="range" id="saturate-slider" min="0" max="200" value="100" class="w-full">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-4">
+                         <button id="grayscale-btn">Grayscale</button>
+                         <button id="sepia-btn">Sepia</button>
+                    </div>
+                    <button id="reset-filters-btn" class="w-full mt-2">Reset FX</button>
                 </div>
 
                 <!-- Download Button -->
                 <div class="pt-4">
-                    <button id="download-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-200 flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                        Download Meme
-                    </button>
+                    <button id="download-btn" class="w-full">[ SAVE MEME ]</button>
                 </div>
             </div>
 
             <!-- Canvas Area -->
-            <div class="w-full lg:w-2/3 flex items-center justify-center bg-gray-800 p-4 rounded-2xl shadow-2xl" id="canvas-container">
-                <canvas id="meme-canvas" class="rounded-lg max-w-full max-h-full"></canvas>
+            <div class="amiga-window w-full lg:w-2/3 flex items-center justify-center" id="canvas-container">
+                <canvas id="meme-canvas" class="max-w-full max-h-full"></canvas>
             </div>
         </div>
     </main>
     
     <!-- Link to your JavaScript file -->
-    <script src="js/memescript.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
+
