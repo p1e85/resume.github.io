@@ -477,6 +477,7 @@ function startTracking() {
     trackBtn.classList.add('tracking');
 }
 
+// MODIFIED: handlePhoto function to include image compression
 async function handlePhoto(event) {
     const pictureBtn = document.getElementById('pictureBtn');
     const originalButtonText = pictureBtn.innerHTML;
@@ -491,12 +492,34 @@ async function handlePhoto(event) {
     pictureBtn.innerHTML = 'Processing...';
     pictureBtn.disabled = true;
 
+    // --- Image Compression Step ---
+    const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true
+    };
+
+    let processedFile;
+    try {
+        console.log(`Original file size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+        processedFile = await imageCompression(file, options);
+        console.log(`Compressed file size: ${(processedFile.size / 1024 / 1024).toFixed(2)} MB`);
+    } catch (error) {
+        console.error("Image compression error:", error);
+        alert("There was an error processing your image.");
+        pictureBtn.innerHTML = originalButtonText;
+        pictureBtn.disabled = false;
+        event.target.value = '';
+        return;
+    }
+    // ------------------------------------
+
     navigator.geolocation.getCurrentPosition(async (position) => {
         const coords = [position.coords.longitude, position.coords.latitude];
         
         if (!currentUser) {
             const reader = new FileReader();
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(processedFile); // Use the compressed file
             reader.onload = e => {
                 const pinInfo = { id: `pin-${Date.now()}`, coords: coords, image: e.target.result, title: 'New Photo' };
                 photoPins.push(pinInfo);
@@ -510,8 +533,8 @@ async function handlePhoto(event) {
         
         try {
             const timestamp = Date.now();
-            const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}-${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
+            const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}-${processedFile.name}`);
+            const snapshot = await uploadBytes(storageRef, processedFile); // Upload the compressed file
             const downloadURL = await getDownloadURL(snapshot.ref);
             
             const pinInfo = { id: `pin-${timestamp}`, coords: coords, imageURL: downloadURL, title: 'New Photo' };
@@ -534,6 +557,7 @@ async function handlePhoto(event) {
         event.target.value = '';
     }, { enableHighAccuracy: true });
 }
+
 function addPhotoMarker(pinInfo) {
     const el = document.createElement('div');
     el.className = 'photo-marker';
@@ -1000,3 +1024,4 @@ async function handleAccountDeletion() {
         }
     }
 }
+
