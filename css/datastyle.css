@@ -69,6 +69,12 @@ body {
     align-items: center;
     margin-bottom: 2rem;
 }
+/* NEW: Wrapper for header buttons */
+.header-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
 h1 {
     margin: 0;
 }
@@ -113,6 +119,11 @@ h2 {
     margin-bottom: 2rem;
     overflow-y: auto;
     max-height: 40vh;
+}
+/* Style for paragraphs inside the modal */
+.modal-content p {
+    margin-bottom: 1rem;
+    line-height: 1.5;
 }
 
 .message-item {
@@ -177,6 +188,7 @@ h2 {
     width: auto;
     padding: 5px 15px;
     font-size: 16px;
+    white-space: nowrap; /* Prevent text from wrapping */
 }
 
 .btn:hover:not(:disabled) {
@@ -268,11 +280,11 @@ input[type="text"]:focus, textarea:focus {
 }
 
 
-/* --- NEW: Mobile Responsive Styles --- */
+/* --- Mobile Responsive Styles --- */
 @media (max-width: 768px) {
     body {
-        padding: 1rem; /* Reduce padding on small screens */
-        font-size: 18px; /* Slightly smaller font */
+        padding: 1rem;
+        font-size: 18px;
     }
 
     .container {
@@ -280,9 +292,14 @@ input[type="text"]:focus, textarea:focus {
     }
 
     .header {
-        flex-direction: column; /* Stack title and theme button */
+        flex-direction: column;
         gap: 1rem;
-        align-items: stretch; /* Make children full width */
+        align-items: stretch;
+    }
+    
+    .header-buttons {
+        flex-direction: column; /* Stack header buttons on mobile */
+        gap: 0.5rem;
     }
 
     h1 {
@@ -290,14 +307,14 @@ input[type="text"]:focus, textarea:focus {
     }
 
     .btn-small {
-        width: 100%; /* Make theme button full width */
+        width: 100%;
     }
 
     .list-actions {
-        flex-direction: column; /* Stack action buttons vertically */
+        flex-direction: column;
     }
 
     .btn {
-        text-align: center; /* Center text inside buttons */
+        text-align: center;
     }
 }
