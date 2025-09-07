@@ -103,7 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
     mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY2p6ajZvejJmMDZhaTNkcWpiN294dm12eCJ9.8ckNT6kfuJry7K7GAeIuxw';
     map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v12',
+        //style: 'mapbox://styles/mapbox/streets-v12',
+        style: 'mapbox://styles/p1creations/cmf8zpwu5003c01p8f4l06t8h',
         center: [-87.6298, 41.8781],
         zoom: 10
     });
