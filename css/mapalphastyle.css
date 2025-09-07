@@ -22,32 +22,28 @@ body {
     right: 15px;
     z-index: 10;
     display: flex;
-    flex-wrap: wrap; 
+    flex-wrap: wrap; /* Allow wrapping on narrow screens */
     justify-content: space-between;
     align-items: center;
     gap: 10px;
 }
 
-.top-bar-left {
+.top-bar-left, .top-bar-right {
     display: flex;
+    align-items: center;
     gap: 10px;
-    flex-wrap: wrap; 
 }
 
-/* On mobile, force community button to a new line */
-.community-button {
-    flex-basis: 100%;
-    order: 3; 
-}
-
-/* On larger screens, use a single row layout */
-@media (min-width: 640px) {
-    .top-bar-container {
-        flex-wrap: nowrap; 
+/* On mobile, force the right group (donate button) to wrap to a new line */
+@media (max-width: 520px) {
+    .top-bar-left {
+        flex-basis: 100%;
+        order: 1;
     }
-    .community-button {
-        flex-basis: auto; 
-        order: 0; 
+    .top-bar-right {
+        flex-basis: 100%;
+        justify-content: flex-start;
+        order: 2;
     }
 }
 
@@ -93,7 +89,7 @@ body {
     background-color: #dc3545;
 }
 
-.top-bar-button, .community-button {
+.top-bar-button, .community-button, .donate-button {
     padding: 8px 12px;
     font-size: 14px;
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -105,8 +101,10 @@ body {
     -webkit-backdrop-filter: blur(5px);
     transition: background-color 0.3s;
     white-space: nowrap;
+    text-decoration: none;
 }
-.top-bar-button:hover, .community-button.off:hover {
+
+.top-bar-button:hover, .community-button.off:hover, .donate-button:hover {
     background-color: rgba(255, 255, 255, 0.4);
 }
 
@@ -122,22 +120,6 @@ body {
     background-color: rgba(255, 255, 255, 0.2);
     color: #333;
     border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.donate-button {
-    padding: 8px 12px;
-    font-size: 14px;
-    text-decoration: none;
-    background-color: rgba(255, 255, 255, 0.2);
-    color: #333;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(5px);
-    transition: background-color 0.3s;
-    white-space: nowrap;
-}
-.donate-button:hover {
-    background-color: rgba(255, 255, 255, 0.4);
 }
 
 
@@ -216,13 +198,11 @@ body {
     display: flex;
     flex-direction: column;
 }
-
 .info-modal-body {
     overflow-y: auto;
     flex-grow: 1;
     padding: 10px 0;
 }
-
 .terms-box {
     overflow-y: auto;
     border: 1px solid #ccc;
