@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
     publicProfileModalCloseBtn.addEventListener('click', () => publicProfileModal.style.display = 'none');
     safetyModalCloseBtn.addEventListener('click', () => safetyModal.style.display = 'none');
     safetyModalOkBtn.addEventListener('click', () => {
-        // sessionStorage.setItem('safetyWarningSeen', 'true');
+        sessionStorage.setItem('safetyWarningSeen', 'true');
         safetyModal.style.display = 'none';
         startTracking();
     });
@@ -396,12 +396,11 @@ async function handleSignUp() {
     }
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        // MODIFIED: Add the new leaderboard fields upon user creation
         await setDoc(doc(db, "users", userCredential.user.uid), {
             username: username,
             email: userCredential.user.email,
             totalPins: 0,
-            totalDistance: 0, // in meters
+            totalDistance: 0,
             totalRoutes: 0
         });
     } catch (error) { authError.textContent = error.message; }
