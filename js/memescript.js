@@ -4,6 +4,7 @@ const topTextInput = document.getElementById('top-text-input');
 const bottomTextInput = document.getElementById('bottom-text-input');
 const textColorInput = document.getElementById('text-color-input');
 const outlineColorInput = document.getElementById('outline-color-input');
+const textSizeSlider = document.getElementById('text-size-slider'); 
 const downloadBtn = document.getElementById('download-btn');
 const canvas = document.getElementById('meme-canvas');
 const ctx = canvas.getContext('2d');
@@ -32,6 +33,7 @@ topTextInput.addEventListener('input', drawMeme);
 bottomTextInput.addEventListener('input', drawMeme);
 textColorInput.addEventListener('input', drawMeme);
 outlineColorInput.addEventListener('input', drawMeme);
+textSizeSlider.addEventListener('input', drawMeme);
 brightnessSlider.addEventListener('input', () => { filters.brightness = brightnessSlider.value; drawMeme(); });
 contrastSlider.addEventListener('input', () => { filters.contrast = contrastSlider.value; drawMeme(); });
 saturateSlider.addEventListener('input', () => { filters.saturate = saturateSlider.value; drawMeme(); });
@@ -98,6 +100,9 @@ function resizeCanvasToImage() {
 function drawMeme() {
     if (!originalImage) return;
 
+    // Disabling image smoothing for a pixelated look
+    ctx.imageSmoothingEnabled = false;
+
     // 1. Clear canvas and apply image filters
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     applyCanvasFilters();
@@ -109,11 +114,12 @@ function drawMeme() {
     ctx.filter = 'none';
 
     // 4. Prepare text styling
-    const fontSize = canvas.width * 0.08;
-    ctx.font = `${fontSize}px Anton`;
+    const fontSizeMultiplier = textSizeSlider.value / 100; 
+    const fontSize = canvas.width * fontSizeMultiplier;
+    ctx.font = `${fontSize}px Anton`; // Using Anton for the actual meme text remains classic
     ctx.fillStyle = textColorInput.value;
     ctx.strokeStyle = outlineColorInput.value;
-    ctx.lineWidth = fontSize * 0.04; // Outline width relative to font size
+    ctx.lineWidth = fontSize * 0.04; 
     ctx.textAlign = 'center';
     
     // 5. Draw Top Text
@@ -145,9 +151,9 @@ function applyCanvasFilters() {
  */
 function drawWatermark() {
     const watermarkText = 'p1';
-    const fontSize = canvas.width * 0.025; // Relative font size
-    ctx.font = `${fontSize}px Inter`;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; // Semi-transparent white
+    const fontSize = canvas.width * 0.025;
+    ctx.font = `${fontSize}px "Press Start 2P"`; // Using the retro UI font
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
     ctx.fillText(watermarkText, canvas.width - 10, canvas.height - 10);
@@ -169,16 +175,13 @@ function resetFilters() {
  */
 function downloadMeme() {
     if (!originalImage) {
-        // A simple validation instead of a disruptive alert
-        const downloadButton = document.getElementById('download-btn');
-        const originalText = downloadButton.textContent;
-        downloadButton.textContent = 'Upload an Image First!';
+        const originalText = downloadBtn.textContent;
+        downloadBtn.textContent = 'No Image!';
         setTimeout(() => {
-            downloadButton.textContent = originalText;
+            downloadBtn.textContent = originalText;
         }, 2000);
         return;
     }
-    // Create a temporary link element
     const link = document.createElement('a');
     link.download = 'p1-meme.png';
     link.href = canvas.toDataURL('image/png');
@@ -191,14 +194,14 @@ function downloadMeme() {
 function drawInitialPlaceholder() {
     canvas.width = 500;
     canvas.height = 300;
-    ctx.fillStyle = '#1f2937'; // dark gray-800
+    ctx.fillStyle = '#BDBDBD'; // Amiga window gray
     ctx.fillRect(0,0, canvas.width, canvas.height);
-    ctx.fillStyle = '#cbd5e1'; // light slate-300
+    ctx.fillStyle = '#000000';
     ctx.textAlign = 'center';
-    ctx.font = '24px Inter';
-    ctx.fillText('Upload an image to start', canvas.width/2, canvas.height/2);
+    ctx.font = '10px "Press Start 2P"';
+    ctx.fillText('Load an Image to Start...', canvas.width/2, canvas.height/2);
 }
 
 // --- Initial Setup ---
-// Call the function to draw the placeholder when the page loads.
 window.onload = drawInitialPlaceholder;
+
