@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
     publicProfileModalCloseBtn.addEventListener('click', () => publicProfileModal.style.display = 'none');
     safetyModalCloseBtn.addEventListener('click', () => safetyModal.style.display = 'none');
     safetyModalOkBtn.addEventListener('click', () => {
-        sessionStorage.setItem('safetyWarningSeen', 'true');
+        // sessionStorage.setItem('safetyWarningSeen', 'true');
         safetyModal.style.display = 'none';
         startTracking();
     });
@@ -379,6 +379,8 @@ function updateAuthModalUI() {
         updateAuthModalUI();
     });
 }
+
+// MODIFIED: handleSignUp to include new leaderboard fields
 async function handleSignUp() {
     const email = document.getElementById('emailInput').value;
     const password = document.getElementById('passwordInput').value;
@@ -396,15 +398,18 @@ async function handleSignUp() {
     }
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        // Add all fields for a new user, including the scoreboard and badge map
         await setDoc(doc(db, "users", userCredential.user.uid), {
             username: username,
             email: userCredential.user.email,
             totalPins: 0,
-            totalDistance: 0,
-            totalRoutes: 0
+            totalDistance: 0, // in meters
+            totalRoutes: 0,
+            badges: {} // Initialize an empty map for achievements
         });
     } catch (error) { authError.textContent = error.message; }
 }
+
 async function handleLogIn() {
     const email = document.getElementById('emailInput').value;
     const password = document.getElementById('passwordInput').value;
