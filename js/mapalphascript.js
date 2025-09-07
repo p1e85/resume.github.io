@@ -41,6 +41,16 @@ let isCommunityViewOn = false;
 let communityLayers = [];
 let isSignUpMode = true;
 
+const mapStyles = [
+    { name: 'Streets', url: 'mapbox://styles/mapbox/streets-v12' },
+    { name: 'Outdoors', url: 'mapbox://styles/mapbox/outdoors-v12' },
+    { name: 'Light', url: 'mapbox://styles/mapbox/light-v11' },
+    { name: 'Dark', url: 'mapbox://styles/mapbox/dark-v11' },
+    { name: 'Satellite', url: 'mapbox://styles/mapbox/satellite-streets-v12' }
+];
+let currentStyleIndex = 0;
+
+
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -89,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const safetyModal = document.getElementById('safetyModal');
     const safetyModalOkBtn = document.getElementById('safetyModalOkBtn');
     const safetyModalCloseBtn = safetyModal.querySelector('.close-btn');
+    const changeStyleBtn = document.getElementById('changeStyleBtn');
 
 
     // --- Initial UI Setup ---
@@ -103,40 +114,13 @@ document.addEventListener('DOMContentLoaded', () => {
     mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY2p6ajZvejJmMDZhaTNkcWpiN294dm12eCJ9.8ckNT6kfuJry7K7GAeIuxw';
     map = new mapboxgl.Map({
         container: 'map',
-        //style: 'mapbox://styles/mapbox/streets-v12',
-        style: 'mapbox://styles/p1creations/cmf90cs77004p01qsgh1o3hge',
+        style: mapStyles[currentStyleIndex].url,
         center: [-87.6298, 41.8781],
         zoom: 10
     });
 
     map.on('load', () => {
-        map.addSource('user-route', {
-            'type': 'geojson',
-            'data': { 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': [] } }
-        });
-        map.addLayer({
-            'id': 'user-route',
-            'type': 'line',
-            'source': 'user-route',
-            'layout': { 'line-join': 'round', 'line-cap': 'round' },
-            'paint': { 'line-color': '#007bff', 'line-width': 5 }
-        });
-        map.addSource('user-location-point', {
-            'type': 'geojson',
-            'data': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [] } }
-        });
-        map.addLayer({
-            'id': 'user-location-pulse',
-            'type': 'circle',
-            'source': 'user-location-point',
-            'paint': { 'circle-radius': 15, 'circle-color': '#007bff', 'circle-opacity': 0.2 }
-        });
-        map.addLayer({
-            'id': 'user-location-dot',
-            'type': 'circle',
-            'source': 'user-location-point',
-            'paint': { 'circle-radius': 6, 'circle-color': '#fff', 'circle-stroke-width': 2, 'circle-stroke-color': '#007bff' }
-        });
+        initializeMapLayers();
     });
 
     // --- Event Listeners ---
@@ -195,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
     publicProfileModalCloseBtn.addEventListener('click', () => publicProfileModal.style.display = 'none');
     safetyModalCloseBtn.addEventListener('click', () => safetyModal.style.display = 'none');
     safetyModalOkBtn.addEventListener('click', () => {
-        // REMOVED: sessionStorage.setItem('safetyWarningSeen', 'true');
+        sessionStorage.setItem('safetyWarningSeen', 'true');
         safetyModal.style.display = 'none';
         startTracking();
     });
@@ -233,6 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     saveProfileBtn.addEventListener('click', saveProfile);
     deleteAccountBtn.addEventListener('click', handleAccountDeletion);
+    changeStyleBtn.addEventListener('click', changeMapStyle);
 });
 
 // --- Firebase Auth State Listener ---
@@ -281,6 +266,52 @@ onAuthStateChanged(auth, async (user) => {
 
 
 // --- Functions ---
+function initializeMapLayers() {
+    if (!map.getSource('user-route')) {
+        map.addSource('user-route', {
+            'type': 'geojson',
+            'data': { 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': routeCoordinates } }
+        });
+    }
+    if (!map.getLayer('user-route')) {
+        map.addLayer({
+            'id': 'user-route', 'type': 'line', 'source': 'user-route',
+            'layout': { 'line-join': 'round', 'line-cap': 'round' },
+            'paint': { 'line-color': '#007bff', 'line-width': 5 }
+        });
+    }
+    if (!map.getSource('user-location-point')) {
+        map.addSource('user-location-point', {
+            'type': 'geojson',
+            'data': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [] } }
+        });
+    }
+    if (!map.getLayer('user-location-pulse')) {
+        map.addLayer({
+            'id': 'user-location-pulse', 'type': 'circle', 'source': 'user-location-point',
+            'paint': { 'circle-radius': 15, 'circle-color': '#007bff', 'circle-opacity': 0.2 }
+        });
+    }
+    if (!map.getLayer('user-location-dot')) {
+        map.addLayer({
+            'id': 'user-location-dot', 'type': 'circle', 'source': 'user-location-point',
+            'paint': { 'circle-radius': 6, 'circle-color': '#fff', 'circle-stroke-width': 2, 'circle-stroke-color': '#007bff' }
+        });
+    }
+}
+
+function changeMapStyle() {
+    currentStyleIndex = (currentStyleIndex + 1) % mapStyles.length;
+    const newStyle = mapStyles[currentStyleIndex];
+    map.setStyle(newStyle.url);
+    map.once('style.load', () => {
+        initializeMapLayers();
+        markers.forEach(marker => marker.addTo(map));
+        if (isCommunityViewOn) {
+            fetchAndDisplayCommunityRoutes();
+        }
+    });
+}
 function convertRouteForFirestore(coordsArray) {
     return coordsArray.map(coord => ({ lng: coord[0], lat: coord[1] }));
 }
@@ -386,7 +417,6 @@ function findMe() {
     }, () => alert("Could not get your location."), { enableHighAccuracy: true });
 }
 
-// MODIFIED: toggleTracking now always shows the safety modal
 function toggleTracking() {
     const trackBtn = document.getElementById('trackBtn');
 
@@ -400,8 +430,11 @@ function toggleTracking() {
             userLocationSource.setData({ 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [] } });
         }
     } else {
-        // Always show the safety modal when starting
-        document.getElementById('safetyModal').style.display = 'flex';
+        if (!sessionStorage.getItem('safetyWarningSeen')) {
+            document.getElementById('safetyModal').style.display = 'flex';
+        } else {
+            startTracking();
+        }
     }
 }
 
