@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
     const createBtn = document.getElementById('createBtn');
-    const modal = document.getElementById('dataModal');
+    const dataModal = document.getElementById('dataModal'); // Renamed for clarity
     const cancelBtn = document.getElementById('cancelBtn');
     const dataForm = document.getElementById('dataForm');
     const messageList = document.getElementById('messageList');
@@ -17,30 +17,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const body = document.body;
     const themeKey = 'retro-db-theme';
 
+    // NEW: Info Modal elements
+    const infoBtn = document.getElementById('infoBtn');
+    const infoModal = document.getElementById('infoModal');
+    const closeInfoBtn = document.getElementById('closeInfoBtn');
+
     // --- State ---
     let messages = JSON.parse(localStorage.getItem('retroDbMessages')) || [];
     let editIndex = null;
-    // NEW: Array of all available themes
     const themes = ['default', 'amber', 'vaporwave', 'monochrome'];
 
     // --- Functions ---
     
-    // UPDATED: applyTheme function to handle multiple classes
+    // Theme Functions
     const applyTheme = (themeName) => {
-        // First, remove any existing theme classes
         body.classList.remove('theme-amber', 'theme-vaporwave', 'theme-monochrome');
         
-        // Add the new theme class if it's not the default
         if (themeName !== 'default') {
             body.classList.add(`theme-${themeName}`);
         }
     };
 
-    // UPDATED: toggleTheme function to cycle through the themes array
     const toggleTheme = () => {
         const currentTheme = localStorage.getItem(themeKey) || 'default';
         const currentIndex = themes.indexOf(currentTheme);
-        // Cycle to the next theme in the array
         const nextIndex = (currentIndex + 1) % themes.length;
         const nextTheme = themes[nextIndex];
         
@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme(nextTheme);
     };
 
+    // Action Button and List Rendering Functions
     const updateActionButtons = () => {
         const selectedCount = messageList.querySelectorAll('input[type="checkbox"]:checked').length;
         
@@ -83,7 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateActionButtons();
     };
     
-    const showModal = (isEditMode = false, data = {}) => {
+    // Data Modal Functions
+    const showDataModal = (isEditMode = false, data = {}) => {
         if (isEditMode) {
             modalTitle.textContent = "EDIT DATA ENTRY";
             saveBtn.textContent = "> SAVE CHANGES";
@@ -94,15 +96,25 @@ document.addEventListener('DOMContentLoaded', () => {
             modalTitle.textContent = "NEW DATA ENTRY";
             saveBtn.textContent = "> SAVE ENTRY";
         }
-        modal.classList.remove('hidden');
+        dataModal.classList.remove('hidden');
     };
 
-    const hideModal = () => {
-        modal.classList.add('hidden');
+    const hideDataModal = () => {
+        dataModal.classList.add('hidden');
         dataForm.reset();
         editIndex = null;
     };
     
+    // NEW: Info Modal Functions
+    const showInfoModal = () => {
+        infoModal.classList.remove('hidden');
+    };
+
+    const hideInfoModal = () => {
+        infoModal.classList.add('hidden');
+    };
+
+    // Utility and Handler Functions
     const downloadTxtFile = (filename, text) => {
         const blob = new Blob([text], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
@@ -137,10 +149,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         localStorage.setItem('retroDbMessages', JSON.stringify(messages));
         renderMessages();
-        hideModal();
+        hideDataModal();
     };
-
-    // --- Event Handlers for Actions ---
 
     const handleEdit = () => {
         const checkedBox = messageList.querySelector('input[type="checkbox"]:checked');
@@ -150,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editIndex = parseInt(itemDiv.dataset.index, 10);
         
         const messageToEdit = messages[editIndex];
-        showModal(true, messageToEdit);
+        showDataModal(true, messageToEdit);
     };
 
     const handleDownload = () => {
@@ -194,10 +204,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Event Listeners ---
-    createBtn.addEventListener('click', () => showModal());
-    cancelBtn.addEventListener('click', hideModal);
-    modal.addEventListener('click', (event) => {
-        if (event.target === modal) hideModal();
+    createBtn.addEventListener('click', () => showDataModal());
+    cancelBtn.addEventListener('click', hideDataModal);
+    dataModal.addEventListener('click', (event) => {
+        if (event.target === dataModal) hideDataModal();
     });
     dataForm.addEventListener('submit', handleFormSubmit);
 
@@ -213,6 +223,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     themeToggleBtn.addEventListener('click', toggleTheme);
+
+    // NEW: Event listeners for the info modal
+    infoBtn.addEventListener('click', showInfoModal);
+    closeInfoBtn.addEventListener('click', hideInfoModal);
+    infoModal.addEventListener('click', (event) => {
+        if (event.target === infoModal) {
+            hideInfoModal();
+        }
+    });
+
 
     // --- Initial Load ---
     const savedTheme = localStorage.getItem(themeKey) || 'default';
