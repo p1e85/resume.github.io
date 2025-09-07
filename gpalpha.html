@@ -6,11 +6,11 @@
     <title>Garbage Path - Map Tracker</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♻️</text></svg>">
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />
-    <link rel="stylesheet" href="css/mapalphastyle.css">
+    <link rel="stylesheet" href="css/mapstyle.css">
 </head>
 <body>
 
-    <!-- Top Bar Container (MODIFIED) -->
+    <!-- Top Bar Container -->
     <div class="top-bar-container">
         <div class="top-bar-left">
             <button id="infoBtn" class="top-bar-button">ℹ️ Info</button>
@@ -109,6 +109,11 @@
             <h2 id="profileUsername"></h2>
             <p id="profileLocation" class="profile-location"></p>
             <p id="profileBio" class="profile-bio"></p>
+            <hr>
+            <h4>Achievements</h4>
+            <div id="profileAchievements" class="badge-container">
+                <!-- Badges will be dynamically inserted here by JavaScript -->
+            </div>
             <button id="profileSupportBtn" class="modal-button support-button">☕ Support Them</button>
         </div>
     </div>
@@ -203,7 +208,7 @@
 
     <!-- JavaScript Libraries -->
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
-    <script src="js/mapalphascript.js" type="module"></script>
+    <script src="js/mapscript.js" type="module"></script>
 
 </body>
 </html>
