@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     publicProfileModalCloseBtn.addEventListener('click', () => publicProfileModal.style.display = 'none');
     safetyModalCloseBtn.addEventListener('click', () => safetyModal.style.display = 'none');
     safetyModalOkBtn.addEventListener('click', () => {
-        sessionStorage.setItem('safetyWarningSeen', 'true');
+        // REMOVED: sessionStorage.setItem('safetyWarningSeen', 'true');
         safetyModal.style.display = 'none';
         startTracking();
     });
@@ -385,6 +385,7 @@ function findMe() {
     }, () => alert("Could not get your location."), { enableHighAccuracy: true });
 }
 
+// MODIFIED: toggleTracking now always shows the safety modal
 function toggleTracking() {
     const trackBtn = document.getElementById('trackBtn');
 
@@ -398,11 +399,8 @@ function toggleTracking() {
             userLocationSource.setData({ 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [] } });
         }
     } else {
-        if (!sessionStorage.getItem('safetyWarningSeen')) {
-            document.getElementById('safetyModal').style.display = 'flex';
-        } else {
-            startTracking();
-        }
+        // Always show the safety modal when starting
+        document.getElementById('safetyModal').style.display = 'flex';
     }
 }
 
@@ -484,7 +482,6 @@ async function handlePhoto(event) {
         event.target.value = '';
     }, { enableHighAccuracy: true });
 }
-
 function addPhotoMarker(pinInfo) {
     const el = document.createElement('div');
     el.className = 'photo-marker';
@@ -837,7 +834,6 @@ async function saveProfile() {
             buyMeACoffeeLink: coffeeLink
         });
 
-        // Update username display in real-time
         const userEmailSpan = document.getElementById('userEmail');
         const userProfile = await getDoc(userDocRef);
         if (userProfile.exists() && userEmailSpan) {
