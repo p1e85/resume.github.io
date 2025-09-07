@@ -10,20 +10,16 @@
 </head>
 <body>
 
-    <!-- Top Bar Container (RESTRUCTURED) -->
+    <!-- Top Bar Container -->
     <div class="top-bar-container">
-        <div class="top-row">
-            <div class="top-bar-left">
-                <button id="infoBtn" class="top-bar-button">ℹ️ Info</button>
-                <button id="changeStyleBtn" class="top-bar-button">🎨 Change Style</button>
-            </div>
-            <a href="https://www.buymeacoffee.com/p1skates" target="_blank" class="donate-button">
-                ☕ Support the Mission
-            </a>
-        </div>
-        <div class="bottom-row">
+        <div class="top-bar-left">
+            <button id="infoBtn" class="top-bar-button">ℹ️ Info</button>
+            <button id="changeStyleBtn" class="top-bar-button">🎨 Change Style</button>
             <button id="communityBtn" class="community-button off">🌎 Community View: OFF</button>
         </div>
+        <a href="https://www.buymeacoffee.com/p1skates" target="_blank" class="donate-button">
+            ☕ Support the Mission
+        </a>
     </div>
 
     <!-- Info Modal -->
@@ -31,17 +27,21 @@
         <div class="modal-content">
             <span class="close-btn">&times;</span>
             <h2>About Garbage Path</h2>
-            <h4>The Mission (Why)</h4>
-            <p>Garbage Path transforms the chore of cleaning up our neighborhoods into a visible and rewarding achievement. By tracking your cleanup routes and pinning the litter you collect, you create a tangible record of your positive impact. Share your efforts on the community map to inspire others, see our collective progress, and help identify areas that need our attention the most.</p>
-            <h4>How to Use the App</h4>
-            <ol class="info-list">
-                <li><strong>Sign Up or Skip:</strong> Create an account to save your data to the cloud, or 'Skip' to use the app as a guest (your data will be saved only on this browser).</li>
-                <li><strong>Track a Route:</strong> Press 'Start Tracking' to draw your path on the map as you walk.</li>
-                <li><strong>Pin Garbage:</strong> When you find litter, press 'Pin Picture' to take a photo. This will drop a pin at your location.</li>
-                <li><strong>Save/Load:</strong> Use the 'Data' button to save your current session or load a previous one. You can save multiple named sessions.</li>
-                <li><strong>Publish:</strong> When logged in, you can use the 'Publish to Community' button to share your completed route with everyone.</li>
-                <li><strong>Community View:</strong> Toggle the 'Community View' button to see all the routes published by other users!</li>
-            </ol>
+            
+            <div class="info-modal-body">
+                <h4>The Mission (Why)</h4>
+                <p>Garbage Path transforms the chore of cleaning up our neighborhoods into a visible and rewarding achievement. By tracking your cleanup routes and pinning the litter you collect, you create a tangible record of your positive impact. Share your efforts on the community map to inspire others, see our collective progress, and help identify areas that need our attention the most.</p>
+                <h4>How to Use the App</h4>
+                <ol class="info-list">
+                    <li><strong>Sign Up or Skip:</strong> Create an account to save your data to the cloud, or 'Skip' to use the app as a guest (your data will be saved only on this browser).</li>
+                    <li><strong>Track a Route:</strong> Press 'Start Tracking' to draw your path on the map as you walk.</li>
+                    <li><strong>Pin Garbage:</strong> When you find litter, press 'Pin Picture' to take a photo. This will drop a pin at your location.</li>
+                    <li><strong>Save/Load:</strong> Use the 'Data' button to save your current session or load a previous one. You can save multiple named sessions.</li>
+                    <li><strong>Publish:</strong> When logged in, you can use the 'Publish to Community' button to share your completed route with everyone.</li>
+                    <li><strong>Community View:</strong> Toggle the 'Community View' button to see all the routes published by other users!</li>
+                </ol>
+            </div>
+            
             <p class="tos-link-container">You can review the full <a href="#" id="viewTermsLink">Terms of Use</a> at any time.</p>
         </div>
     </div>
