@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RETRO-DB 💾</title>
-    <link rel="stylesheet" href="css/datastyle.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
@@ -14,7 +14,9 @@
     <div class="container">
         <div class="header">
             <h1>// RETRO-DB TERMINAL</h1>
-            <button id="themeToggleBtn" class="btn btn-small">> CHANGE THEME</button>
+            <div class="header-buttons">
+                <button id="infoBtn" class="btn btn-small">> INFO (?)</button> <button id="themeToggleBtn" class="btn btn-small">> CHANGE THEME</button>
+            </div>
         </div>
 
         <div class="list-actions">
@@ -54,6 +56,19 @@
         </div>
     </div>
 
-    <script src="js/datascript.js"></script>
+    <div id="infoModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>HOW YOUR DATA IS SAVED</h2>
+            <p>This website is designed with your privacy as the top priority.</p>
+            <p><strong>1. Purely Local Storage:</strong> Everything you type is saved directly in your web browser's local storage. No data is ever sent to or stored on an external server.</p>
+            <p><strong>2. Developer Invisibility:</strong> Because your data never leaves your machine, we (the developers) cannot see, access, or share your notes. Your entries are completely private to you.</p>
+            <p><strong>3. Browser Dependent:</strong> Your saved list is tied to the browser you are currently using. If you clear your browser's data or switch to a different device, your list will not be available there. The downloaded `.txt` files are your permanent backup.</p>
+            <div class="modal-actions">
+                <button type="button" id="closeInfoBtn" class="btn">> GOT IT</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
