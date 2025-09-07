@@ -19,6 +19,7 @@ const resetFiltersBtn = document.getElementById('reset-filters-btn');
 
 // --- State Variables ---
 let originalImage = null;
+let saveCount = 1; // New variable to track save count
 let filters = {
     brightness: 100,
     contrast: 100,
@@ -171,7 +172,8 @@ function resetFilters() {
 }
 
 /**
- * Triggers the download of the canvas content as a 'p1-meme.png' image file.
+ * Triggers the download of the canvas content. Prompts the user for a filename
+ * with an incrementing default.
  */
 function downloadMeme() {
     if (!originalImage) {
@@ -182,10 +184,27 @@ function downloadMeme() {
         }, 2000);
         return;
     }
+
+    // 1. Set up the default name with the current save count
+    const defaultName = `p1-meme-${saveCount}`;
+    
+    // 2. Prompt the user for a filename
+    let fileName = prompt("Enter a filename for your meme:", defaultName);
+
+    // 3. If the user cancels or enters an empty name, use the default
+    if (!fileName || fileName.trim() === '') {
+        fileName = defaultName;
+    }
+    
+    // 4. Create a link and trigger the download
     const link = document.createElement('a');
-    link.download = 'p1-meme.png';
+    // Ensure the filename ends with .png
+    link.download = `${fileName.replace(/\.png$/i, '')}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
+    
+    // 5. Increment the counter for the next save
+    saveCount++;
 }
 
 /**
@@ -204,4 +223,3 @@ function drawInitialPlaceholder() {
 
 // --- Initial Setup ---
 window.onload = drawInitialPlaceholder;
-
