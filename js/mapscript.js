@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const safetyModalOkBtn = document.getElementById('safetyModalOkBtn');
     const safetyModalCloseBtn = safetyModal.querySelector('.close-btn');
 
+
     // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
         termsModal.style.display = 'none';
@@ -182,12 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
     skipBtn.addEventListener('click', () => authModal.style.display = 'none');
     findMeBtn.addEventListener('click', findMe);
     trackBtn.addEventListener('click', toggleTracking);
-    safetyModalOkBtn.addEventListener('click', () => {
-        safetyModal.style.display = 'none';
-        sessionStorage.setItem('safetyWarningSeen', 'true');
-        startTracking();
-    });
-    safetyModalCloseBtn.addEventListener('click', () => safetyModal.style.display = 'none');
     pictureBtn.addEventListener('click', () => cameraInput.click());
     cameraInput.addEventListener('change', handlePhoto);
     dataBtn.addEventListener('click', () => dataModal.style.display = 'flex');
@@ -197,6 +192,12 @@ document.addEventListener('DOMContentLoaded', () => {
     publishedRoutesModalCloseBtn.addEventListener('click', () => publishedRoutesModal.style.display = 'none');
     profileModalCloseBtn.addEventListener('click', () => profileModal.style.display = 'none');
     publicProfileModalCloseBtn.addEventListener('click', () => publicProfileModal.style.display = 'none');
+    safetyModalCloseBtn.addEventListener('click', () => safetyModal.style.display = 'none');
+    safetyModalOkBtn.addEventListener('click', () => {
+        // REMOVED: sessionStorage.setItem('safetyWarningSeen', 'true');
+        safetyModal.style.display = 'none';
+        startTracking();
+    });
     
     window.addEventListener('click', (event) => {
         const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal, profileModal, publicProfileModal, safetyModal];
@@ -384,29 +385,27 @@ function findMe() {
     }, () => alert("Could not get your location."), { enableHighAccuracy: true });
 }
 
+// MODIFIED: toggleTracking now always shows the safety modal
 function toggleTracking() {
+    const trackBtn = document.getElementById('trackBtn');
+
     if (trackingWatcher) {
-        const trackBtn = document.getElementById('trackBtn');
-        const userLocationSource = map.getSource('user-location-point');
         navigator.geolocation.clearWatch(trackingWatcher);
         trackingWatcher = null;
         trackBtn.textContent = '🛰️ Start Tracking';
         trackBtn.classList.remove('tracking');
+        const userLocationSource = map.getSource('user-location-point');
         if (userLocationSource) {
             userLocationSource.setData({ 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [] } });
         }
     } else {
-        if (sessionStorage.getItem('safetyWarningSeen')) {
-            startTracking();
-        } else {
-            document.getElementById('safetyModal').style.display = 'flex';
-        }
+        // Always show the safety modal when starting
+        document.getElementById('safetyModal').style.display = 'flex';
     }
 }
 
 function startTracking() {
     const trackBtn = document.getElementById('trackBtn');
-    const userLocationSource = map.getSource('user-location-point');
     routeCoordinates = [];
     navigator.geolocation.getCurrentPosition(position => {
         map.flyTo({ center: [position.coords.longitude, position.coords.latitude], zoom: 16 });
@@ -417,44 +416,71 @@ function startTracking() {
         if (map.getSource('user-route')) {
             map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
         }
-        if (userLocationSource) {
-            userLocationSource.setData({ 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': newCoord } });
+        if (map.getSource('user-location-point')) {
+            map.getSource('user-location-point').setData({ 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': newCoord } });
         }
     }, () => alert("Error watching position."), { enableHighAccuracy: true });
+    
     trackBtn.textContent = '🛑 Stop Tracking';
     trackBtn.classList.add('tracking');
 }
 
 async function handlePhoto(event) {
-    const file = event.target.files[0];
-    if (!file) return;
     const pictureBtn = document.getElementById('pictureBtn');
     const originalButtonText = pictureBtn.innerHTML;
-    pictureBtn.innerHTML = 'Processing...';
-    pictureBtn.disabled = true;
-    if (!currentUser) {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = e => navigator.geolocation.getCurrentPosition(position => {
-            const pinInfo = { id: `pin-${Date.now()}`, coords: [position.coords.longitude, position.coords.latitude], image: e.target.result, title: 'New Photo' };
-            photoPins.push(pinInfo);
-            addPhotoMarker(pinInfo);
-        }, () => alert("Could not get location."));
-        pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
+
+    if (!event.target.files || event.target.files.length === 0) {
+        console.log("No file selected.");
+        event.target.value = '';
         return;
     }
-    try {
-        const timestamp = Date.now();
-        const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}-${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        navigator.geolocation.getCurrentPosition(position => {
-            const pinInfo = { id: `pin-${timestamp}`, coords: [position.coords.longitude, position.coords.latitude], imageURL: downloadURL, title: 'New Photo' };
+    
+    const file = event.target.files[0];
+    pictureBtn.innerHTML = 'Processing...';
+    pictureBtn.disabled = true;
+
+    navigator.geolocation.getCurrentPosition(async (position) => {
+        const coords = [position.coords.longitude, position.coords.latitude];
+        
+        if (!currentUser) {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = e => {
+                const pinInfo = { id: `pin-${Date.now()}`, coords: coords, image: e.target.result, title: 'New Photo' };
+                photoPins.push(pinInfo);
+                addPhotoMarker(pinInfo);
+                pictureBtn.innerHTML = originalButtonText;
+                pictureBtn.disabled = false;
+                event.target.value = '';
+            };
+            return;
+        }
+        
+        try {
+            const timestamp = Date.now();
+            const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}-${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+            
+            const pinInfo = { id: `pin-${timestamp}`, coords: coords, imageURL: downloadURL, title: 'New Photo' };
             photoPins.push(pinInfo);
             addPhotoMarker(pinInfo);
-        }, () => alert("Could not get location."));
-    } catch (error) { console.error("Error uploading photo:", error); alert("Photo upload failed."); }
-    finally { pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = ''; }
+
+        } catch (error) {
+            console.error("Error uploading photo:", error);
+            alert("Photo upload failed.");
+        } finally {
+            pictureBtn.innerHTML = originalButtonText;
+            pictureBtn.disabled = false;
+            event.target.value = '';
+        }
+
+    }, () => {
+        alert("Could not get your location. Photo was not pinned.");
+        pictureBtn.innerHTML = originalButtonText;
+        pictureBtn.disabled = false;
+        event.target.value = '';
+    }, { enableHighAccuracy: true });
 }
 function addPhotoMarker(pinInfo) {
     const el = document.createElement('div');
@@ -807,6 +833,13 @@ async function saveProfile() {
             location: location,
             buyMeACoffeeLink: coffeeLink
         });
+
+        const userEmailSpan = document.getElementById('userEmail');
+        const userProfile = await getDoc(userDocRef);
+        if (userProfile.exists() && userEmailSpan) {
+            userEmailSpan.textContent = `Logged in as: ${userProfile.data().username}`;
+        }
+
         alert("Your profile has been updated successfully!");
         document.getElementById('profileModal').style.display = 'none';
     } catch (error) {
@@ -896,3 +929,4 @@ async function handleAccountDeletion() {
         }
     }
 }
+
