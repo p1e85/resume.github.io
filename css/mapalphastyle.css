@@ -22,9 +22,16 @@ body {
     right: 15px;
     z-index: 10;
     display: flex;
+    flex-direction: column; /* Stack rows vertically */
     gap: 10px;
-    align-items: center;
+    align-items: stretch; /* Make children span full width */
+}
+
+.top-row {
+    display: flex;
     justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
 .top-bar-left {
@@ -90,6 +97,7 @@ body {
 }
 
 .community-button {
+    width: 100%; /* Make button span full width of container */
     padding: 8px 12px;
     font-size: 14px;
     border: 1px solid transparent;
