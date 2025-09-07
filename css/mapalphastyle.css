@@ -22,30 +22,58 @@ body {
     right: 15px;
     z-index: 10;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column; /* Mobile-first: stack rows */
+    gap: 10px;
+}
+
+.top-row {
+    display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
     gap: 10px;
 }
 
 .top-bar-left {
     display: flex;
     gap: 10px;
-    flex-wrap: wrap;
 }
 
-.community-button {
-    flex-basis: 100%;
-    order: 3;
+.bottom-row {
+    width: 100%;
 }
 
-@media (min-width: 768px) {
+/* On larger screens (tablets and desktops), switch to a single row layout */
+@media (min-width: 640px) {
     .top-bar-container {
-        flex-wrap: nowrap;
+        flex-direction: row; /* Horizontal layout */
+        justify-content: space-between;
+        align-items: center;
     }
-    .community-button {
-        flex-basis: auto;
-        order: 0;
+    .top-row {
+        width: auto; /* Allow the top row to shrink */
+    }
+    .bottom-row {
+        width: auto; /* Allow the bottom row to shrink */
+    }
+    /* Combine left buttons and community button into one group */
+    .top-bar-left {
+        order: 1;
+    }
+    .bottom-row {
+        order: 2;
+    }
+    .donate-button {
+        order: 3;
+    }
+    .top-bar-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: nowrap; /* Prevent wrapping */
+    }
+    .top-bar-left {
+        flex-grow: 1; /* Allow left side to take available space */
     }
 }
 
@@ -91,7 +119,7 @@ body {
     background-color: #dc3545;
 }
 
-.top-bar-button, .community-button {
+.top-bar-button {
     padding: 8px 12px;
     font-size: 14px;
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -104,14 +132,24 @@ body {
     transition: background-color 0.3s;
     white-space: nowrap;
 }
-.top-bar-button:hover, .community-button.off:hover {
+.top-bar-button:hover {
     background-color: rgba(255, 255, 255, 0.4);
 }
 
 .community-button {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    cursor: pointer;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    transition: background-color 0.3s, color 0.3s;
     background-color: #28a745;
     color: white;
-    border-color: transparent;
+    white-space: nowrap;
 }
 .community-button:hover {
     opacity: 0.9;
@@ -120,6 +158,9 @@ body {
     background-color: rgba(255, 255, 255, 0.2);
     color: #333;
     border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.community-button.off:hover {
+    background-color: rgba(255, 255, 255, 0.4);
 }
 
 .donate-button {
@@ -231,7 +272,7 @@ body {
 #agreeBtn {
     padding: 12px; font-size: 18px; border: none; border-radius: 5px;
     color: white; background-color: #007bff; cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color: 0.2s;
 }
 #agreeBtn:disabled {
     background-color: #cccccc;
@@ -284,7 +325,7 @@ body {
 #authActionBtn {
     padding: 12px; font-size: 16px; border: none; border-radius: 5px;
     color: white; background-color: #007bff; cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color: 0.2s;
 }
 #authActionBtn:disabled {
     background-color: #cccccc;
@@ -371,7 +412,6 @@ body {
     margin-top: 20px;
     white-space: pre-wrap;
 }
-
 .badge-container {
     display: flex;
     flex-wrap: wrap;
@@ -400,7 +440,6 @@ body {
     font-style: italic;
     color: #888;
 }
-
 .support-button {
     background-color: #ffc107;
     color: #000;
