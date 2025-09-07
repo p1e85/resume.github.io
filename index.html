@@ -1,175 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garbage Path - Map Tracker</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♻️</text></svg>">
-    <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />
-    <link rel="stylesheet" href="css/mapstyle.css">
-</head>
-<body>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Resume - Patrick DeQuattro</title>
+        <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:500,700" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Muli:400,400i,800,800i" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
 
-    <!-- Top Bar Container -->
-    <div class="top-bar-container">
-        <div class="top-bar-left">
-            <button id="infoBtn" class="top-bar-button">ℹ️ Info</button>
-            <button id="communityBtn" class="community-button off">🌎 Community View: OFF</button>
-        </div>
-        <a href="https://www.buymeacoffee.com/p1skates" target="_blank" class="donate-button">
-            ☕ Support the Mission
-        </a>
-    </div>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2374675649398355"
+     crossorigin="anonymous"></script>
 
-    <!-- Info Modal -->
-    <div id="infoModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>About Garbage Path</h2>
-            <h4>The Mission (Why)</h4>
-            <p>Garbage Path transforms the chore of cleaning up our neighborhoods into a visible and rewarding achievement. By tracking your cleanup routes and pinning the litter you collect, you create a tangible record of your positive impact. Share your efforts on the community map to inspire others, see our collective progress, and help identify areas that need our attention the most.</p>
-            <h4>How to Use the App</h4>
-            <ol class="info-list">
-                <li><strong>Sign Up or Skip:</strong> Create an account to save your data to the cloud, or 'Skip' to use the app as a guest (your data will be saved only on this browser).</li>
-                <li><strong>Track a Route:</strong> Press 'Start Tracking' to draw your path on the map as you walk.</li>
-                <li><strong>Pin Garbage:</strong> When you find litter, press 'Pin Picture' to take a photo. This will drop a pin at your location.</li>
-                <li><strong>Save/Load:</strong> Use the 'Data' button to save your current session or load a previous one. You can save multiple named sessions.</li>
-                <li><strong>Publish:</strong> When logged in, you can use the 'Publish to Community' button to share your completed route with everyone.</li>
-                <li><strong>Community View:</strong> Toggle the 'Community View' button to see all the routes published by other users!</li>
-            </ol>
-            <p class="tos-link-container">You can review the full <a href="#" id="viewTermsLink">Terms of Use</a> at any time.</p>
-        </div>
-    </div>
-    
-    <!-- Terms of Use Modal -->
-    <div id="termsModal" class="modal-overlay">
-        <div class="modal-content">
-            <h2>Terms of Use</h2>
-            <div class="terms-box">
-                <p>Welcome to Garbage Path! By accessing or using our application (the "Service"), you agree to be bound by these Terms of Use.</p>
-                <p><strong>1. Description of Service:</strong> This Service is for the sole purpose of identifying and documenting refuse, trash, and litter (collectively, "Garbage").</p>
-                <p><strong>2. Prohibited Content:</strong> You may NOT upload any photograph containing people, illegal activities, or personal information. The focus must be exclusively on Garbage.</p>
-                <p><strong>3. Disclaimer:</strong> This Service is provided "AS IS". Your use of this service is entirely at your own risk. We are not liable for any damages or harm arising from your use of the Service.</p>
+    </head>
+    <body id="page-top">
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
+            <a class="navbar-brand js-scroll-trigger" href="#page-top">
+                <span class="d-block d-lg-none">Patrick DeQuattro</span>
+                <span class="d-none d-lg-block"><img class="img-fluid img-profile rounded-circle mx-auto mb-2" src="assets/img/P1.jpg" alt="..." /></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#experience">Experience</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#education">Education</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#skills">Skills</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#interests">Interests</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#awards">Awards</a></li>
+                </ul>
             </div>
-            <div class="agreement-section">
-                <input type="checkbox" id="termsCheckbox">
-                <label for="termsCheckbox">I acknowledge and have read the terms of use.</label>
-            </div>
-            <button id="agreeBtn" disabled>I Agree</button>
+        </nav>
+        <!-- Page Content-->
+        <div class="container-fluid p-0">
+            <!-- About-->
+            <section class="resume-section" id="about">
+                <div class="resume-section-content">
+                    <h1 class="mb-0">
+                        Patrick
+                        <span class="text-primary">DeQuattro</span>
+                    </h1>
+                    <div class="subheading mb-5">
+                        -Chicago, IL
+                        <a href="mailto:pgdequattro@yahoo.com">pgdequattro@yahoo.com</a>
+                    </div>
+                    <p class="lead mb-5">Automotive Professional, with aspirations to become a software developer. Self taught coder, recieved advanced certification through college course work. Working knowledge of Java, Android SDK, HTML/CSS, JavaScript/jQuery/Bootstrap, PHP/MySQL, Visual Basic, ASP.NET, looking for a good company to learn and grow with.</p>
+                    <div class="social-icons">
+                        <a class="social-icon" href="https://www.linkedin.com/in/patrick-dequattro-90611629"><i class="fab fa-linkedin-in"></i></a>
+                        <a class="social-icon" href="https://github.com/p1e85"><i class="fab fa-github"></i></a>
+                        <a class="social-icon" href="https://twitter.com/SSe85"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </section>
+            <hr class="m-0" />
+            <!-- Experience-->
+            <section class="resume-section" id="experience">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Experience</h2>
+                   <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">Parts Specialist</h3>
+                            <div class="subheading mb-3">Toyota of Lincolnwood</div>
+                            
+                        </div>
+                        <div class="flex-shrink-0"><span class="text-primary">November 2022 - present</span></div>
+                    </div>
+			
+		<div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">Parts Specialist</h3>
+                            <div class="subheading mb-3">City Volkswagon of Evanston</div>
+                            
+                        </div>
+                        <div class="flex-shrink-0"><span class="text-primary">January 2020 - November 2022</span></div>
+                    </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">Service Advisor</h3>
+                            <div class="subheading mb-3">Berman Subaru of Chicago</div>
+                            
+                        </div>
+                        <div class="flex-shrink-0"><span class="text-primary">August 2018 - March 2019</span></div>
+                    </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">Assistant Service Manager</h3>
+                            <div class="subheading mb-3">Grossinger Toyota North</div>
+                            
+                        </div>
+                        <div class="flex-shrink-0"><span class="text-primary">February 2017 - April 2018</span></div>
+                    </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">Senoir Technician</h3>
+                            <div class="subheading mb-3">Firestone Complete Autocare</div>
+                            
+                        </div>
+                        <div class="flex-shrink-0"><span class="text-primary">Augest 2008 - April 2016</span></div>
+                    </div>
+                </div>
+            </section>
+            <hr class="m-0" />
+            <!-- Education-->
+            <section class="resume-section" id="education">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Education</h2>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">City Colleges of Chicago</h3>
+                            <div class="subheading mb-3">Advance Certicate</div>
+                            <div>Computer Science - Web Development</div>
+                            
+                        </div>
+                        <div class="flex-shrink-0"><span class="text-primary">June 2019 - May 2021</span></div>
+                    </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">Universal technical Institute</h3>
+                            <div class="subheading mb-3">Automotive Technology</div>
+                            <div>General Automotive Repairs</div>
+                        </div>
+                        <div class="flex-shrink-0"><span class="text-primary">April 2006 - May 2007</span></div>
+                    </div>
+                </div>
+            </section>
+            <hr class="m-0" />
+            <!-- Skills-->
+            <section class="resume-section" id="skills">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Skills</h2>
+                    <div class="subheading mb-3">Programming Languages & Tools</div>
+                    <ul class="list-inline dev-icons">
+                        <li class="list-inline-item"><i class="fab fa-java"></i></li>
+			<li class="list-inline-item"><i class="fab fa-android"></i></li>
+                        <li class="list-inline-item"><i class="fab fa-html5"></i></li>
+                        <li class="list-inline-item"><i class="fab fa-css3-alt"></i></li>
+			<li class="list-inline-item"><i class="fab fa-js"></i></li>
+                        <li class="list-inline-item"><i class="fab fa-bootstrap"></i></li>
+                        <li class="list-inline-item"><i class="fab fa-php"></i></li>
+                        <li class="list-inline-item"><i class="fas fa-database"></i></li>
+                    </ul>
+                    <div class="subheading mb-3">Workflow</div>
+                    <ul class="fa-ul mb-0">
+                        <li>
+                            <span class="fa-li"><i class="fas fa-check"></i></span>
+                            Mobile-First, Responsive Design
+                        </li>
+                        <li>
+                            <span class="fa-li"><i class="fas fa-check"></i></span>
+                            Cross Browser Testing & Debugging
+                        </li>
+                        
+                    </ul>
+                </div>
+            </section>
+            <hr class="m-0" />
+            <!-- Interests-->
+            <section class="resume-section" id="interests">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Interests</h2>
+                    <p>Apart from being a web developer, I enjoy coding any type of programs. Whether it being a game or productivity software, I even dabled in Commordore Basic. 
+			My activities other than computer coding is skateboarding, I've been an avid skater since 1999 and enjoy shredding when ever I have the time. Other outdoor activites I enjoy such as camping and kayaking. 
+			I also play a lot of video games and do some twitch streaming, I look at it like I'm already playing video games, I might as well stream it and entertain people as I play.</p>
+                </div>
+            </section>
+            <hr class="m-0" />
+            <!-- Awards-->
+            <section class="resume-section" id="awards">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Awards & Certifications</h2>
+                    <ul class="fa-ul mb-0">
+                        <li>
+                            <span class="fa-li"><i class="fas fa-trophy text-warning"></i></span>
+                            City Colleges of Chicago Advanced Cerificate - Web Developer
+                        </li>
+                        <li>
+                            <span class="fa-li"><i class="fas fa-trophy text-warning"></i></span>
+                            City Colleges of Chicago Basic Cerificate - Computer Information Systems
+                        </li>
+                        <li>
+                            <span class="fa-li"><i class="fas fa-trophy text-warning"></i></span>
+                            
+                            Udacity Grow With Google Android Challenge
+                        </li>
+                        <li>
+                            <span class="fa-li"><i class="fas fa-trophy text-warning"></i></span>
+                            
+                            Udacity Front End Web Development Nanodegree
+                        </li>
+                        <li>
+                            <span class="fa-li"><i class="fas fa-trophy text-warning"></i></span>
+                            
+                            Forte Knowledge Basic Certificate Java/Android SDK
+                        </li>
+                        
+                    </ul>
+                </div>
+            </section>
         </div>
-    </div>
-    
-    <!-- Authentication Modal -->
-    <div id="authModal" class="modal-overlay">
-        <div class="modal-content auth-modal">
-            <h2 id="authTitle">Create an Account</h2>
-            <p id="authSubtitle">Or <a href="#" id="switchAuthModeLink">log in to an existing account.</a></p>
-            <div id="authForm" class="auth-form signup-mode">
-                <input type="text" id="usernameInput" placeholder="Public Username">
-                <input type="email" id="emailInput" placeholder="Email (for login)">
-                <input type="password" id="passwordInput" placeholder="Password (min. 6 characters)">
-                <button id="authActionBtn">Sign Up</button>
-            </div>
-            <hr>
-            <button id="skipBtn" class="skip-button">Skip for now</button>
-            <p id="authError" class="error-message"></p>
-        </div>
-    </div>
-    
-    <!-- Modal for Editing User Profile -->
-    <div id="profileModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>Edit Your Public Profile</h2>
-            <p>This information will be visible to other users when they click your username on the community map.</p>
-            <div class="profile-form">
-                <label for="bioInput">Short Bio</label>
-                <textarea id="bioInput" placeholder="Tell the community a little about yourself..." maxlength="150"></textarea>
-                <label for="locationInput">Location</label>
-                <input type="text" id="locationInput" placeholder="e.g., Chicago, IL" maxlength="50">
-                <label for="coffeeLinkInput">"Buy Me a Coffee" Link</label>
-                <input type="url" id="coffeeLinkInput" placeholder="https://www.buymeacoffee.com/yourname">
-                <button id="saveProfileBtn" class="modal-button">Save Profile</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Map container -->
-    <div id='map'></div>
-
-    <!-- Bottom Container -->
-    <div class="bottom-container">
-        <div id="userStatus" class="user-status-display">
-            <div id="loggedInContent">
-                <span id="userEmail"></span>
-                <button id="logoutBtn">Log Out</button>
-            </div>
-            <div id="guestContent">
-                <span>Guest Mode</span>
-                <button id="loginSignupBtn">Log In / Sign Up</button>
-            </div>
-        </div>
-        <div class="controls">
-            <button id="findMeBtn">📍 Find Me</button>
-            <button id="trackBtn">🛰️ Start Tracking</button>
-            <input type="file" accept="image/*" capture="environment" id="cameraInput" style="display: none;">
-            <button id="pictureBtn">📸 Pin Picture</button>
-            <button id="dataBtn">💾 Data</button>
-        </div>
-    </div>
-
-    <!-- Data Management Modal -->
-    <div id="dataModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>Data Management</h2>
-            <p>Manage your private sessions or your public contributions.</p>
-            <button id="editProfileBtn" class="modal-button edit-profile">👤 Edit My Profile</button>
-            <button id="saveBtn" class="modal-button">Save Private Session</button>
-            <button id="loadBtn" class="modal-button">Load Private Session</button>
-            <button id="managePublicationsBtn" class="modal-button manage">Manage My Publications</button>
-            <hr>
-            <p>Publish your completed route to the public community map for everyone to see.</p>
-            <button id="publishBtn" class="modal-button publish">🚀 Publish to Community</button>
-            <hr>
-            <p>Export your current session as a GeoJSON file.</p>
-            <button id="exportBtn" class="modal-button export">Export as GeoJSON</button>
-        </div>
-    </div>
-
-    <!-- Saved Cloud Sessions Modal -->
-    <div id="sessionsModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>Load a Private Session</h2>
-            <p>Select a previously saved session to load it onto the map.</p>
-            <ul id="sessionList" class="session-list"></ul>
-        </div>
-    </div>
-
-    <!-- Saved Local Sessions Modal -->
-    <div id="localSessionsModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>Load a Local Session</h2>
-            <p>Select a session saved on this browser to load it.</p>
-            <ul id="localSessionList" class="session-list"></ul>
-        </div>
-    </div>
-
-    <!-- Published Routes Modal -->
-    <div id="publishedRoutesModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>Manage My Published Routes</h2>
-            <p>Here you can view and permanently delete your contributions to the community map.</p>
-            <ul id="publishedRoutesList" class="session-list"></ul>
-        </div>
-    </div>
-
-    <!-- JavaScript Libraries -->
-    <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
-    <script src="js/mapscript.js" type="module"></script>
-
-</body>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+    </body>
 </html>
