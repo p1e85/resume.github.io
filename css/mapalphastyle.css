@@ -22,31 +22,33 @@ body {
     right: 15px;
     z-index: 10;
     display: flex;
-    flex-wrap: wrap; /* Allow wrapping on narrow screens */
+    flex-direction: column; /* Mobile-first: stack rows */
+    gap: 10px;
+}
+
+.top-row {
+    display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
     gap: 10px;
 }
 
-.top-bar-left, .top-bar-right {
+.top-bar-left {
     display: flex;
-    align-items: center;
     gap: 10px;
 }
 
-/* On mobile, force the right group (donate button) to wrap to a new line */
-@media (max-width: 520px) {
-    .top-bar-left {
-        flex-basis: 100%;
-        order: 1;
+/* On larger screens, switch to a single row */
+@media (min-width: 600px) {
+    .top-bar-container {
+        flex-direction: row;
+        align-items: center;
     }
-    .top-bar-right {
-        flex-basis: 100%;
-        justify-content: flex-start;
-        order: 2;
+    .bottom-row {
+        width: auto; /* Allow button to shrink to its content size */
     }
 }
-
 
 .bottom-container {
     position: absolute;
@@ -109,6 +111,8 @@ body {
 }
 
 .community-button {
+    width: 100%;
+    box-sizing: border-box;
     background-color: #28a745;
     color: white;
     border-color: transparent;
@@ -420,3 +424,4 @@ body {
     border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
     background-size: cover; background-position: center; cursor: pointer;
 }
+
