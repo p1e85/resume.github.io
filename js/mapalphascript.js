@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     map = new mapboxgl.Map({
         container: 'map',
         //style: 'mapbox://styles/mapbox/streets-v12',
-        style: 'mapbox://styles/p1creations/cmf8zpwu5003c01p8f4l06t8h',
+        style: 'mapbox://styles/p1creations/cmf90cs77004p01qsgh1o3hge',
         center: [-87.6298, 41.8781],
         zoom: 10
     });
