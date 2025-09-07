@@ -22,9 +22,8 @@ body {
     right: 15px;
     z-index: 10;
     display: flex;
-    flex-direction: column; /* Stack rows vertically */
+    flex-direction: column;
     gap: 10px;
-    align-items: stretch; /* Make children span full width */
 }
 
 .top-row {
@@ -32,6 +31,7 @@ body {
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    gap: 10px;
 }
 
 .top-bar-left {
@@ -91,13 +91,15 @@ body {
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     transition: background-color 0.3s;
+    white-space: nowrap;
 }
 .top-bar-button:hover {
     background-color: rgba(255, 255, 255, 0.4);
 }
 
 .community-button {
-    width: 100%; /* Make button span full width of container */
+    width: 100%;
+    box-sizing: border-box; /* Important for full-width buttons */
     padding: 8px 12px;
     font-size: 14px;
     border: 1px solid transparent;
@@ -131,6 +133,7 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(5px);
     transition: background-color 0.3s;
+    white-space: nowrap;
 }
 .donate-button:hover {
     background-color: rgba(255, 255, 255, 0.4);
@@ -401,4 +404,3 @@ body {
     border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
     background-size: cover; background-position: center; cursor: pointer;
 }
-
