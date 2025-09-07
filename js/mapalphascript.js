@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     safetyModalOkBtn.addEventListener('click', () => {
         sessionStorage.setItem('safetyWarningSeen', 'true');
         safetyModal.style.display = 'none';
-        startTracking(); // Proceed with starting the tracking
+        startTracking();
     });
     
     window.addEventListener('click', (event) => {
@@ -389,7 +389,6 @@ function toggleTracking() {
     const trackBtn = document.getElementById('trackBtn');
 
     if (trackingWatcher) {
-        // This means we are stopping tracking
         navigator.geolocation.clearWatch(trackingWatcher);
         trackingWatcher = null;
         trackBtn.textContent = '🛰️ Start Tracking';
@@ -399,8 +398,6 @@ function toggleTracking() {
             userLocationSource.setData({ 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [] } });
         }
     } else {
-        // This means we are starting tracking
-        // Show safety warning if it hasn't been seen this session
         if (!sessionStorage.getItem('safetyWarningSeen')) {
             document.getElementById('safetyModal').style.display = 'flex';
         } else {
@@ -431,36 +428,63 @@ function startTracking() {
 }
 
 async function handlePhoto(event) {
-    const file = event.target.files[0];
-    if (!file) return;
     const pictureBtn = document.getElementById('pictureBtn');
     const originalButtonText = pictureBtn.innerHTML;
-    pictureBtn.innerHTML = 'Processing...';
-    pictureBtn.disabled = true;
-    if (!currentUser) {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = e => navigator.geolocation.getCurrentPosition(position => {
-            const pinInfo = { id: `pin-${Date.now()}`, coords: [position.coords.longitude, position.coords.latitude], image: e.target.result, title: 'New Photo' };
-            photoPins.push(pinInfo);
-            addPhotoMarker(pinInfo);
-        }, () => alert("Could not get location."));
-        pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
+
+    if (!event.target.files || event.target.files.length === 0) {
+        console.log("No file selected.");
+        event.target.value = '';
         return;
     }
-    try {
-        const timestamp = Date.now();
-        const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}-${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        navigator.geolocation.getCurrentPosition(position => {
-            const pinInfo = { id: `pin-${timestamp}`, coords: [position.coords.longitude, position.coords.latitude], imageURL: downloadURL, title: 'New Photo' };
+    
+    const file = event.target.files[0];
+    pictureBtn.innerHTML = 'Processing...';
+    pictureBtn.disabled = true;
+
+    navigator.geolocation.getCurrentPosition(async (position) => {
+        const coords = [position.coords.longitude, position.coords.latitude];
+        
+        if (!currentUser) {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = e => {
+                const pinInfo = { id: `pin-${Date.now()}`, coords: coords, image: e.target.result, title: 'New Photo' };
+                photoPins.push(pinInfo);
+                addPhotoMarker(pinInfo);
+                pictureBtn.innerHTML = originalButtonText;
+                pictureBtn.disabled = false;
+                event.target.value = '';
+            };
+            return;
+        }
+        
+        try {
+            const timestamp = Date.now();
+            const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}-${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+            
+            const pinInfo = { id: `pin-${timestamp}`, coords: coords, imageURL: downloadURL, title: 'New Photo' };
             photoPins.push(pinInfo);
             addPhotoMarker(pinInfo);
-        }, () => alert("Could not get location."));
-    } catch (error) { console.error("Error uploading photo:", error); alert("Photo upload failed."); }
-    finally { pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = ''; }
+
+        } catch (error) {
+            console.error("Error uploading photo:", error);
+            alert("Photo upload failed.");
+        } finally {
+            pictureBtn.innerHTML = originalButtonText;
+            pictureBtn.disabled = false;
+            event.target.value = '';
+        }
+
+    }, () => {
+        alert("Could not get your location. Photo was not pinned.");
+        pictureBtn.innerHTML = originalButtonText;
+        pictureBtn.disabled = false;
+        event.target.value = '';
+    }, { enableHighAccuracy: true });
 }
+
 function addPhotoMarker(pinInfo) {
     const el = document.createElement('div');
     el.className = 'photo-marker';
@@ -812,6 +836,14 @@ async function saveProfile() {
             location: location,
             buyMeACoffeeLink: coffeeLink
         });
+
+        // Update username display in real-time
+        const userEmailSpan = document.getElementById('userEmail');
+        const userProfile = await getDoc(userDocRef);
+        if (userProfile.exists() && userEmailSpan) {
+            userEmailSpan.textContent = `Logged in as: ${userProfile.data().username}`;
+        }
+
         alert("Your profile has been updated successfully!");
         document.getElementById('profileModal').style.display = 'none';
     } catch (error) {
@@ -901,5 +933,4 @@ async function handleAccountDeletion() {
         }
     }
 }
-a safety reminder. A pop up that happens when the start tracking button is pressed, only on the first time. can you add that?
 
