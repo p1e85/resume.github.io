@@ -11,7 +11,7 @@ import {
     deleteUser
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// --- Garbage Path V2 Firebase Config ---
+// --- Litter Bugs V2 Firebase Config ---
 const firebaseConfig = {
   apiKey: "AIzaSyCE1b6VtJjUs0O5YvyLjeslxuHC8UlgJUM",
   authDomain: "garbagepathv2.firebaseapp.com",
@@ -477,7 +477,6 @@ function startTracking() {
     trackBtn.classList.add('tracking');
 }
 
-// MODIFIED: handlePhoto function to include image compression
 async function handlePhoto(event) {
     const pictureBtn = document.getElementById('pictureBtn');
     const originalButtonText = pictureBtn.innerHTML;
@@ -492,7 +491,6 @@ async function handlePhoto(event) {
     pictureBtn.innerHTML = 'Processing...';
     pictureBtn.disabled = true;
 
-    // --- Image Compression Step ---
     const options = {
         maxSizeMB: 1,
         maxWidthOrHeight: 1920,
@@ -512,14 +510,13 @@ async function handlePhoto(event) {
         event.target.value = '';
         return;
     }
-    // ------------------------------------
 
     navigator.geolocation.getCurrentPosition(async (position) => {
         const coords = [position.coords.longitude, position.coords.latitude];
         
         if (!currentUser) {
             const reader = new FileReader();
-            reader.readAsDataURL(processedFile); // Use the compressed file
+            reader.readAsDataURL(processedFile);
             reader.onload = e => {
                 const pinInfo = { id: `pin-${Date.now()}`, coords: coords, image: e.target.result, title: 'New Photo' };
                 photoPins.push(pinInfo);
@@ -534,7 +531,7 @@ async function handlePhoto(event) {
         try {
             const timestamp = Date.now();
             const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}-${processedFile.name}`);
-            const snapshot = await uploadBytes(storageRef, processedFile); // Upload the compressed file
+            const snapshot = await uploadBytes(storageRef, processedFile);
             const downloadURL = await getDownloadURL(snapshot.ref);
             
             const pinInfo = { id: `pin-${timestamp}`, coords: coords, imageURL: downloadURL, title: 'New Photo' };
@@ -557,7 +554,6 @@ async function handlePhoto(event) {
         event.target.value = '';
     }, { enableHighAccuracy: true });
 }
-
 function addPhotoMarker(pinInfo) {
     const el = document.createElement('div');
     el.className = 'photo-marker';
@@ -814,7 +810,7 @@ function displaySessionData(data) {
 function exportGeoJSON() {
     const now = new Date();
     const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
-    const fileName = `garbage_path_data_${timestamp}.geojson`;
+    const fileName = `litter_bugs_data_${timestamp}.geojson`;
     const pinFeatures = photoPins.map(pin => ({ type: 'Feature', geometry: { type: 'Point', coordinates: pin.coords }, properties: { title: pin.title, image_url: pin.imageURL || 'local_data' } }));
     const routeFeature = { type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates }, properties: {} };
     const geojson = { type: 'FeatureCollection', features: [...pinFeatures, routeFeature] };
@@ -1024,4 +1020,3 @@ async function handleAccountDeletion() {
         }
     }
 }
-
