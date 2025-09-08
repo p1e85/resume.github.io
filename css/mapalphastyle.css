@@ -22,7 +22,7 @@ body {
     right: 15px;
     z-index: 10;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: wrap; /* Allow wrapping on narrow screens */
     justify-content: space-between;
     align-items: center;
     gap: 10px;
@@ -32,22 +32,22 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    flex-grow: 1; /* Allow left side to take up space */
 }
 
-.top-bar-right {
-    display: flex;
+/* Mobile-first: Community button takes full width on its own row */
+.community-button {
+    flex-basis: 100%;
+    order: 3; /* Push to the bottom of the flex container */
 }
 
-/* On mobile, stack the right side below */
-@media (max-width: 600px) {
-    .top-bar-left {
-        flex-basis: 100%;
-    }
-    .top-bar-right {
-       flex-basis: 100%;
+/* Desktop: Reset to a single row layout */
+@media (min-width: 560px) {
+    .community-button {
+        flex-basis: auto; /* Reset width */
+        order: 0; /* Reset order */
     }
 }
+
 
 .bottom-container {
     position: absolute;
@@ -198,13 +198,11 @@ body {
     display: flex;
     flex-direction: column;
 }
-
 .info-modal-body {
     overflow-y: auto;
     flex-grow: 1;
     padding: 10px 0;
 }
-
 .terms-box {
     overflow-y: auto;
     border: 1px solid #ccc;
