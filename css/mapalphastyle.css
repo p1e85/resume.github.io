@@ -22,7 +22,7 @@ body {
     right: 15px;
     z-index: 10;
     display: flex;
-    flex-wrap: wrap; /* Allow wrapping on narrow screens */
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
     gap: 10px;
@@ -34,17 +34,21 @@ body {
     gap: 10px;
 }
 
-/* Mobile-first: Community button takes full width on its own row */
-.community-button {
-    flex-basis: 100%;
-    order: 3; /* Push to the bottom of the flex container */
+.top-bar-right {
+    display: flex;
+    align-items: center;
 }
 
-/* Desktop: Reset to a single row layout */
-@media (min-width: 560px) {
-    .community-button {
-        flex-basis: auto; /* Reset width */
-        order: 0; /* Reset order */
+/* On mobile, force the left group to take full width */
+@media (max-width: 520px) {
+    .top-bar-left {
+        flex-basis: 100%;
+        order: 1;
+    }
+    .top-bar-right {
+        flex-basis: 100%;
+        justify-content: flex-start;
+        order: 2;
     }
 }
 
@@ -220,7 +224,7 @@ body {
 #agreeBtn {
     padding: 12px; font-size: 18px; border: none; border-radius: 5px;
     color: white; background-color: #007bff; cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color: 0.2s;
 }
 #agreeBtn:disabled {
     background-color: #cccccc;
@@ -400,7 +404,7 @@ body {
     text-align: center;
 }
 
-/* --- User Status & Photo Markers --- */
+/* --- User Status Display --- */
 .user-status-display {
     display: flex;
     background-color: rgba(255, 255, 255, 0.8);
@@ -415,8 +419,4 @@ body {
     border: none; background-color: #6c757d; color: white;
     padding: 5px 10px; border-radius: 5px; cursor: pointer;
 }
-.photo-marker {
-    width: 40px; height: 40px; border-radius: 50%;
-    border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-    background-size: cover; background-position: center; cursor: pointer;
-}
+
