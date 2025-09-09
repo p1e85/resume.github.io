@@ -22,7 +22,7 @@ body {
     right: 15px;
     z-index: 10;
     display: flex;
-    flex-direction: column; 
+    flex-direction: column;
     gap: 10px;
 }
 
@@ -53,7 +53,7 @@ body {
     }
     .bottom-row {
         width: auto;
-        margin-left: 10px; /* Add space between button groups */
+        margin-left: 10px;
     }
 }
 
@@ -109,7 +109,7 @@ body {
     cursor: pointer;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-    transition: background-color 0.3s;
+    transition: background-color: 0.3s;
     white-space: nowrap;
     text-decoration: none;
 }
@@ -411,7 +411,7 @@ body {
     text-align: center;
 }
 
-/* --- User Status Display & Photo Markers --- */
+/* --- User Status Display --- */
 .user-status-display {
     display: flex;
     background-color: rgba(255, 255, 255, 0.8);
