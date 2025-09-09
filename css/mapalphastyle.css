@@ -411,7 +411,7 @@ body {
     text-align: center;
 }
 
-/* --- User Status Display --- */
+/* --- User Status Display & Photo Markers --- */
 .user-status-display {
     display: flex;
     background-color: rgba(255, 255, 255, 0.8);
