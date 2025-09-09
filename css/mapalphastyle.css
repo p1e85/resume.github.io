@@ -275,7 +275,7 @@ body {
 #authActionBtn {
     padding: 12px; font-size: 16px; border: none; border-radius: 5px;
     color: white; background-color: #007bff; cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color: 0.2s;
 }
 #authActionBtn:disabled {
     background-color: #cccccc;
