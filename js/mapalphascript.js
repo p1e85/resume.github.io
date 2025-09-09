@@ -34,7 +34,7 @@ let currentUser = null;
 let trackingWatcher = null;
 let routeCoordinates = [];
 let photoPins = [];
-// 'markers' array is now deprecated in favor of GeoJSON data layers
+// 'markers' array is deprecated
 let map;
 let findMeMarker = null;
 let isCommunityViewOn = false;
@@ -730,7 +730,7 @@ function exportGeoJSON() {
 
 async function populatePublishedRoutesList() {
     const publishedRoutesList = document.getElementById('publishedRoutesList');
-    publishedRoutesList.innerHTML = '<li>Loading...</li>';
+    publishedRoutesList.innerHTML = '<li>Loading your publications...</li>';
     try {
         const q = query(collection(db, "publishedRoutes"), where("userId", "==", currentUser.uid), orderBy("timestamp", "desc"));
         const querySnapshot = await getDocs(q);
