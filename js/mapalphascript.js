@@ -34,7 +34,7 @@ let currentUser = null;
 let trackingWatcher = null;
 let routeCoordinates = [];
 let photoPins = [];
-let markers = [];
+// let markers = []; // Deprecated: We now use data layers
 let map;
 let findMeMarker = null;
 let isCommunityViewOn = false;
@@ -69,7 +69,6 @@ const allBadges = {
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- Element References ---
     const termsModal = document.getElementById('termsModal');
     const authModal = document.getElementById('authModal');
     const agreeBtn = document.getElementById('agreeBtn');
@@ -116,8 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const safetyModalCloseBtn = safetyModal.querySelector('.close-btn');
     const changeStyleBtn = document.getElementById('changeStyleBtn');
 
-
-    // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
         termsModal.style.display = 'none';
         document.getElementById('userStatus').style.display = 'flex';
@@ -125,7 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
         termsModal.style.display = 'flex';
     }
 
-    // --- Mapbox Setup ---
     mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY2p6ajZvejJmMDZhaTNkcWpiN294dm12eCJ9.8ckNT6kfuJry7K7GAeIuxw';
     map = new mapboxgl.Map({
         container: 'map',
@@ -136,9 +132,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     map.on('load', () => {
         initializeMapLayers();
+        setupPinClickListeners();
     });
 
-    // --- Event Listeners ---
     const validateSignUpForm = () => {
         const isEmailValid = emailInput.value.includes('@');
         const isPasswordValid = passwordInput.value.length >= 6;
@@ -154,7 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
     passwordInput.addEventListener('input', validateSignUpForm);
     usernameInput.addEventListener('input', validateSignUpForm);
     ageCheckbox.addEventListener('change', validateSignUpForm);
-
     infoBtn.addEventListener('click', () => infoModal.style.display = 'flex');
     infoModalCloseBtn.addEventListener('click', () => infoModal.style.display = 'none');
     viewTermsLink.addEventListener('click', (e) => {
@@ -194,16 +189,13 @@ document.addEventListener('DOMContentLoaded', () => {
     publicProfileModalCloseBtn.addEventListener('click', () => publicProfileModal.style.display = 'none');
     safetyModalCloseBtn.addEventListener('click', () => safetyModal.style.display = 'none');
     safetyModalOkBtn.addEventListener('click', () => {
-        // sessionStorage.setItem('safetyWarningSeen', 'true');
         safetyModal.style.display = 'none';
         startTracking();
     });
-    
     window.addEventListener('click', (event) => {
         const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal, profileModal, publicProfileModal, safetyModal];
         if (modals.includes(event.target)) modals.forEach(m => m.style.display = 'none');
     });
-    
     saveBtn.addEventListener('click', saveSession);
     loadBtn.addEventListener('click', () => {
         dataModal.style.display = 'none';
@@ -235,7 +227,6 @@ document.addEventListener('DOMContentLoaded', () => {
     changeStyleBtn.addEventListener('click', changeMapStyle);
 });
 
-// --- Firebase Auth State Listener ---
 onAuthStateChanged(auth, async (user) => {
     const userStatus = document.getElementById('userStatus');
     const loggedInContent = document.getElementById('loggedInContent');
@@ -245,9 +236,7 @@ onAuthStateChanged(auth, async (user) => {
     const publishBtn = document.getElementById('publishBtn');
     const managePublicationsBtn = document.getElementById('managePublicationsBtn');
     const editProfileBtn = document.getElementById('editProfileBtn');
-    
     if(userStatus) userStatus.style.display = 'flex';
-
     if (user) {
         currentUser = user;
         try {
@@ -256,9 +245,7 @@ onAuthStateChanged(auth, async (user) => {
             if (docSnap.exists()) {
                 const username = docSnap.data().username;
                 if (userEmailSpan) userEmailSpan.textContent = `Logged in as: ${username}`;
-            } else {
-                if (userEmailSpan) userEmailSpan.textContent = `Logged in`;
-            }
+            } else { if (userEmailSpan) userEmailSpan.textContent = `Logged in`; }
         } catch (error) {
             console.error("Error fetching username:", error);
             if (userEmailSpan) userEmailSpan.textContent = `Logged in`;
@@ -279,157 +266,137 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-
-// --- Functions ---
 function initializeMapLayers() {
+    // User Route Line
     if (!map.getSource('user-route')) {
-        map.addSource('user-route', {
-            'type': 'geojson',
-            'data': { 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': routeCoordinates } }
-        });
+        map.addSource('user-route', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } } });
     }
     if (!map.getLayer('user-route')) {
-        map.addLayer({
-            'id': 'user-route', 'type': 'line', 'source': 'user-route',
-            'layout': { 'line-join': 'round', 'line-cap': 'round' },
-            'paint': { 'line-color': '#007bff', 'line-width': 5 }
-        });
+        map.addLayer({ id: 'user-route', type: 'line', source: 'user-route', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': '#007bff', 'line-width': 5 } });
     }
+
+    // User Location Point
     if (!map.getSource('user-location-point')) {
-        map.addSource('user-location-point', {
-            'type': 'geojson',
-            'data': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [] } }
-        });
+        map.addSource('user-location-point', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'Point', 'coordinates': [] } } });
     }
     if (!map.getLayer('user-location-pulse')) {
-        map.addLayer({
-            'id': 'user-location-pulse', 'type': 'circle', 'source': 'user-location-point',
-            'paint': { 'circle-radius': 15, 'circle-color': '#007bff', 'circle-opacity': 0.2 }
-        });
+        map.addLayer({ id: 'user-location-pulse', type: 'circle', source: 'user-location-point', paint: { 'circle-radius': 15, 'circle-color': '#007bff', 'circle-opacity': 0.2 } });
     }
     if (!map.getLayer('user-location-dot')) {
-        map.addLayer({
-            'id': 'user-location-dot', 'type': 'circle', 'source': 'user-location-point',
-            'paint': { 'circle-radius': 6, 'circle-color': '#fff', 'circle-stroke-width': 2, 'circle-stroke-color': '#007bff' }
+        map.addLayer({ id: 'user-location-dot', type: 'circle', source: 'user-location-point', paint: { 'circle-radius': 6, 'circle-color': '#fff', 'circle-stroke-width': 2, 'circle-stroke-color': '#007bff' } });
+    }
+
+    // User Photo Pins Source and Layers
+    if (!map.getSource('user-pins-source')) {
+        map.addSource('user-pins-source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+    }
+    if (!map.getLayer('user-pins-dots')) {
+        map.addLayer({ id: 'user-pins-dots', type: 'circle', source: 'user-pins-source', maxzoom: 14, paint: { 'circle-radius': 6, 'circle-color': '#007bff', 'circle-stroke-width': 2, 'circle-stroke-color': '#ffffff' } });
+    }
+    if (!map.getLayer('user-pins-icons')) {
+        const cameraIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#007bff" width="24px" height="24px"><path d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="3.2"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>`;
+        const cameraIconURI = 'data:image/svg+xml;base64,' + btoa(cameraIconSVG);
+        map.loadImage(cameraIconURI, (error, image) => {
+            if (error) throw error;
+            if (!map.hasImage('camera-icon-user')) map.addImage('camera-icon-user', image, { sdf: true });
+            if (!map.getLayer('user-pins-icons')) {
+                map.addLayer({ id: 'user-pins-icons', type: 'symbol', source: 'user-pins-source', minzoom: 14, layout: { 'icon-image': 'camera-icon-user', 'icon-size': 1.5, 'icon-allow-overlap': true }, paint: { 'icon-color': '#007bff' } });
+            }
         });
     }
+    
+    // Community Photo Pins Source and Layers
+    if (!map.getSource('community-pins-source')) {
+        map.addSource('community-pins-source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+    }
+    if (!map.getLayer('community-pins-dots')) {
+        map.addLayer({ id: 'community-pins-dots', type: 'circle', source: 'community-pins-source', maxzoom: 14, paint: { 'circle-radius': 6, 'circle-color': '#28a745', 'circle-stroke-width': 2, 'circle-stroke-color': '#ffffff' } });
+    }
+    if (!map.getLayer('community-pins-icons')) {
+        const cameraIconCommunitySVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#28a745" width="24px" height="24px"><path d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="3.2"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>`;
+        const cameraIconCommunityURI = 'data:image/svg+xml;base64,' + btoa(cameraIconCommunitySVG);
+        map.loadImage(cameraIconCommunityURI, (error, image) => {
+            if (error) throw error;
+            if (!map.hasImage('camera-icon-community')) map.addImage('camera-icon-community', image, { sdf: true });
+            if (!map.getLayer('community-pins-icons')) {
+                map.addLayer({ id: 'community-pins-icons', type: 'symbol', source: 'community-pins-source', minzoom: 14, layout: { 'icon-image': 'camera-icon-community', 'icon-size': 1.5, 'icon-allow-overlap': true }, paint: { 'icon-color': '#28a745' } });
+            }
+        });
+    }
+}
+
+function setupPinClickListeners() {
+    const userPinLayers = ['user-pins-dots', 'user-pins-icons'];
+    userPinLayers.forEach(layerId => {
+        map.on('click', layerId, (e) => {
+            if (e.features.length > 0) {
+                const pinInfo = JSON.parse(e.features[0].properties.pinInfo);
+                createAndShowPinPopup(pinInfo, 'user');
+            }
+        });
+        map.on('mouseenter', layerId, () => map.getCanvas().style.cursor = 'pointer');
+        map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = '');
+    });
+
+    const communityPinLayers = ['community-pins-dots', 'community-pins-icons'];
+    communityPinLayers.forEach(layerId => {
+        map.on('click', layerId, (e) => {
+            if (e.features.length > 0) {
+                const pinInfo = JSON.parse(e.features[0].properties.pinInfo);
+                const routeInfo = JSON.parse(e.features[0].properties.routeInfo);
+                createAndShowPinPopup(pinInfo, 'community', routeInfo);
+            }
+        });
+        map.on('mouseenter', layerId, () => map.getCanvas().style.cursor = 'pointer');
+        map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = '');
+    });
 }
 
 function changeMapStyle() {
     currentStyleIndex = (currentStyleIndex + 1) % mapStyles.length;
-    const newStyle = mapStyles[currentStyleIndex];
-    map.setStyle(newStyle.url);
+    map.setStyle(mapStyles[currentStyleIndex].url);
     map.once('style.load', () => {
         initializeMapLayers();
-        markers.forEach(marker => marker.addTo(map));
-        if (isCommunityViewOn) {
-            fetchAndDisplayCommunityRoutes();
-        }
+        if (isCommunityViewOn) fetchAndDisplayCommunityRoutes();
+        updateUserPinsSource(); // Redraw user pins on style change
     });
 }
-function convertRouteForFirestore(coordsArray) {
-    return coordsArray.map(coord => ({ lng: coord[0], lat: coord[1] }));
-}
-function convertRouteFromFirestore(coordsObjects) {
-    if (!coordsObjects) return [];
-    return coordsObjects.map(coord => [coord.lng, coord.lat]);
-}
-function convertPinsForFirestore(pinsArray) {
-    return pinsArray.map(pin => {
-        const newPin = { ...pin };
-        if (Array.isArray(newPin.coords)) {
-            newPin.coords = { lng: newPin.coords[0], lat: newPin.coords[1] };
-        }
-        return newPin;
-    });
-}
-function convertPinsFromFirestore(pinsObjects) {
-    if (!pinsObjects) return [];
-    return pinsObjects.map(pin => {
-        const newPin = { ...pin };
-        if (newPin.coords && typeof newPin.coords === 'object' && !Array.isArray(newPin.coords)) {
-            newPin.coords = [newPin.coords.lng, newPin.coords.lat];
-        }
-        return newPin;
-    });
-}
+
+function convertRouteForFirestore(coordsArray) { return coordsArray.map(coord => ({ lng: coord[0], lat: coord[1] })); }
+function convertRouteFromFirestore(coordsObjects) { if (!coordsObjects) return []; return coordsObjects.map(coord => [coord.lng, coord.lat]); }
+function convertPinsForFirestore(pinsArray) { return pinsArray.map(pin => ({ ...pin, coords: { lng: pin.coords[0], lat: pin.coords[1] } })); }
+function convertPinsFromFirestore(pinsObjects) { if (!pinsObjects) return []; return pinsObjects.map(pin => ({ ...pin, coords: [pin.coords.lng, pin.coords.lat] })); }
+
 function updateAuthModalUI() {
-    const authForm = document.getElementById('authForm');
-    const authTitle = document.getElementById('authTitle');
-    const authSubtitle = document.getElementById('authSubtitle');
-    const authActionBtn = document.getElementById('authActionBtn');
-    const emailInput = document.getElementById('emailInput');
-    const passwordInput = document.getElementById('passwordInput');
-    const usernameInput = document.getElementById('usernameInput');
-    const ageCheckbox = document.getElementById('ageCheckbox');
-    
+    const authForm = document.getElementById('authForm'), authTitle = document.getElementById('authTitle'), authSubtitle = document.getElementById('authSubtitle'), authActionBtn = document.getElementById('authActionBtn'), emailInput = document.getElementById('emailInput'), passwordInput = document.getElementById('passwordInput'), usernameInput = document.getElementById('usernameInput'), ageCheckbox = document.getElementById('ageCheckbox');
     document.getElementById('authError').textContent = '';
-    
     if (isSignUpMode) {
-        authTitle.textContent = 'Create a Litter Bugs Account';
-        authSubtitle.innerHTML = 'Or <a href="#" id="switchAuthModeLink">log in to an existing account.</a>';
-        authActionBtn.textContent = 'Sign Up';
-        authForm.classList.add('signup-mode'); authForm.classList.remove('login-mode');
+        authTitle.textContent = 'Create a Litter Bugs Account'; authSubtitle.innerHTML = 'Or <a href="#" id="switchAuthModeLink">log in to an existing account.</a>'; authActionBtn.textContent = 'Sign Up'; authForm.classList.add('signup-mode'); authForm.classList.remove('login-mode');
     } else {
-        authTitle.textContent = 'Log In to Litter Bugs';
-        authSubtitle.innerHTML = 'Or <a href="#" id="switchAuthModeLink">create a new account.</a>';
-        authActionBtn.textContent = 'Log In';
-        authForm.classList.add('login-mode'); authForm.classList.remove('signup-mode');
+        authTitle.textContent = 'Log In to Litter Bugs'; authSubtitle.innerHTML = 'Or <a href="#" id="switchAuthModeLink">create a new account.</a>'; authActionBtn.textContent = 'Log In'; authForm.classList.add('login-mode'); authForm.classList.remove('signup-mode');
     }
-
-    const isEmailValid = emailInput.value.includes('@');
-    const isPasswordValid = passwordInput.value.length >= 6;
-    const isUsernameValid = usernameInput.value.trim().length >= 3;
-    const isAgeChecked = ageCheckbox.checked;
-    
-    if (isSignUpMode) {
-        authActionBtn.disabled = !(isEmailValid && isPasswordValid && isUsernameValid && isAgeChecked);
-    } else {
-        authActionBtn.disabled = !(isEmailValid && isPasswordValid);
-    }
-
-    document.getElementById('switchAuthModeLink').addEventListener('click', (e) => {
-        e.preventDefault();
-        isSignUpMode = !isSignUpMode;
-        updateAuthModalUI();
-    });
+    const isEmailValid = emailInput.value.includes('@'), isPasswordValid = passwordInput.value.length >= 6, isUsernameValid = usernameInput.value.trim().length >= 3, isAgeChecked = ageCheckbox.checked;
+    authActionBtn.disabled = isSignUpMode ? !(isEmailValid && isPasswordValid && isUsernameValid && isAgeChecked) : !(isEmailValid && isPasswordValid);
+    document.getElementById('switchAuthModeLink').addEventListener('click', (e) => { e.preventDefault(); isSignUpMode = !isSignUpMode; updateAuthModalUI(); });
 }
+
 async function handleSignUp() {
-    const email = document.getElementById('emailInput').value;
-    const password = document.getElementById('passwordInput').value;
-    const username = document.getElementById('usernameInput').value;
-    const ageCheckbox = document.getElementById('ageCheckbox');
-    const authError = document.getElementById('authError');
+    const email = document.getElementById('emailInput').value, password = document.getElementById('passwordInput').value, username = document.getElementById('usernameInput').value, ageCheckbox = document.getElementById('ageCheckbox'), authError = document.getElementById('authError');
     authError.textContent = '';
-    
-    if (!ageCheckbox.checked) {
-        authError.textContent = 'You must certify that you are 18 or older to sign up.';
-        return;
-    }
-    if (!username || username.trim().length < 3) {
-        authError.textContent = 'Username must be at least 3 characters.'; return;
-    }
+    if (!ageCheckbox.checked) { authError.textContent = 'You must certify that you are 18 or older to sign up.'; return; }
+    if (!username || username.trim().length < 3) { authError.textContent = 'Username must be at least 3 characters.'; return; }
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await setDoc(doc(db, "users", userCredential.user.uid), {
-            username: username,
-            email: userCredential.user.email,
-            totalPins: 0,
-            totalDistance: 0,
-            totalRoutes: 0,
-            badges: {}
-        });
+        await setDoc(doc(db, "users", userCredential.user.uid), { username, email: userCredential.user.email, totalPins: 0, totalDistance: 0, totalRoutes: 0, badges: {} });
     } catch (error) { authError.textContent = error.message; }
 }
+
 async function handleLogIn() {
-    const email = document.getElementById('emailInput').value;
-    const password = document.getElementById('passwordInput').value;
-    const authError = document.getElementById('authError');
+    const email = document.getElementById('emailInput').value, password = document.getElementById('passwordInput').value, authError = document.getElementById('authError');
     authError.textContent = '';
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-    } catch (error) { authError.textContent = error.message; }
+    try { await signInWithEmailAndPassword(auth, email, password); } catch (error) { authError.textContent = error.message; }
 }
+
 function findMe() {
     if (findMeMarker) findMeMarker.remove();
     navigator.geolocation.getCurrentPosition(position => {
@@ -441,38 +408,25 @@ function findMe() {
 
 function toggleTracking() {
     const trackBtn = document.getElementById('trackBtn');
-
     if (trackingWatcher) {
         navigator.geolocation.clearWatch(trackingWatcher);
         trackingWatcher = null;
         trackBtn.textContent = '🛰️ Start Tracking';
         trackBtn.classList.remove('tracking');
-        const userLocationSource = map.getSource('user-location-point');
-        if (userLocationSource) {
-            userLocationSource.setData({ 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [] } });
-        }
-    } else {
-        document.getElementById('safetyModal').style.display = 'flex';
-    }
+        if (map.getSource('user-location-point')) map.getSource('user-location-point').setData({ type: 'Feature', geometry: { type: 'Point', coordinates: [] } });
+    } else { document.getElementById('safetyModal').style.display = 'flex'; }
 }
 
 function startTracking() {
     const trackBtn = document.getElementById('trackBtn');
     routeCoordinates = [];
-    navigator.geolocation.getCurrentPosition(position => {
-        map.flyTo({ center: [position.coords.longitude, position.coords.latitude], zoom: 16 });
-    });
-    trackingWatcher = navigator.geolocation.watchPosition(position => {
-        const newCoord = [position.coords.longitude, position.coords.latitude];
+    navigator.geolocation.getCurrentPosition(pos => map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 16 }));
+    trackingWatcher = navigator.geolocation.watchPosition(pos => {
+        const newCoord = [pos.coords.longitude, pos.coords.latitude];
         routeCoordinates.push(newCoord);
-        if (map.getSource('user-route')) {
-            map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
-        }
-        if (map.getSource('user-location-point')) {
-            map.getSource('user-location-point').setData({ 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': newCoord } });
-        }
+        if (map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
+        if (map.getSource('user-location-point')) map.getSource('user-location-point').setData({ type: 'Feature', geometry: { type: 'Point', coordinates: newCoord } });
     }, () => alert("Error watching position."), { enableHighAccuracy: true });
-    
     trackBtn.textContent = '🛑 Stop Tracking';
     trackBtn.classList.add('tracking');
 }
@@ -480,124 +434,111 @@ function startTracking() {
 async function handlePhoto(event) {
     const pictureBtn = document.getElementById('pictureBtn');
     const originalButtonText = pictureBtn.innerHTML;
-
-    if (!event.target.files || event.target.files.length === 0) {
-        console.log("No file selected.");
-        event.target.value = '';
-        return;
-    }
-    
+    if (!event.target.files || event.target.files.length === 0) { event.target.value = ''; return; }
     const file = event.target.files[0];
-    pictureBtn.innerHTML = 'Processing...';
-    pictureBtn.disabled = true;
-
-    const options = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1920,
-        useWebWorker: true
-    };
-
+    pictureBtn.innerHTML = 'Processing...'; pictureBtn.disabled = true;
+    const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
     let processedFile;
     try {
         console.log(`Original file size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
         processedFile = await imageCompression(file, options);
         console.log(`Compressed file size: ${(processedFile.size / 1024 / 1024).toFixed(2)} MB`);
     } catch (error) {
-        console.error("Image compression error:", error);
-        alert("There was an error processing your image.");
-        pictureBtn.innerHTML = originalButtonText;
-        pictureBtn.disabled = false;
-        event.target.value = '';
-        return;
+        console.error("Image compression error:", error); alert("Error processing image.");
+        pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = ''; return;
     }
-
     navigator.geolocation.getCurrentPosition(async (position) => {
         const coords = [position.coords.longitude, position.coords.latitude];
-        
         if (!currentUser) {
             const reader = new FileReader();
             reader.readAsDataURL(processedFile);
             reader.onload = e => {
-                const pinInfo = { id: `pin-${Date.now()}`, coords: coords, image: e.target.result, title: 'New Photo' };
+                const pinInfo = { id: `pin-${Date.now()}`, coords, image: e.target.result, title: 'New Photo' };
                 photoPins.push(pinInfo);
-                addPhotoMarker(pinInfo);
-                pictureBtn.innerHTML = originalButtonText;
-                pictureBtn.disabled = false;
-                event.target.value = '';
+                updateUserPinsSource();
+                pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
             };
             return;
         }
-        
         try {
             const timestamp = Date.now();
             const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}-${processedFile.name}`);
             const snapshot = await uploadBytes(storageRef, processedFile);
             const downloadURL = await getDownloadURL(snapshot.ref);
-            
-            const pinInfo = { id: `pin-${timestamp}`, coords: coords, imageURL: downloadURL, title: 'New Photo' };
+            const pinInfo = { id: `pin-${timestamp}`, coords, imageURL: downloadURL, title: 'New Photo' };
             photoPins.push(pinInfo);
-            addPhotoMarker(pinInfo);
-
-        } catch (error) {
-            console.error("Error uploading photo:", error);
-            alert("Photo upload failed.");
-        } finally {
-            pictureBtn.innerHTML = originalButtonText;
-            pictureBtn.disabled = false;
-            event.target.value = '';
-        }
-
+            updateUserPinsSource();
+        } catch (error) { console.error("Error uploading photo:", error); alert("Photo upload failed."); }
+        finally { pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = ''; }
     }, () => {
         alert("Could not get your location. Photo was not pinned.");
-        pictureBtn.innerHTML = originalButtonText;
-        pictureBtn.disabled = false;
-        event.target.value = '';
+        pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
     }, { enableHighAccuracy: true });
 }
-function addPhotoMarker(pinInfo) {
-    const el = document.createElement('div');
-    el.className = 'photo-marker';
-    el.style.backgroundImage = `url(${pinInfo.imageURL || pinInfo.image})`;
-    const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(createPhotoPopupHTML(pinInfo));
-    const marker = new mapboxgl.Marker(el).setLngLat(pinInfo.coords).setPopup(popup).addTo(map);
-    markers.push(marker);
-    popup.on('open', () => {
-        document.getElementById(`save-${pinInfo.id}`).addEventListener('click', () => {
+
+function updateUserPinsSource() {
+    const features = photoPins.map(pin => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: pin.coords },
+        properties: { pinInfo: JSON.stringify(pin) }
+    }));
+    if (map.getSource('user-pins-source')) {
+        map.getSource('user-pins-source').setData({ type: 'FeatureCollection', features });
+    }
+}
+
+function createAndShowPinPopup(pinInfo, type, routeInfo = {}) {
+    let popupHTML;
+    if (type === 'user') {
+        popupHTML = createPhotoPopupHTML(pinInfo);
+    } else {
+        popupHTML = `<div><img src="${pinInfo.imageURL}" alt="Community photo" style="width:100%; border-radius: 4px;"/><p style="margin: 5px 0 0;"><strong>${pinInfo.title}</strong></p><small>By: <a href="#" class="profile-link" data-userid="${routeInfo.userId}">${routeInfo.username || 'A user'}</a></small></div>`;
+    }
+    const popup = new mapboxgl.Popup({ offset: 25 }).setLngLat(pinInfo.coords).setHTML(popupHTML).addTo(map);
+    if (type === 'user') {
+        const saveBtn = document.getElementById(`save-${pinInfo.id}`);
+        const deleteBtn = document.getElementById(`delete-${pinInfo.id}`);
+        if(saveBtn) saveBtn.addEventListener('click', () => {
             const pin = photoPins.find(p => p.id === pinInfo.id);
             if (pin) pin.title = document.getElementById(`title-${pinInfo.id}`).value;
-            popup.remove();
-            alert("Title updated! Remember to save your session.");
+            popup.remove(); alert("Title updated! Remember to save your session.");
         });
-        document.getElementById(`delete-${pinInfo.id}`).addEventListener('click', () => {
+        if(deleteBtn) deleteBtn.addEventListener('click', () => {
             if (confirm("Are you sure you want to delete this pin?")) {
                 photoPins = photoPins.filter(p => p.id !== pinInfo.id);
-                marker.remove();
-                alert("Pin deleted! Remember to save your session.");
+                updateUserPinsSource();
+                popup.remove(); alert("Pin deleted! Remember to save your session.");
             }
         });
-    });
+    } else {
+        document.querySelectorAll('.profile-link').forEach(link => {
+            link.addEventListener('click', (e) => { e.preventDefault(); showPublicProfile(e.target.dataset.userid); });
+        });
+    }
 }
+
 function createPhotoPopupHTML(pinInfo) {
     return `<div><img src="${pinInfo.imageURL || pinInfo.image}" alt="User photo" style="width:100%; height:auto; border-radius: 4px;"/><input type="text" id="title-${pinInfo.id}" value="${pinInfo.title}" placeholder="Enter a title" style="width: 95%; margin-top: 10px;"><div style="display: flex; justify-content: space-between; margin-top: 5px;"><button id="save-${pinInfo.id}">Save Title</button><button id="delete-${pinInfo.id}" style="background-color: #dc3545;">Delete</button></div></div>`;
 }
+
 async function toggleCommunityView() {
     const communityBtn = document.getElementById('communityBtn');
     isCommunityViewOn = !isCommunityViewOn;
     if (isCommunityViewOn) {
-        communityBtn.textContent = '🌎 Community View: ON';
-        communityBtn.classList.remove('off');
+        communityBtn.textContent = '🌎 Community View: ON'; communityBtn.classList.remove('off');
         await fetchAndDisplayCommunityRoutes();
     } else {
-        communityBtn.textContent = '🌎 Community View: OFF';
-        communityBtn.classList.add('off');
+        communityBtn.textContent = '🌎 Community View: OFF'; communityBtn.classList.add('off');
         clearCommunityRoutes();
     }
 }
+
 async function fetchAndDisplayCommunityRoutes() {
     try {
         const q = query(collection(db, "publishedRoutes"), orderBy("timestamp", "desc"));
         const querySnapshot = await getDocs(q);
         clearCommunityRoutes();
+        let allCommunityPins = [];
         querySnapshot.forEach(doc => {
             const routeData = doc.data();
             const routeId = doc.id;
@@ -608,60 +549,44 @@ async function fetchAndDisplayCommunityRoutes() {
             communityLayers.push({ id: `community-route-${routeId}`, type: 'layer' });
             if (mapboxPins) {
                 mapboxPins.forEach(pin => {
-                    const el = document.createElement('div');
-                    el.className = 'photo-marker';
-                    el.style.backgroundImage = `url(${pin.imageURL})`;
-                    el.style.borderColor = '#28a745';
-                    const popupHTML = `
-                        <div>
-                            <img src="${pin.imageURL}" alt="Community photo" style="width:100%; border-radius: 4px;"/>
-                            <p style="margin: 5px 0 0;"><strong>${pin.title}</strong></p>
-                            <small>By: <a href="#" class="profile-link" data-userid="${routeData.userId}">${routeData.username || 'A user'}</a></small>
-                        </div>`;
-                    const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(popupHTML);
-                    popup.on('open', () => {
-                        document.querySelectorAll('.profile-link').forEach(link => {
-                            link.addEventListener('click', (e) => {
-                                e.preventDefault();
-                                showPublicProfile(e.target.dataset.userid);
-                            });
-                        });
+                    allCommunityPins.push({
+                        type: 'Feature',
+                        geometry: { type: 'Point', coordinates: pin.coords },
+                        properties: { pinInfo: JSON.stringify(pin), routeInfo: JSON.stringify({ userId: routeData.userId, username: routeData.username }) }
                     });
-                    const marker = new mapboxgl.Marker(el).setLngLat(pin.coords).setPopup(popup).addTo(map);
-                    communityLayers.push({ id: `community-marker-${pin.id}`, type: 'marker', instance: marker });
                 });
             }
         });
+        if (map.getSource('community-pins-source')) map.getSource('community-pins-source').setData({ type: 'FeatureCollection', features: allCommunityPins });
     } catch (error) { console.error("Error fetching community routes:", error); alert("Could not load community data."); }
 }
+
 function clearCommunityRoutes() {
     communityLayers.forEach(layer => {
-        if (layer.type === 'marker') layer.instance.remove();
-        else if (layer.type === 'layer') {
+        if (layer.type === 'layer') {
             if (map.getLayer(layer.id)) map.removeLayer(layer.id);
             if (map.getSource(layer.id)) map.removeSource(layer.id);
         }
     });
+    if (map.getSource('community-pins-source')) map.getSource('community-pins-source').setData({ type: 'FeatureCollection', features: [] });
     communityLayers = [];
 }
+
 async function publishRoute() {
     if (!currentUser) return;
-    if (routeCoordinates.length < 2 || photoPins.length === 0) {
-        alert("You need a tracked route and at least one photo pin to publish."); return;
-    }
+    if (routeCoordinates.length < 2 || photoPins.length === 0) { alert("You need a tracked route and at least one photo pin to publish."); return; }
     try {
         const userDocRef = doc(db, "users", currentUser.uid);
         const docSnap = await getDoc(userDocRef);
         if (!docSnap.exists()) throw new Error("Could not find user profile.");
         const username = docSnap.data().username;
-        const firestoreReadyPins = convertPinsForFirestore(photoPins);
-        const firestoreReadyRoute = convertRouteForFirestore(routeCoordinates);
-        await addDoc(collection(db, "publishedRoutes"), { userId: currentUser.uid, username: username, timestamp: new Date(), route: firestoreReadyRoute, pins: firestoreReadyPins });
+        await addDoc(collection(db, "publishedRoutes"), { userId: currentUser.uid, username, timestamp: new Date(), route: convertRouteForFirestore(routeCoordinates), pins: convertPinsForFirestore(photoPins) });
         alert("Success! Your route has been published.");
         clearCurrentSession();
         document.getElementById('dataModal').style.display = 'none';
     } catch (error) { console.error("Error publishing route:", error); alert("There was an error publishing your route."); }
 }
+
 async function saveSession() {
     const dataModal = document.getElementById('dataModal');
     if (!currentUser) {
@@ -678,14 +603,13 @@ async function saveSession() {
     const sessionName = prompt("Name this cloud session:", `Cleanup on ${new Date().toLocaleDateString()}`);
     if (sessionName) {
         try {
-            const firestoreReadyPins = convertPinsForFirestore(photoPins);
-            const firestoreReadyRoute = convertRouteForFirestore(routeCoordinates);
-            await addDoc(collection(db, "users", currentUser.uid, "privateSessions"), { sessionName, timestamp: new Date(), pins: firestoreReadyPins, route: firestoreReadyRoute });
+            await addDoc(collection(db, "users", currentUser.uid, "privateSessions"), { sessionName, timestamp: new Date(), pins: convertPinsForFirestore(photoPins), route: convertRouteForFirestore(routeCoordinates) });
             alert(`Session "${sessionName}" saved to your account!`);
             dataModal.style.display = 'none';
-        } catch (error) { console.error("Error saving session to Firestore:", error); alert("Could not save session to your account."); }
+        } catch (error) { console.error("Error saving session:", error); alert("Could not save session."); }
     }
 }
+
 async function loadSession() {
     if (!currentUser) {
         populateLocalSessionList();
@@ -695,50 +619,42 @@ async function loadSession() {
     await populateSessionList();
     document.getElementById('sessionsModal').style.display = 'flex';
 }
+
 function populateLocalSessionList() {
     const localSessionList = document.getElementById('localSessionList');
     const guestSessions = JSON.parse(localStorage.getItem('guestSessions')) || [];
     localSessionList.innerHTML = '';
-    if (guestSessions.length === 0) {
-        localSessionList.innerHTML = '<li>No locally saved sessions found.</li>'; return;
-    }
+    if (guestSessions.length === 0) { localSessionList.innerHTML = '<li>No locally saved sessions found.</li>'; return; }
     guestSessions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach((sessionData, index) => {
         const li = document.createElement('li');
-        const contentDiv = document.createElement('div');
-        contentDiv.style.flexGrow = '1';
-        contentDiv.innerHTML = `<span>${sessionData.sessionName}</span><br><small class="session-date">${new Date(sessionData.timestamp).toLocaleDateString()}</small>`;
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Delete';
-        deleteBtn.className = 'delete-session-btn';
-        li.appendChild(contentDiv);
-        li.appendChild(deleteBtn);
-        contentDiv.addEventListener('click', () => loadSpecificLocalSession(index));
-        deleteBtn.addEventListener('click', (event) => {
-            event.stopPropagation();
-            deleteLocalSession(index, sessionData.sessionName);
-        });
+        li.innerHTML = `<div><span>${sessionData.sessionName}</span><br><small class="session-date">${new Date(sessionData.timestamp).toLocaleDateString()}</small></div><button class="delete-session-btn">Delete</button>`;
+        li.querySelector('div').addEventListener('click', () => loadSpecificLocalSession(index));
+        li.querySelector('button').addEventListener('click', (e) => { e.stopPropagation(); deleteLocalSession(index, sessionData.sessionName); });
         localSessionList.appendChild(li);
     });
 }
+
 function deleteLocalSession(sessionIndex, sessionName) {
-    if (confirm(`Are you sure you want to delete the local session "${sessionName}"? This cannot be undone.`)) {
+    if (confirm(`Are you sure you want to delete "${sessionName}"?`)) {
         let guestSessions = JSON.parse(localStorage.getItem('guestSessions')) || [];
         guestSessions.splice(sessionIndex, 1);
         localStorage.setItem('guestSessions', JSON.stringify(guestSessions));
-        alert(`Session "${sessionName}" has been deleted.`);
+        alert("Session deleted.");
         populateLocalSessionList();
     }
 }
+
 function loadSpecificLocalSession(sessionIndex) {
     const guestSessions = JSON.parse(localStorage.getItem('guestSessions')) || [];
     const sessionData = guestSessions[sessionIndex];
     if (sessionData) {
         clearCurrentSession();
         displaySessionData(sessionData);
-        alert(`Local session "${sessionData.sessionName}" loaded!`);
+        alert(`Session "${sessionData.sessionName}" loaded!`);
         document.getElementById('localSessionsModal').style.display = 'none';
     }
 }
+
 async function populateSessionList() {
     const sessionList = document.getElementById('sessionList');
     sessionList.innerHTML = '<li>Loading...</li>';
@@ -746,67 +662,55 @@ async function populateSessionList() {
         const q = query(collection(db, "users", currentUser.uid, "privateSessions"), orderBy("timestamp", "desc"));
         const querySnapshot = await getDocs(q);
         sessionList.innerHTML = '';
-        if (querySnapshot.empty) {
-            sessionList.innerHTML = '<li>No saved cloud sessions found.</li>'; return;
-        }
+        if (querySnapshot.empty) { sessionList.innerHTML = '<li>No saved cloud sessions found.</li>'; return; }
         querySnapshot.forEach(doc => {
             const sessionData = doc.data();
             const li = document.createElement('li');
-            const contentDiv = document.createElement('div');
-            contentDiv.style.flexGrow = '1';
-            contentDiv.innerHTML = `<span>${sessionData.sessionName}</span><br><small class="session-date">${new Date(sessionData.timestamp.seconds * 1000).toLocaleDateString()}</small>`;
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'Delete';
-            deleteBtn.className = 'delete-session-btn';
-            li.appendChild(contentDiv);
-            li.appendChild(deleteBtn);
-            contentDiv.addEventListener('click', () => loadSpecificSession(doc.id));
-            deleteBtn.addEventListener('click', (event) => {
-                event.stopPropagation();
-                deletePrivateSession(doc.id, sessionData.sessionName);
-            });
+            li.innerHTML = `<div><span>${sessionData.sessionName}</span><br><small class="session-date">${new Date(sessionData.timestamp.seconds * 1000).toLocaleDateString()}</small></div><button class="delete-session-btn">Delete</button>`;
+            li.querySelector('div').addEventListener('click', () => loadSpecificSession(doc.id));
+            li.querySelector('button').addEventListener('click', (e) => { e.stopPropagation(); deletePrivateSession(doc.id, sessionData.sessionName); });
             sessionList.appendChild(li);
         });
     } catch (error) { console.error("Error fetching sessions:", error); sessionList.innerHTML = '<li>Could not load sessions.</li>'; }
 }
+
 async function deletePrivateSession(sessionId, sessionName) {
-    if (confirm(`Are you sure you want to delete the cloud session "${sessionName}"? This cannot be undone.`)) {
+    if (confirm(`Are you sure you want to delete "${sessionName}"?`)) {
         try {
             await deleteDoc(doc(db, "users", currentUser.uid, "privateSessions", sessionId));
-            alert(`Session "${sessionName}" has been deleted.`);
+            alert("Session deleted.");
             populateSessionList();
-        } catch (error) {
-            console.error("Error deleting session:", error);
-            alert("Failed to delete the session. Please try again.");
-        }
+        } catch (error) { console.error("Error deleting session:", error); alert("Failed to delete the session."); }
     }
 }
+
 async function loadSpecificSession(sessionId) {
     try {
         const docSnap = await getDoc(doc(db, "users", currentUser.uid, "privateSessions", sessionId));
         if (docSnap.exists()) {
             clearCurrentSession();
             const sessionData = docSnap.data();
-            const convertedData = { ...sessionData, pins: convertPinsFromFirestore(sessionData.pins), route: convertRouteFromFirestore(sessionData.route) };
-            displaySessionData(convertedData);
+            displaySessionData({ ...sessionData, pins: convertPinsFromFirestore(sessionData.pins), route: convertRouteFromFirestore(sessionData.route) });
             alert(`Session "${sessionData.sessionName}" loaded!`);
             document.getElementById('sessionsModal').style.display = 'none';
         }
-    } catch (error) { console.error("Error loading specific session:", error); alert("Failed to load the session."); }
+    } catch (error) { console.error("Error loading specific session:", error); alert("Failed to load session."); }
 }
+
 function clearCurrentSession() {
-    markers.forEach(marker => marker.remove());
-    markers = [];
     photoPins = [];
     routeCoordinates = [];
+    updateUserPinsSource();
     if (map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
 }
+
 function displaySessionData(data) {
     photoPins = data.pins || [];
     routeCoordinates = data.route || [];
-    photoPins.forEach(pin => addPhotoMarker(pin));
+    updateUserPinsSource();
     if(map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
 }
+
 function exportGeoJSON() {
     const now = new Date();
     const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
@@ -826,117 +730,75 @@ function exportGeoJSON() {
 
 async function populatePublishedRoutesList() {
     const publishedRoutesList = document.getElementById('publishedRoutesList');
-    publishedRoutesList.innerHTML = '<li>Loading your publications...</li>';
+    publishedRoutesList.innerHTML = '<li>Loading...</li>';
     try {
-        const routesRef = collection(db, "publishedRoutes");
-        const q = query(routesRef, where("userId", "==", currentUser.uid), orderBy("timestamp", "desc"));
+        const q = query(collection(db, "publishedRoutes"), where("userId", "==", currentUser.uid), orderBy("timestamp", "desc"));
         const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-            publishedRoutesList.innerHTML = '<li>You have not published any routes yet.</li>';
-            return;
-        }
+        if (querySnapshot.empty) { publishedRoutesList.innerHTML = '<li>You have not published any routes yet.</li>'; return; }
         publishedRoutesList.innerHTML = '';
         querySnapshot.forEach(doc => {
             const routeData = doc.data();
             const li = document.createElement('li');
-            const contentDiv = document.createElement('div');
-            contentDiv.style.flexGrow = '1';
-            contentDiv.innerHTML = `<span>Route published on</span><br><small class="session-date">${new Date(routeData.timestamp.seconds * 1000).toLocaleString()}</small>`;
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'Delete';
-            deleteBtn.className = 'delete-session-btn';
-            li.appendChild(contentDiv);
-            li.appendChild(deleteBtn);
-            deleteBtn.addEventListener('click', (event) => {
-                event.stopPropagation();
-                deletePublishedRoute(doc.id);
-            });
+            li.innerHTML = `<div><span>Route published on</span><br><small class="session-date">${new Date(routeData.timestamp.seconds * 1000).toLocaleString()}</small></div><button class="delete-session-btn">Delete</button>`;
+            li.querySelector('button').addEventListener('click', (e) => { e.stopPropagation(); deletePublishedRoute(doc.id); });
             publishedRoutesList.appendChild(li);
         });
-    } catch (error) {
-        console.error("Error fetching published routes:", error);
-        publishedRoutesList.innerHTML = '<li>Could not load your publications.</li>';
-    }
+    } catch (error) { console.error("Error fetching published routes:", error); publishedRoutesList.innerHTML = '<li>Could not load publications.</li>'; }
 }
 
 async function deletePublishedRoute(routeId) {
-    if (confirm(`Are you sure you want to permanently delete this published route from the community map? This action cannot be undone.`)) {
+    if (confirm("Are you sure you want to permanently delete this published route?")) {
         try {
             await deleteDoc(doc(db, "publishedRoutes", routeId));
-            alert(`Your route has been deleted from the community map.`);
+            alert("Route deleted from the community map.");
             populatePublishedRoutesList();
             if (isCommunityViewOn) {
                 clearCommunityRoutes();
                 fetchAndDisplayCommunityRoutes();
             }
-        } catch (error) {
-            console.error("Error deleting published route:", error);
-            alert("Failed to delete the route. Please check the console for errors.");
-        }
+        } catch (error) { console.error("Error deleting published route:", error); alert("Failed to delete route."); }
     }
 }
 
 async function loadProfileForEditing() {
     if (!currentUser) return;
     try {
-        const userDocRef = doc(db, "users", currentUser.uid);
-        const docSnap = await getDoc(userDocRef);
+        const docSnap = await getDoc(doc(db, "users", currentUser.uid));
         if (docSnap.exists()) {
             const profileData = docSnap.data();
             document.getElementById('bioInput').value = profileData.bio || '';
             document.getElementById('locationInput').value = profileData.location || '';
             document.getElementById('coffeeLinkInput').value = profileData.buyMeACoffeeLink || '';
         }
-    } catch (error) {
-        console.error("Error loading profile data:", error);
-        alert("Could not load your profile data.");
-    }
+    } catch (error) { console.error("Error loading profile:", error); alert("Could not load your profile."); }
 }
 
 async function saveProfile() {
     if (!currentUser) return;
-    const bio = document.getElementById('bioInput').value;
-    const location = document.getElementById('locationInput').value;
-    const coffeeLink = document.getElementById('coffeeLinkInput').value;
+    const bio = document.getElementById('bioInput').value, location = document.getElementById('locationInput').value, coffeeLink = document.getElementById('coffeeLinkInput').value;
     try {
         const userDocRef = doc(db, "users", currentUser.uid);
-        await updateDoc(userDocRef, {
-            bio: bio,
-            location: location,
-            buyMeACoffeeLink: coffeeLink
-        });
-
+        await updateDoc(userDocRef, { bio, location, buyMeACoffeeLink: coffeeLink });
         const userEmailSpan = document.getElementById('userEmail');
         const userProfile = await getDoc(userDocRef);
-        if (userProfile.exists() && userEmailSpan) {
-            userEmailSpan.textContent = `Logged in as: ${userProfile.data().username}`;
-        }
-
-        alert("Your profile has been updated successfully!");
+        if (userProfile.exists() && userEmailSpan) userEmailSpan.textContent = `Logged in as: ${userProfile.data().username}`;
+        alert("Profile updated successfully!");
         document.getElementById('profileModal').style.display = 'none';
-    } catch (error) {
-        console.error("Error saving profile:", error);
-        alert("There was an error saving your profile. Please try again.");
-    }
+    } catch (error) { console.error("Error saving profile:", error); alert("Error saving profile."); }
 }
 
 async function showPublicProfile(userId) {
     if (!userId) return;
-
     try {
-        const userDocRef = doc(db, "users", userId);
-        const docSnap = await getDoc(userDocRef);
-
+        const docSnap = await getDoc(doc(db, "users", userId));
         if (docSnap.exists()) {
             const profileData = docSnap.data();
             const publicProfileModal = document.getElementById('publicProfileModal');
             const profileSupportBtn = document.getElementById('profileSupportBtn');
             const profileAchievementsContainer = document.getElementById('profileAchievements');
-            
             document.getElementById('profileUsername').textContent = profileData.username || 'Anonymous User';
             document.getElementById('profileLocation').textContent = profileData.location || '';
             document.getElementById('profileBio').textContent = profileData.bio || 'This user has not written a bio yet.';
-            
             profileAchievementsContainer.innerHTML = '';
             const userBadges = profileData.badges || {};
             let earnedBadgesCount = 0;
@@ -951,73 +813,40 @@ async function showPublicProfile(userId) {
                     profileAchievementsContainer.appendChild(badgeElement);
                 }
             }
-            if (earnedBadgesCount === 0) {
-                profileAchievementsContainer.innerHTML = '<p class="no-badges-message">This user hasn\'t earned any badges yet.</p>';
-            }
-
+            if (earnedBadgesCount === 0) profileAchievementsContainer.innerHTML = '<p class="no-badges-message">This user hasn\'t earned any badges yet.</p>';
             if (profileData.buyMeACoffeeLink) {
                 profileSupportBtn.style.display = 'block';
-                profileSupportBtn.onclick = () => {
-                    window.open(profileData.buyMeACoffeeLink, '_blank');
-                };
-            } else {
-                profileSupportBtn.style.display = 'none';
-            }
-            
+                profileSupportBtn.onclick = () => window.open(profileData.buyMeACoffeeLink, '_blank');
+            } else { profileSupportBtn.style.display = 'none'; }
             publicProfileModal.style.display = 'flex';
-        } else {
-            alert("Could not find this user's profile.");
-        }
-    } catch (error) {
-        console.error("Error fetching public profile:", error);
-        alert("There was an error loading the user's profile.");
-    }
+        } else { alert("Could not find this user's profile."); }
+    } catch (error) { console.error("Error fetching public profile:", error); alert("Error loading profile."); }
 }
+
 async function handleAccountDeletion() {
     if (!currentUser) return;
-
-    const confirmation1 = confirm("DANGER: Are you absolutely sure you want to permanently delete your account? This action cannot be undone.");
-    if (!confirmation1) return;
-
-    const confirmation2 = confirm("All of your private saved sessions and public routes will be deleted forever. Are you still sure?");
-    if (!confirmation2) return;
-
+    if (!confirm("DANGER: Are you absolutely sure you want to permanently delete your account? This action cannot be undone.")) return;
+    if (!confirm("All of your private saved sessions and public routes will be deleted forever. Are you still sure?")) return;
     try {
-        console.log("Starting account deletion process for user:", currentUser.uid);
-
+        console.log("Starting account deletion for user:", currentUser.uid);
         const privateSessionsQuery = query(collection(db, "users", currentUser.uid, "privateSessions"));
         const privateSessionsSnapshot = await getDocs(privateSessionsQuery);
-        const privateDeletePromises = [];
-        privateSessionsSnapshot.forEach(doc => {
-            privateDeletePromises.push(deleteDoc(doc.ref));
-        });
-        await Promise.all(privateDeletePromises);
+        await Promise.all(privateSessionsSnapshot.docs.map(d => deleteDoc(d.ref)));
         console.log("Private sessions deleted.");
-
         const publishedRoutesQuery = query(collection(db, "publishedRoutes"), where("userId", "==", currentUser.uid));
         const publishedRoutesSnapshot = await getDocs(publishedRoutesQuery);
-        const publicDeletePromises = [];
-        publishedRoutesSnapshot.forEach(doc => {
-            publicDeletePromises.push(deleteDoc(doc.ref));
-        });
-        await Promise.all(publicDeletePromises);
+        await Promise.all(publishedRoutesSnapshot.docs.map(d => deleteDoc(d.ref)));
         console.log("Published routes deleted.");
-
         await deleteDoc(doc(db, "users", currentUser.uid));
         console.log("User profile document deleted.");
-
         await deleteUser(currentUser);
-        
         alert("Your account and all associated data have been permanently deleted.");
         document.getElementById('profileModal').style.display = 'none';
-        
     } catch (error) {
         console.error("Error deleting account:", error);
         if (error.code === 'auth/requires-recent-login') {
-            alert("This is a sensitive operation and requires you to have logged in recently. Please log out and log back in to delete your account.");
-        } else {
-            alert("An error occurred while deleting your account. Please check the console for details.");
-        }
+            alert("This is a sensitive operation. Please log out and log back in to delete your account.");
+        } else { alert("An error occurred while deleting your account."); }
     }
 }
 
