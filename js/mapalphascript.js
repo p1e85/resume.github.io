@@ -34,7 +34,7 @@ let currentUser = null;
 let trackingWatcher = null;
 let routeCoordinates = [];
 let photoPins = [];
-// let markers = []; // Deprecated: We now use data layers
+// 'markers' array is now deprecated in favor of GeoJSON data layers
 let map;
 let findMeMarker = null;
 let isCommunityViewOn = false;
@@ -358,7 +358,7 @@ function changeMapStyle() {
     map.once('style.load', () => {
         initializeMapLayers();
         if (isCommunityViewOn) fetchAndDisplayCommunityRoutes();
-        updateUserPinsSource(); // Redraw user pins on style change
+        updateUserPinsSource();
     });
 }
 
@@ -680,7 +680,7 @@ async function deletePrivateSession(sessionId, sessionName) {
             await deleteDoc(doc(db, "users", currentUser.uid, "privateSessions", sessionId));
             alert("Session deleted.");
             populateSessionList();
-        } catch (error) { console.error("Error deleting session:", error); alert("Failed to delete the session."); }
+        } catch (error) { console.error("Error deleting session:", error); alert("Failed to delete session."); }
     }
 }
 
