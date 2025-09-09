@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Platformer Game</title>
+    <title>Procedural Platformer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
@@ -12,8 +12,7 @@
             width: 100%;
             margin: 0;
             overflow: hidden; /* Prevent scrolling */
-            background-color: #1a202c; /*
-            dark blue-gray */
+            background-color: #1a202c; /* dark blue-gray */
         }
         body {
             font-family: 'Press Start 2P', cursive;
@@ -26,8 +25,7 @@
         .game-wrapper {
             position: relative;
             width: 100%;
-            flex-grow: 1; /*
-            Allow wrapper to fill space */
+            flex-grow: 1; /* Allow wrapper to fill space */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -45,17 +43,13 @@
         .control-button {
             transition: all 0.1s ease;
             user-select: none;
-            -webkit-user-select: none;
-            /*
-            Prevent text selection on taps */
+            -webkit-user-select: none; /* Prevent text selection on taps */
         }
         .control-button:active {
-            background-color: rgba(160, 174, 192, 0.7); /*
-            gray-500 with opacity */
+            background-color: rgba(160, 174, 192, 0.7); /* gray-500 with opacity */
             transform: scale(0.95);
         }
-        /*
-        Hide mobile controls on large screens */
+        /* Hide mobile controls on large screens */
         @media (min-width: 1024px) {
             #mobile-controls {
                 display: none;
@@ -68,8 +62,9 @@
     <!-- Game Canvas Wrapper -->
     <div class="game-wrapper">
         <canvas id="gameCanvas"></canvas>
-        <div id="messageBox" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 text-white text-2xl md:text-4xl hidden rounded-lg text-center p-4">
-            You Won!
+        <div id="messageBox" class="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-70 text-white text-2xl md:text-4xl hidden rounded-lg text-center p-4">
+            <span id="winMessage">You Won!</span>
+            <span id="distanceMessage" class="text-xl md:text-2xl mt-4"></span>
         </div>
     </div>
 
@@ -87,31 +82,30 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const messageBox = document.getElementById('messageBox');
+        const winMessage = document.getElementById('winMessage');
+        const distanceMessage = document.getElementById('distanceMessage');
 
         let gameRunning = true;
+        const WINNING_DISTANCE = 10000;
 
         // Game settings
         const gravity = 0.6;
-        let player, platforms, keys;
+        let player, platforms, keys, scrollOffset;
 
         // Image objects
         const playerImage = new Image();
         const platformImage = new Image();
-        const winPlatformImage = new Image();
         const backgroundImage = new Image();
 
         // Default "Art" as base64 SVGs to avoid external requests
         const defaultPlayerSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#4299e1"/><circle cx="30" cy="30" r="10" fill="white"/><circle cx="70" cy="30" r="10" fill="white"/><rect x="20" y="60" width="60" height="10" fill="white" rx="5"/></svg>`;
         const defaultPlatformSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50"><rect width="200" height="50" fill="#a0aec0" rx="10"/></svg>`;
-        const winPlatformSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50"><rect width="200" height="50" fill="#f6e05e" rx="10"/><path d="M100 5 L115 40 L70 18 H130 L85 40 Z" fill="#f687b3"/></svg>`;
         const defaultBackgroundSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><rect width="800" height="600" fill="#2d3748"/><circle cx="700" cy="100" r="50" fill="#f6e05e"/></svg>`;
 
         playerImage.src = 'data:image/svg+xml;base64,' + btoa(defaultPlayerSVG);
         platformImage.src = 'data:image/svg+xml;base64,' + btoa(defaultPlatformSVG);
-        winPlatformImage.src = 'data:image/svg+xml;base64,' + btoa(winPlatformSVG);
         backgroundImage.src = 'data:image/svg+xml;base64,' + btoa(defaultBackgroundSVG);
-
-        // Player Class
+        
         class Player {
             constructor() {
                 this.position = { x: 100, y: 100 };
@@ -138,44 +132,63 @@
                     this.position.y = canvas.height - this.height;
                     this.onGround = true;
                 }
-                 // Prevent player from going off-screen horizontally
+                
                 if (this.position.x < 0) {
                     this.position.x = 0;
                 }
-                if (this.position.x + this.width > canvas.width) {
-                    this.position.x = canvas.width - this.width;
+                
+                // Fall off screen
+                if (this.position.y > canvas.height) {
+                    loseGame();
                 }
             }
         }
 
-        // Platform Class
         class Platform {
-            constructor({ x, y, width = 200, height = 20, isWinPlatform = false}) {
+            constructor({ x, y, width, height }) {
                 this.position = { x, y };
                 this.width = width;
                 this.height = height;
-                this.isWinPlatform = isWinPlatform;
             }
 
             draw() {
-                const img = this.isWinPlatform ? winPlatformImage : platformImage;
-                ctx.drawImage(img, this.position.x, this.position.y, this.width, this.height);
+                ctx.drawImage(platformImage, this.position.x, this.position.y, this.width, this.height);
             }
         }
         
-        // Game initialization
+        function generatePlatform(lastPlatform) {
+            const MIN_GAP = 80;
+            const MAX_GAP = 200;
+            const MAX_Y_CHANGE = 100;
+            const MIN_WIDTH = 150;
+            const MAX_WIDTH = 300;
+
+            const newX = lastPlatform.position.x + lastPlatform.width + MIN_GAP + Math.random() * (MAX_GAP - MIN_GAP);
+            let newY = lastPlatform.position.y + (Math.random() - 0.5) * MAX_Y_CHANGE * 2;
+            
+            // Clamp Y to be within screen bounds
+            if (newY > canvas.height - 50) newY = canvas.height - 50;
+            if (newY < 200) newY = 200;
+
+            const newWidth = MIN_WIDTH + Math.random() * (MAX_WIDTH - MIN_WIDTH);
+            
+            platforms.push(new Platform({ x: newX, y: newY, width: newWidth, height: 20 }));
+        }
+
         function init() {
             gameRunning = true;
+            scrollOffset = 0;
             messageBox.classList.add('hidden');
             
             player = new Player();
             platforms = [
-                new Platform({ x: 0, y: canvas.height - 30, width: 300, height: 30 }),
-                new Platform({ x: 200, y: canvas.height - 150 }),
-                new Platform({ x: 500, y: canvas.height - 250 }),
-                new Platform({ x: 850, y: canvas.height - 400 }),
-                new Platform({ x: 500, y: canvas.height - 550, isWinPlatform: true }), // Win platform
+                new Platform({ x: 0, y: canvas.height - 60, width: 600, height: 60 }),
             ];
+            
+            // Generate initial platforms to fill the screen
+            while(platforms[platforms.length - 1].position.x < canvas.width) {
+                 generatePlatform(platforms[platforms.length - 1]);
+            }
 
             keys = {
                 right: { pressed: false },
@@ -187,26 +200,40 @@
             }
         }
 
-        // Animation loop
         function animate() {
             if (!gameRunning) return;
             requestAnimationFrame(animate);
 
-            // Draw background
             ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = '20px "Press Start 2P"';
+            ctx.fillText(`Distance: ${Math.floor(scrollOffset)}`, 20, 40);
+
 
             platforms.forEach(platform => {
                 platform.draw();
             });
             player.update();
 
-            // Player movement
-            if (keys.right.pressed && player.position.x < canvas.width - player.width) {
+            // Scrolling and player movement
+            if (keys.right.pressed && player.position.x < 400) {
                 player.velocity.x = 5;
-            } else if (keys.left.pressed && player.position.x > 0) {
+            } else if (keys.left.pressed && player.position.x > 100) {
                 player.velocity.x = -5;
             } else {
                 player.velocity.x = 0;
+                if (keys.right.pressed) {
+                    scrollOffset += 5;
+                    platforms.forEach(platform => {
+                        platform.position.x -= 5;
+                    });
+                } else if (keys.left.pressed && scrollOffset > 0) {
+                    scrollOffset -= 5;
+                     platforms.forEach(platform => {
+                        platform.position.x += 5;
+                    });
+                }
             }
 
             // Platform collision detection
@@ -221,34 +248,47 @@
                     player.velocity.y = 0;
                     player.position.y = platform.position.y - player.height;
                     player.onGround = true;
-                    if (platform.isWinPlatform) {
-                       winGame();
-                    }
                 }
             });
+            
+            // Procedurally add and remove platforms
+            const lastPlatform = platforms[platforms.length - 1];
+            if (lastPlatform.position.x + lastPlatform.width < canvas.width + 200) {
+                generatePlatform(lastPlatform);
+            }
+            
+            platforms = platforms.filter(p => p.position.x + p.width > 0);
+            
+            // Win condition
+            if(scrollOffset >= WINNING_DISTANCE) {
+                winGame();
+            }
         }
         
-        function winGame() {
+        function showEndScreen(title, finalDistance) {
             gameRunning = false;
-            messageBox.textContent = 'You Reached The Goal!';
+            winMessage.textContent = title;
+            distanceMessage.textContent = `Distance: ${Math.floor(finalDistance)}`;
             messageBox.classList.remove('hidden');
-            setTimeout(init, 2000); // Restart after 2 seconds
+            setTimeout(init, 3000); // Restart after 3 seconds
+        }
+
+        function winGame() {
+            showEndScreen('You Survived!', scrollOffset);
+        }
+        
+        function loseGame() {
+            showEndScreen('Game Over!', scrollOffset);
         }
 
         // --- Event listeners for controls ---
 
-        // Keyboard controls
         window.addEventListener('keydown', ({ key }) => {
             switch (key) {
                 case 'ArrowLeft': keys.left.pressed = true; break;
                 case 'ArrowRight': keys.right.pressed = true; break;
-                case 'ArrowUp':
-                case ' ': //
-                Allow spacebar to jump
-                    if (player.onGround) {
-                        player.velocity.y = -player.jumpStrength;
-                        player.onGround = false;
-                    }
+                case 'ArrowUp': case ' ':
+                    if (player.onGround) player.velocity.y = -player.jumpStrength;
                     break;
             }
         });
@@ -260,17 +300,13 @@
             }
         });
 
-        // Mobile & Mouse Button Controls
         const leftBtn = document.getElementById('leftBtn');
         const rightBtn = document.getElementById('rightBtn');
         const jumpBtn = document.getElementById('jumpBtn');
 
         function handleJump(e) {
              e.preventDefault();
-             if (player.onGround) {
-                player.velocity.y = -player.jumpStrength;
-                player.onGround = false;
-            }
+             if (player.onGround) player.velocity.y = -player.jumpStrength;
         }
         
         function handleLeftPress(e) { e.preventDefault(); keys.left.pressed = true; }
@@ -282,8 +318,7 @@
         leftBtn.addEventListener('touchstart', handleLeftPress);
         leftBtn.addEventListener('mouseup', handleLeftRelease);
         leftBtn.addEventListener('touchend', handleLeftRelease);
-        leftBtn.addEventListener('mouseleave', handleLeftRelease); //
-        Handle mouse leaving button area
+        leftBtn.addEventListener('mouseleave', handleLeftRelease);
 
         rightBtn.addEventListener('mousedown', handleRightPress);
         rightBtn.addEventListener('touchstart', handleRightPress);
@@ -294,27 +329,18 @@
         jumpBtn.addEventListener('mousedown', handleJump);
         jumpBtn.addEventListener('touchstart', handleJump);
 
-        
-        // Set canvas internal resolution
         function setCanvasResolution() {
-            canvas.width = 1280; // Render at a fixed resolution for consistency
+            canvas.width = 1280;
             canvas.height = 720;
-            // The CSS handles the display scaling
-            
-            // Re-initialize the game if it has already been running
-            if(player) {
-                init();
-            }
+            if(player) init();
         }
         
-        // Initial setup on window load
         window.onload = () => {
              setCanvasResolution();
              init();
              animate();
         }
         
-        // Also adjust on resize to handle orientation changes on mobile
         window.addEventListener('resize', setCanvasResolution);
 
     </script>
