@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Vertical Procedural Platformer</title>
+    <title>Power-Up Platformer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
@@ -43,11 +43,32 @@
         #collectibles-bar {
             width: 100%;
             background-color: #2d3748;
-            padding: 1rem;
+            padding: 0.75rem;
             text-align: center;
             box-shadow: 0 -5px 10px rgba(0,0,0,0.2);
             z-index: 5;
-            font-size: 1.25rem;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        #inventory {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .inventory-slot {
+            width: 50px;
+            height: 50px;
+            background-color: #4a5568;
+            border: 2px solid #718096;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .inventory-slot img {
+            width: 80%;
+            height: 80%;
         }
         .control-button {
             transition: all 0.1s ease;
@@ -60,18 +81,9 @@
         }
         /* Hide mobile controls on large screens */
         @media (min-width: 1024px) {
-            #mobile-controls {
-                display: none;
-            }
-             #collectibles-bar {
-                display: none;
-            }
-            canvas {
-                aspect-ratio: 16 / 9; /* Revert to landscape for desktop */
-            }
-            .game-wrapper {
-                 padding: 1rem;
-            }
+            #mobile-controls, #collectibles-bar { display: none; }
+            canvas { aspect-ratio: 16 / 9; }
+            .game-wrapper { padding: 1rem; }
         }
     </style>
 </head>
@@ -88,7 +100,12 @@
 
     <!-- Collectibles Bar for Mobile -->
     <div id="collectibles-bar">
-        <span class="text-yellow-400">Coins: <span id="coin-count">0</span></span>
+        <span class="text-yellow-400 text-xl">Coins: <span id="coin-count">0</span></span>
+        <div id="inventory">
+            <div class="inventory-slot" id="slot-0"></div>
+            <div class="inventory-slot" id="slot-1"></div>
+            <div class="inventory-slot" id="slot-2"></div>
+        </div>
     </div>
 
     <!-- Mobile Controls -->
@@ -108,213 +125,218 @@
         const winMessage = document.getElementById('winMessage');
         const scoreMessage = document.getElementById('scoreMessage');
         const coinCountDisplay = document.getElementById('coin-count');
+        const inventorySlots = [
+            document.getElementById('slot-0'),
+            document.getElementById('slot-1'),
+            document.getElementById('slot-2'),
+        ];
 
         let gameRunning = true;
         const WINNING_SCORE = 50;
+        const BASE_GRAVITY = 0.7;
+        const BASE_JUMP = 18;
+        const BASE_SPEED = 6;
 
-        // Game settings
-        const gravity = 0.7;
-        let player, platforms, coins, keys, scrollOffset, score;
+        // Game state
+        let player, platforms, coins, powerUps, keys, scrollOffset, score, inventory;
+        let activePowerUps = { speed: false, jump: false, gravity: false };
 
-        // Image objects
-        const playerImage = new Image();
-        const platformImage = new Image();
-        const coinImage = new Image();
-        const backgroundImage = new Image();
+        // --- IMAGES ---
+        const playerImage = new Image(), platformImage = new Image(), coinImage = new Image(), backgroundImage = new Image();
+        const speedBoostImage = new Image(), jumpBoostImage = new Image(), lowGravityImage = new Image();
 
-        // Default "Art" as base64 SVGs
         const playerSVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#4299e1" rx="15"/><circle cx="30" cy="35" r="10" fill="white"/><circle cx="70" cy="35" r="10" fill="white"/><rect x="25" y="65" width="50" height="10" rx="5" fill="white"/></svg>`;
         const platformSVG = `<svg viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="50" fill="#a0aec0" rx="10"/></svg>`;
         const coinSVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45" fill="#f6e05e" stroke="#f6b93b" stroke-width="8"/></svg>`;
         const backgroundSVG = `<svg viewBox="0 0 800 1200" xmlns="http://www.w3.org/2000/svg"><rect width="800" height="1200" fill="#2d3748"/><circle cx="700" cy="150" r="50" fill="#f6e05e"/></svg>`;
+        const speedSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#63b3ed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 17l5-5-5-5M6 17l5-5-5-5"/></svg>`;
+        const jumpSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#48bb78" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10V7a4 4 0 118 0v3M5 10h14M6 14h12M8 18h8"/></svg>`;
+        const gravitySVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#d6bcfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM2 12h20M12 2a15 15 0 010 20"/></svg>`;
 
         playerImage.src = 'data:image/svg+xml;base64,' + btoa(playerSVG);
         platformImage.src = 'data:image/svg+xml;base64,' + btoa(platformSVG);
         coinImage.src = 'data:image/svg+xml;base64,' + btoa(coinSVG);
         backgroundImage.src = 'data:image/svg+xml;base64,' + btoa(backgroundSVG);
+        speedBoostImage.src = 'data:image/svg+xml;base64,' + btoa(speedSVG);
+        jumpBoostImage.src = 'data:image/svg+xml;base64,' + btoa(jumpSVG);
+        lowGravityImage.src = 'data:image/svg+xml;base64,' + btoa(gravitySVG);
+
+        const powerUpTypes = {
+            speed: { image: speedBoostImage, duration: 5000 },
+            jump: { image: jumpBoostImage, duration: 10000 },
+            gravity: { image: lowGravityImage, duration: 10000 },
+        };
         
+        // --- CLASSES ---
         class Player {
             constructor() {
                 this.position = { x: 100, y: 100 };
                 this.velocity = { x: 0, y: 0 };
-                this.width = 50;
-                this.height = 50;
-                this.jumpStrength = 18; // Increased jump for taller screen
-                this.onGround = false;
+                this.width = 50; this.height = 50;
+                this.jumpStrength = BASE_JUMP; this.speed = BASE_SPEED;
+                this.gravity = BASE_GRAVITY; this.onGround = false;
             }
             draw() { ctx.drawImage(playerImage, this.position.x, this.position.y, this.width, this.height); }
             update() {
-                this.draw();
-                this.position.x += this.velocity.x;
-                this.position.y += this.velocity.y;
-                if (this.position.y + this.height + this.velocity.y <= canvas.height) {
-                    this.velocity.y += gravity;
-                } else {
-                    this.velocity.y = 0;
-                    this.position.y = canvas.height - this.height;
-                    this.onGround = true;
-                }
+                this.draw(); this.position.x += this.velocity.x; this.position.y += this.velocity.y;
+                if (this.position.y + this.height + this.velocity.y <= canvas.height) this.velocity.y += this.gravity;
+                else { this.velocity.y = 0; this.position.y = canvas.height - this.height; this.onGround = true; }
                 if (this.position.x < 0) this.position.x = 0;
                 if (this.position.y > canvas.height) loseGame();
             }
         }
-
-        class Platform {
-            constructor({ x, y, width, height }) {
-                this.position = { x, y };
-                this.width = width;
-                this.height = height;
-            }
+        class Platform { /* ... same as before ... */ 
+            constructor({ x, y, width, height }) { this.position = { x, y }; this.width = width; this.height = height; }
             draw() { ctx.drawImage(platformImage, this.position.x, this.position.y, this.width, this.height); }
         }
-
-        class Coin {
-            constructor({ x, y }) {
-                this.position = { x, y };
-                this.width = 30;
-                this.height = 30;
-            }
+        class Coin { /* ... same as before ... */ 
+            constructor({ x, y }) { this.position = { x, y }; this.width = 30; this.height = 30; }
             draw() { ctx.drawImage(coinImage, this.position.x, this.position.y, this.width, this.height); }
         }
+        class PowerUp {
+            constructor({ x, y, type }) {
+                this.position = { x, y };
+                this.width = 35; this.height = 35; this.type = type;
+                this.image = powerUpTypes[type].image;
+            }
+            draw() { ctx.drawImage(this.image, this.position.x, this.position.y, this.width, this.height); }
+        }
         
-        function generatePlatformsAndCoins() {
+        // --- GAME LOGIC ---
+        function generateContent() {
             const lastPlatform = platforms[platforms.length - 1];
-            const MIN_GAP = 100;
-            const MAX_GAP = 250;
-            const MAX_Y_CHANGE = 200;
-            const MIN_WIDTH = 150;
-            const MAX_WIDTH = 350;
+            const newX = lastPlatform.position.x + lastPlatform.width + (100 + Math.random() * 150);
+            let newY = lastPlatform.position.y + (Math.random() - 0.5) * 400;
+            if (newY > canvas.height - 100) newY = canvas.height - 100; if (newY < 300) newY = 300;
+            const newWidth = 150 + Math.random() * 200;
+            platforms.push(new Platform({ x: newX, y: newY, width: newWidth, height: 25 }));
 
-            const newX = lastPlatform.position.x + lastPlatform.width + MIN_GAP + Math.random() * (MAX_GAP - MIN_GAP);
-            let newY = lastPlatform.position.y + (Math.random() - 0.5) * MAX_Y_CHANGE * 2;
-            
-            if (newY > canvas.height - 100) newY = canvas.height - 100;
-            if (newY < 300) newY = 300;
-
-            const newWidth = MIN_WIDTH + Math.random() * (MAX_WIDTH - MIN_WIDTH);
-            const newPlatform = new Platform({ x: newX, y: newY, width: newWidth, height: 25 });
-            platforms.push(newPlatform);
-
-            // Add a coin on the new platform
-            if (Math.random() > 0.3) { // 70% chance to spawn a coin
-                coins.push(new Coin({ x: newX + newWidth / 2 - 15, y: newY - 40 }));
+            if (Math.random() > 0.3) coins.push(new Coin({ x: newX + newWidth / 2 - 15, y: newY - 40 }));
+            if (Math.random() > 0.9) { // 10% chance for a power-up
+                const type = Object.keys(powerUpTypes)[Math.floor(Math.random() * 3)];
+                powerUps.push(new PowerUp({ x: newX + newWidth / 2 - 17, y: newY - 45, type }));
             }
         }
 
         function init() {
-            gameRunning = true;
-            scrollOffset = 0;
-            score = 0;
-            updateScore(0);
+            gameRunning = true; scrollOffset = 0; score = 0;
+            inventory = []; updateScore(0); updateInventoryDisplay();
             messageBox.classList.add('hidden');
-            
             player = new Player();
             platforms = [ new Platform({ x: 0, y: canvas.height - 60, width: 600, height: 60 }) ];
-            coins = [];
-            
-            while(platforms[platforms.length - 1].position.x < canvas.width) {
-                 generatePlatformsAndCoins();
-            }
-
+            coins = []; powerUps = [];
+            while(platforms[platforms.length - 1].position.x < canvas.width) generateContent();
             keys = { right: { pressed: false }, left: { pressed: false } };
-            
             if (!gameRunning) animate();
         }
 
-        function updateScore(newScore) {
-             score = newScore;
-             coinCountDisplay.textContent = score;
-             // For desktop view, draw score on canvas
-            if (window.innerWidth >= 1024) {
-                 // The animate loop will handle drawing
-            }
-        }
-
         function animate() {
-            if (!gameRunning) return;
-            requestAnimationFrame(animate);
-
+            if (!gameRunning) return; requestAnimationFrame(animate);
             ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-            
-            // Draw score on canvas for desktop
-             if (window.innerWidth >= 1024) {
-                ctx.fillStyle = 'white';
-                ctx.font = '24px "Press Start 2P"';
+            if (window.innerWidth >= 1024) { /* Draw desktop UI */
+                ctx.fillStyle = 'white'; ctx.font = '24px "Press Start 2P"';
                 ctx.fillText(`Coins: ${score}`, 20, 40);
+                inventory.forEach((p, i) => {
+                    ctx.drawImage(powerUpTypes[p].image, 20 + i * 50, 60, 40, 40);
+                });
             }
-
-            platforms.forEach(p => p.draw());
-            coins.forEach(c => c.draw());
+            [platforms, coins, powerUps].forEach(arr => arr.forEach(item => item.draw()));
             player.update();
 
             // Scrolling and player movement
-            if (keys.right.pressed && player.position.x < canvas.width * 0.4) {
-                player.velocity.x = 6;
-            } else if (keys.left.pressed && player.position.x > 100) {
-                player.velocity.x = -6;
-            } else {
+            const currentSpeed = player.speed;
+            if (keys.right.pressed && player.position.x < canvas.width * 0.4) player.velocity.x = currentSpeed;
+            else if (keys.left.pressed && player.position.x > 100) player.velocity.x = -currentSpeed;
+            else {
                 player.velocity.x = 0;
                 if (keys.right.pressed) {
-                    scrollOffset += 6;
-                    platforms.forEach(p => p.position.x -= 6);
-                    coins.forEach(c => c.position.x -= 6);
+                    scrollOffset += currentSpeed;
+                    [platforms, coins, powerUps].forEach(arr => arr.forEach(item => item.position.x -= currentSpeed));
                 } else if (keys.left.pressed && scrollOffset > 0) {
-                    scrollOffset -= 6;
-                     platforms.forEach(p => p.position.x += 6);
-                     coins.forEach(c => c.position.x += 6);
+                    scrollOffset -= currentSpeed;
+                    [platforms, coins, powerUps].forEach(arr => arr.forEach(item => item.position.x += currentSpeed));
                 }
             }
 
-            // Platform collision
+            // Collisions
             player.onGround = false;
-            platforms.forEach(p => {
-                if (player.position.y + player.height <= p.position.y &&
-                    player.position.y + player.height + player.velocity.y >= p.position.y &&
-                    player.position.x + player.width >= p.position.x &&
-                    player.position.x <= p.position.x + p.width) {
-                    player.velocity.y = 0;
-                    player.position.y = p.position.y - player.height;
-                    player.onGround = true;
+            platforms.forEach(p => { /* ... collision logic same as before ... */
+                if (player.position.y + player.height <= p.position.y && player.position.y + player.height + player.velocity.y >= p.position.y && player.position.x + player.width >= p.position.x && player.position.x <= p.position.x + p.width) {
+                    player.velocity.y = 0; player.position.y = p.position.y - player.height; player.onGround = true;
                 }
             });
-            
-            // Coin collision
-            coins.forEach((coin, index) => {
-                if (player.position.x < coin.position.x + coin.width &&
-                    player.position.x + player.width > coin.position.x &&
-                    player.position.y < coin.position.y + coin.height &&
-                    player.position.y + player.height > coin.position.y) {
-                    coins.splice(index, 1);
-                    updateScore(score + 1);
+            coins.forEach((c, i) => { /* ... collision logic same as before ... */
+                if (player.position.x < c.position.x + c.width && player.position.x + player.width > c.position.x && player.position.y < c.position.y + c.height && player.position.y + player.height > c.position.y) {
+                    coins.splice(i, 1); updateScore(score + 1);
                 }
             });
-            
+            powerUps.forEach((p, i) => {
+                if (player.position.x < p.position.x + p.width && player.position.x + player.width > p.position.x && player.position.y < p.position.y + p.height && player.position.y + player.height > p.position.y) {
+                    if (inventory.length < 3) {
+                        powerUps.splice(i, 1); inventory.push(p.type); updateInventoryDisplay();
+                    }
+                }
+            });
+
             // Generate new content
-            if (platforms[platforms.length - 1].position.x < canvas.width) {
-                generatePlatformsAndCoins();
-            }
-            platforms = platforms.filter(p => p.position.x + p.width > 0);
-            coins = coins.filter(c => c.position.x + c.width > 0);
-            
+            if (platforms[platforms.length - 1].position.x < canvas.width) generateContent();
+            [platforms, coins, powerUps] = [platforms, coins, powerUps].map(arr => arr.filter(item => item.position.x + (item.width || 0) > 0));
             if(score >= WINNING_SCORE) winGame();
         }
-        
-        function showEndScreen(title, finalScore) {
-            gameRunning = false;
-            winMessage.textContent = title;
-            scoreMessage.textContent = `Coins Collected: ${finalScore}`;
-            messageBox.classList.remove('hidden');
-            setTimeout(init, 3000);
+
+        // --- UI & Power-Up Activation ---
+        function updateScore(newScore) { score = newScore; coinCountDisplay.textContent = score; }
+        function updateInventoryDisplay() {
+            inventorySlots.forEach((slot, i) => {
+                slot.innerHTML = '';
+                if (inventory[i]) {
+                    const img = powerUpTypes[inventory[i]].image.cloneNode();
+                    slot.appendChild(img);
+                }
+            });
+        }
+        function usePowerUp(index) {
+            if (!inventory[index]) return;
+            const type = inventory.splice(index, 1)[0];
+            updateInventoryDisplay();
+            
+            if (activePowerUps[type]) return; // Don't stack same powerup
+            activePowerUps[type] = true;
+
+            switch (type) {
+                case 'speed': player.speed = BASE_SPEED * 1.8; break;
+                case 'jump': player.jumpStrength = BASE_JUMP * 1.5; break;
+                case 'gravity': player.gravity = BASE_GRAVITY * 0.5; break;
+            }
+
+            setTimeout(() => {
+                switch (type) {
+                    case 'speed': player.speed = BASE_SPEED; break;
+                    case 'jump': player.jumpStrength = BASE_JUMP; break;
+                    case 'gravity': player.gravity = BASE_GRAVITY; break;
+                }
+                activePowerUps[type] = false;
+            }, powerUpTypes[type].duration);
         }
 
+        // --- Game State Functions ---
         function winGame() { showEndScreen('You Win!', score); }
         function loseGame() { init(); }
+        function showEndScreen(title, finalScore) {
+            gameRunning = false; winMessage.textContent = title;
+            scoreMessage.textContent = `Coins: ${finalScore}`;
+            messageBox.classList.remove('hidden'); setTimeout(init, 3000);
+        }
 
+        // --- EVENT LISTENERS ---
         window.addEventListener('keydown', ({ key }) => {
             switch (key) {
                 case 'ArrowLeft': keys.left.pressed = true; break;
                 case 'ArrowRight': keys.right.pressed = true; break;
                 case 'ArrowUp': case ' ': if (player.onGround) player.velocity.y = -player.jumpStrength; break;
+                case '1': usePowerUp(0); break;
+                case '2': usePowerUp(1); break;
+                case '3': usePowerUp(2); break;
             }
         });
         window.addEventListener('keyup', ({ key }) => {
@@ -324,6 +346,7 @@
             }
         });
 
+        // Mobile controls and inventory slots
         const leftBtn = document.getElementById('leftBtn'), rightBtn = document.getElementById('rightBtn'), jumpBtn = document.getElementById('jumpBtn');
         function handleJump(e) { e.preventDefault(); if (player.onGround) player.velocity.y = -player.jumpStrength; }
         function handleLeftPress(e) { e.preventDefault(); keys.left.pressed = true; }
@@ -331,30 +354,20 @@
         function handleRightPress(e) { e.preventDefault(); keys.right.pressed = true; }
         function handleRightRelease(e) { e.preventDefault(); keys.right.pressed = false; }
         leftBtn.addEventListener('mousedown', handleLeftPress); leftBtn.addEventListener('touchstart', handleLeftPress);
-        leftBtn.addEventListener('mouseup', handleLeftRelease); leftBtn.addEventListener('touchend', handleLeftRelease);
-        leftBtn.addEventListener('mouseleave', handleLeftRelease);
+        leftBtn.addEventListener('mouseup', handleLeftRelease); leftBtn.addEventListener('touchend', handleLeftRelease); leftBtn.addEventListener('mouseleave', handleLeftRelease);
         rightBtn.addEventListener('mousedown', handleRightPress); rightBtn.addEventListener('touchstart', handleRightPress);
         rightBtn.addEventListener('mouseup', handleRightRelease); rightBtn.addEventListener('touchend', handleRightRelease);
         rightBtn.addEventListener('mouseleave', handleRightRelease);
         jumpBtn.addEventListener('mousedown', handleJump); jumpBtn.addEventListener('touchstart', handleJump);
-
+        inventorySlots.forEach((slot, i) => slot.addEventListener('click', () => usePowerUp(i)));
+        
         function setCanvasResolution() {
-            // Use different resolutions for different screen aspect ratios
-            if (window.innerWidth < 1024) { // Mobile vertical layout
-                canvas.width = 720;
-                canvas.height = 1120;
-            } else { // Desktop landscape layout
-                canvas.width = 1280;
-                canvas.height = 720;
-            }
+            if (window.innerWidth < 1024) { canvas.width = 720; canvas.height = 1120; }
+            else { canvas.width = 1280; canvas.height = 720; }
             if (player) init();
         }
         
-        window.onload = () => {
-             setCanvasResolution();
-             init();
-             animate();
-        }
+        window.onload = () => { setCanvasResolution(); init(); animate(); }
         window.addEventListener('resize', setCanvasResolution);
     </script>
 </body>
