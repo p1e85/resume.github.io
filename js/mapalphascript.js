@@ -294,15 +294,8 @@ function initializeMapLayers() {
         map.addLayer({ id: 'user-pins-dots', type: 'circle', source: 'user-pins-source', maxzoom: 14, paint: { 'circle-radius': 6, 'circle-color': '#007bff', 'circle-stroke-width': 2, 'circle-stroke-color': '#ffffff' } });
     }
     if (!map.getLayer('user-pins-icons')) {
-        const cameraIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#007bff" width="24px" height="24px"><path d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="3.2"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>`;
-        const cameraIconURI = 'data:image/svg+xml;base64,' + btoa(cameraIconSVG);
-        map.loadImage(cameraIconURI, (error, image) => {
-            if (error) throw error;
-            if (!map.hasImage('camera-icon-user')) map.addImage('camera-icon-user', image, { sdf: true });
-            if (!map.getLayer('user-pins-icons')) {
-                map.addLayer({ id: 'user-pins-icons', type: 'symbol', source: 'user-pins-source', minzoom: 14, layout: { 'icon-image': 'camera-icon-user', 'icon-size': 1.5, 'icon-allow-overlap': true }, paint: { 'icon-color': '#007bff' } });
-            }
-        });
+        // Using a built-in Mapbox icon for simplicity and reliability
+        map.addLayer({ id: 'user-pins-icons', type: 'symbol', source: 'user-pins-source', minzoom: 14, layout: { 'icon-image': 'camera-15', 'icon-size': 1.5, 'icon-allow-overlap': true }, paint: { 'icon-color': '#007bff' } });
     }
     
     // Community Photo Pins Source and Layers
@@ -313,15 +306,8 @@ function initializeMapLayers() {
         map.addLayer({ id: 'community-pins-dots', type: 'circle', source: 'community-pins-source', maxzoom: 14, paint: { 'circle-radius': 6, 'circle-color': '#28a745', 'circle-stroke-width': 2, 'circle-stroke-color': '#ffffff' } });
     }
     if (!map.getLayer('community-pins-icons')) {
-        const cameraIconCommunitySVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#28a745" width="24px" height="24px"><path d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="3.2"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>`;
-        const cameraIconCommunityURI = 'data:image/svg+xml;base64,' + btoa(cameraIconCommunitySVG);
-        map.loadImage(cameraIconCommunityURI, (error, image) => {
-            if (error) throw error;
-            if (!map.hasImage('camera-icon-community')) map.addImage('camera-icon-community', image, { sdf: true });
-            if (!map.getLayer('community-pins-icons')) {
-                map.addLayer({ id: 'community-pins-icons', type: 'symbol', source: 'community-pins-source', minzoom: 14, layout: { 'icon-image': 'camera-icon-community', 'icon-size': 1.5, 'icon-allow-overlap': true }, paint: { 'icon-color': '#28a745' } });
-            }
-        });
+        // Using a built-in Mapbox icon for simplicity and reliability
+        map.addLayer({ id: 'community-pins-icons', type: 'symbol', source: 'community-pins-source', minzoom: 14, layout: { 'icon-image': 'camera-15', 'icon-size': 1.5, 'icon-allow-overlap': true }, paint: { 'icon-color': '#28a745' } });
     }
 }
 
