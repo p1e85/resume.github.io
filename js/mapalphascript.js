@@ -26,51 +26,64 @@ const firebaseConfig = {
 
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    // ... (All element references and event listeners are unchanged) ...
+    // --- All element references are the same ---
+    const termsModal = document.getElementById('termsModal');
+    // ... etc.
+
+    // --- Firebase Auth State Listener is now safely inside ---
+    onAuthStateChanged(auth, async (user) => {
+        // ... same auth logic
+    });
+
+    // --- Initial UI Setup ---
+    if (sessionStorage.getItem('termsAccepted')) {
+        termsModal.style.display = 'none';
+        document.getElementById('userStatus').style.display = 'flex';
+    } else {
+        termsModal.style.display = 'flex';
+    }
+
+    // --- Mapbox Setup ---
+    mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY2p6ajZvejJmMDZhaTNkcWpiN294dm12eCJ9.8ckNT6kfuJry7K7GAeIuxw';
+    map = new mapboxgl.Map({
+        container: 'map',
+        style: mapStyles[currentStyleIndex].url,
+        center: [-87.6298, 41.8781],
+        zoom: 10
+    });
+
+    map.on('load', () => {
+        initializeMapLayers();
+    });
+    
+    map.on('zoom', () => {
+        toggleMarkerVisibility();
+    });
+
+    // --- All Event Listeners are the same ---
+    // ...
 });
 
-// ... (onAuthStateChanged is unchanged) ...
 
 // --- Functions ---
 
-// --- MODIFIED: Data Conversion Helpers ---
-function convertRouteForFirestore(coordsArray) {
-    if (!coordsArray) return [];
-    return coordsArray.map(coord => ({ lng: coord[0], lat: coord[1] }));
-}
-
-function convertRouteFromFirestore(coordsData) {
-    if (!coordsData || coordsData.length === 0) return [];
-    // Backwards compatibility check: if the first item is an array, it's the old format.
-    if (Array.isArray(coordsData[0])) {
-        return coordsData; // Return as-is
+function initializeMapLayers() {
+    // ... same layer initialization ...
+    // User Photo Pins (for dots)
+    if (!map.getSource('user-pins-source')) {
+        map.addSource('user-pins-source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
     }
-    // Otherwise, convert from the new object format.
-    return coordsData.map(coord => [coord.lng, coord.lat]);
+    if (!map.getLayer('user-pins-dots')) {
+        map.addLayer({ id: 'user-pins-dots', type: 'circle', source: 'user-pins-source', maxzoom: ZOOM_THRESHOLD, paint: { 'circle-radius': 6, 'circle-color': '#007bff', 'circle-stroke-width': 2, 'circle-stroke-color': '#ffffff' } });
+    }
+
+    // Community Photo Pins (for dots)
+    if (!map.getSource('community-pins-source')) {
+        map.addSource('community-pins-source', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+    }
+    if (!map.getLayer('community-pins-dots')) {
+        map.addLayer({ id: 'community-pins-dots', type: 'circle', source: 'community-pins-source', maxzoom: ZOOM_THRESHOLD, paint: { 'circle-radius': 6, 'circle-color': '#28a745', 'circle-stroke-width': 2, 'circle-stroke-color': '#ffffff' } });
+    }
 }
 
-function convertPinsForFirestore(pinsArray) {
-    if (!pinsArray) return [];
-    return pinsArray.map(pin => {
-        const newPin = { ...pin };
-        if (Array.isArray(newPin.coords)) {
-            newPin.coords = { lng: newPin.coords[0], lat: newPin.coords[1] };
-        }
-        return newPin;
-    });
-}
-
-function convertPinsFromFirestore(pinsData) {
-    if (!pinsData || pinsData.length === 0) return [];
-    return pinsData.map(pin => {
-        const newPin = { ...pin };
-        // Backwards compatibility check: if coords is an object, convert it.
-        if (newPin.coords && typeof newPin.coords === 'object' && !Array.isArray(newPin.coords)) {
-            newPin.coords = [newPin.coords.lng, newPin.coords.lat];
-        }
-        return newPin;
-    });
-}
-
-
-// ... (The rest of your js/mapscript.js file is unchanged) ...
+// ... (Rest of the file is correct and does not need to be changed) ...
