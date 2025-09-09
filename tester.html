@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Procedural Platformer</title>
+    <title>Vertical Procedural Platformer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
@@ -19,17 +19,17 @@
             color: #e2e8f0;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
         }
         .game-wrapper {
             position: relative;
             width: 100%;
-            flex-grow: 1; /* Allow wrapper to fill space */
+            flex-grow: 1; /* Allow wrapper to fill available space */
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 1rem;
+            padding: 1rem 1rem 0 1rem; /* Padding on sides and top */
         }
         canvas {
             background-color: #2d3748;
@@ -38,7 +38,16 @@
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
-            aspect-ratio: 16 / 9;
+            aspect-ratio: 9 / 14; /* Taller aspect ratio for mobile */
+        }
+        #collectibles-bar {
+            width: 100%;
+            background-color: #2d3748;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 -5px 10px rgba(0,0,0,0.2);
+            z-index: 5;
+            font-size: 1.25rem;
         }
         .control-button {
             transition: all 0.1s ease;
@@ -54,6 +63,15 @@
             #mobile-controls {
                 display: none;
             }
+             #collectibles-bar {
+                display: none;
+            }
+            canvas {
+                aspect-ratio: 16 / 9; /* Revert to landscape for desktop */
+            }
+            .game-wrapper {
+                 padding: 1rem;
+            }
         }
     </style>
 </head>
@@ -64,8 +82,13 @@
         <canvas id="gameCanvas"></canvas>
         <div id="messageBox" class="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-70 text-white text-2xl md:text-4xl hidden rounded-lg text-center p-4">
             <span id="winMessage">You Won!</span>
-            <span id="distanceMessage" class="text-xl md:text-2xl mt-4"></span>
+            <span id="scoreMessage" class="text-xl md:text-2xl mt-4"></span>
         </div>
+    </div>
+
+    <!-- Collectibles Bar for Mobile -->
+    <div id="collectibles-bar">
+        <span class="text-yellow-400">Coins: <span id="coin-count">0</span></span>
     </div>
 
     <!-- Mobile Controls -->
@@ -83,28 +106,32 @@
         const ctx = canvas.getContext('2d');
         const messageBox = document.getElementById('messageBox');
         const winMessage = document.getElementById('winMessage');
-        const distanceMessage = document.getElementById('distanceMessage');
+        const scoreMessage = document.getElementById('scoreMessage');
+        const coinCountDisplay = document.getElementById('coin-count');
 
         let gameRunning = true;
-        const WINNING_DISTANCE = 10000;
+        const WINNING_SCORE = 50;
 
         // Game settings
-        const gravity = 0.6;
-        let player, platforms, keys, scrollOffset;
+        const gravity = 0.7;
+        let player, platforms, coins, keys, scrollOffset, score;
 
         // Image objects
         const playerImage = new Image();
         const platformImage = new Image();
+        const coinImage = new Image();
         const backgroundImage = new Image();
 
-        // Default "Art" as base64 SVGs to avoid external requests
-        const defaultPlayerSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#4299e1"/><circle cx="30" cy="30" r="10" fill="white"/><circle cx="70" cy="30" r="10" fill="white"/><rect x="20" y="60" width="60" height="10" fill="white" rx="5"/></svg>`;
-        const defaultPlatformSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50"><rect width="200" height="50" fill="#a0aec0" rx="10"/></svg>`;
-        const defaultBackgroundSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><rect width="800" height="600" fill="#2d3748"/><circle cx="700" cy="100" r="50" fill="#f6e05e"/></svg>`;
+        // Default "Art" as base64 SVGs
+        const playerSVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#4299e1" rx="15"/><circle cx="30" cy="35" r="10" fill="white"/><circle cx="70" cy="35" r="10" fill="white"/><rect x="25" y="65" width="50" height="10" rx="5" fill="white"/></svg>`;
+        const platformSVG = `<svg viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="50" fill="#a0aec0" rx="10"/></svg>`;
+        const coinSVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45" fill="#f6e05e" stroke="#f6b93b" stroke-width="8"/></svg>`;
+        const backgroundSVG = `<svg viewBox="0 0 800 1200" xmlns="http://www.w3.org/2000/svg"><rect width="800" height="1200" fill="#2d3748"/><circle cx="700" cy="150" r="50" fill="#f6e05e"/></svg>`;
 
-        playerImage.src = 'data:image/svg+xml;base64,' + btoa(defaultPlayerSVG);
-        platformImage.src = 'data:image/svg+xml;base64,' + btoa(defaultPlatformSVG);
-        backgroundImage.src = 'data:image/svg+xml;base64,' + btoa(defaultBackgroundSVG);
+        playerImage.src = 'data:image/svg+xml;base64,' + btoa(playerSVG);
+        platformImage.src = 'data:image/svg+xml;base64,' + btoa(platformSVG);
+        coinImage.src = 'data:image/svg+xml;base64,' + btoa(coinSVG);
+        backgroundImage.src = 'data:image/svg+xml;base64,' + btoa(backgroundSVG);
         
         class Player {
             constructor() {
@@ -112,19 +139,14 @@
                 this.velocity = { x: 0, y: 0 };
                 this.width = 50;
                 this.height = 50;
-                this.jumpStrength = 15;
+                this.jumpStrength = 18; // Increased jump for taller screen
                 this.onGround = false;
             }
-
-            draw() {
-                ctx.drawImage(playerImage, this.position.x, this.position.y, this.width, this.height);
-            }
-
+            draw() { ctx.drawImage(playerImage, this.position.x, this.position.y, this.width, this.height); }
             update() {
                 this.draw();
                 this.position.x += this.velocity.x;
                 this.position.y += this.velocity.y;
-
                 if (this.position.y + this.height + this.velocity.y <= canvas.height) {
                     this.velocity.y += gravity;
                 } else {
@@ -132,15 +154,8 @@
                     this.position.y = canvas.height - this.height;
                     this.onGround = true;
                 }
-                
-                if (this.position.x < 0) {
-                    this.position.x = 0;
-                }
-                
-                // If player falls off the bottom of the screen, reset the game.
-                if (this.position.y > canvas.height) {
-                    loseGame();
-                }
+                if (this.position.x < 0) this.position.x = 0;
+                if (this.position.y > canvas.height) loseGame();
             }
         }
 
@@ -150,53 +165,68 @@
                 this.width = width;
                 this.height = height;
             }
+            draw() { ctx.drawImage(platformImage, this.position.x, this.position.y, this.width, this.height); }
+        }
 
-            draw() {
-                ctx.drawImage(platformImage, this.position.x, this.position.y, this.width, this.height);
+        class Coin {
+            constructor({ x, y }) {
+                this.position = { x, y };
+                this.width = 30;
+                this.height = 30;
             }
+            draw() { ctx.drawImage(coinImage, this.position.x, this.position.y, this.width, this.height); }
         }
         
-        function generatePlatform(lastPlatform) {
-            const MIN_GAP = 80;
-            const MAX_GAP = 200;
-            const MAX_Y_CHANGE = 100;
+        function generatePlatformsAndCoins() {
+            const lastPlatform = platforms[platforms.length - 1];
+            const MIN_GAP = 100;
+            const MAX_GAP = 250;
+            const MAX_Y_CHANGE = 200;
             const MIN_WIDTH = 150;
-            const MAX_WIDTH = 300;
+            const MAX_WIDTH = 350;
 
             const newX = lastPlatform.position.x + lastPlatform.width + MIN_GAP + Math.random() * (MAX_GAP - MIN_GAP);
             let newY = lastPlatform.position.y + (Math.random() - 0.5) * MAX_Y_CHANGE * 2;
             
-            // Clamp Y to be within screen bounds
-            if (newY > canvas.height - 50) newY = canvas.height - 50;
-            if (newY < 200) newY = 200;
+            if (newY > canvas.height - 100) newY = canvas.height - 100;
+            if (newY < 300) newY = 300;
 
             const newWidth = MIN_WIDTH + Math.random() * (MAX_WIDTH - MIN_WIDTH);
-            
-            platforms.push(new Platform({ x: newX, y: newY, width: newWidth, height: 20 }));
+            const newPlatform = new Platform({ x: newX, y: newY, width: newWidth, height: 25 });
+            platforms.push(newPlatform);
+
+            // Add a coin on the new platform
+            if (Math.random() > 0.3) { // 70% chance to spawn a coin
+                coins.push(new Coin({ x: newX + newWidth / 2 - 15, y: newY - 40 }));
+            }
         }
 
         function init() {
             gameRunning = true;
             scrollOffset = 0;
+            score = 0;
+            updateScore(0);
             messageBox.classList.add('hidden');
             
             player = new Player();
-            platforms = [
-                new Platform({ x: 0, y: canvas.height - 60, width: 600, height: 60 }),
-            ];
+            platforms = [ new Platform({ x: 0, y: canvas.height - 60, width: 600, height: 60 }) ];
+            coins = [];
             
-            // Generate initial platforms to fill the screen
             while(platforms[platforms.length - 1].position.x < canvas.width) {
-                 generatePlatform(platforms[platforms.length - 1]);
+                 generatePlatformsAndCoins();
             }
 
-            keys = {
-                right: { pressed: false },
-                left: { pressed: false },
-            };
+            keys = { right: { pressed: false }, left: { pressed: false } };
             
-            if (!gameRunning) {
-                animate();
+            if (!gameRunning) animate();
+        }
+
+        function updateScore(newScore) {
+             score = newScore;
+             coinCountDisplay.textContent = score;
+             // For desktop view, draw score on canvas
+            if (window.innerWidth >= 1024) {
+                 // The animate loop will handle drawing
             }
         }
 
@@ -206,95 +236,87 @@
 
             ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
             
-            ctx.fillStyle = 'white';
-            ctx.font = '20px "Press Start 2P"';
-            ctx.fillText(`Distance: ${Math.floor(scrollOffset)}`, 20, 40);
+            // Draw score on canvas for desktop
+             if (window.innerWidth >= 1024) {
+                ctx.fillStyle = 'white';
+                ctx.font = '24px "Press Start 2P"';
+                ctx.fillText(`Coins: ${score}`, 20, 40);
+            }
 
-
-            platforms.forEach(platform => {
-                platform.draw();
-            });
+            platforms.forEach(p => p.draw());
+            coins.forEach(c => c.draw());
             player.update();
 
             // Scrolling and player movement
-            if (keys.right.pressed && player.position.x < 400) {
-                player.velocity.x = 5;
+            if (keys.right.pressed && player.position.x < canvas.width * 0.4) {
+                player.velocity.x = 6;
             } else if (keys.left.pressed && player.position.x > 100) {
-                player.velocity.x = -5;
+                player.velocity.x = -6;
             } else {
                 player.velocity.x = 0;
                 if (keys.right.pressed) {
-                    scrollOffset += 5;
-                    platforms.forEach(platform => {
-                        platform.position.x -= 5;
-                    });
+                    scrollOffset += 6;
+                    platforms.forEach(p => p.position.x -= 6);
+                    coins.forEach(c => c.position.x -= 6);
                 } else if (keys.left.pressed && scrollOffset > 0) {
-                    scrollOffset -= 5;
-                     platforms.forEach(platform => {
-                        platform.position.x += 5;
-                    });
+                    scrollOffset -= 6;
+                     platforms.forEach(p => p.position.x += 6);
+                     coins.forEach(c => c.position.x += 6);
                 }
             }
 
-            // Platform collision detection
+            // Platform collision
             player.onGround = false;
-            platforms.forEach(platform => {
-                if (
-                    player.position.y + player.height <= platform.position.y &&
-                    player.position.y + player.height + player.velocity.y >= platform.position.y &&
-                    player.position.x + player.width >= platform.position.x &&
-                    player.position.x <= platform.position.x + platform.width
-                ) {
+            platforms.forEach(p => {
+                if (player.position.y + player.height <= p.position.y &&
+                    player.position.y + player.height + player.velocity.y >= p.position.y &&
+                    player.position.x + player.width >= p.position.x &&
+                    player.position.x <= p.position.x + p.width) {
                     player.velocity.y = 0;
-                    player.position.y = platform.position.y - player.height;
+                    player.position.y = p.position.y - player.height;
                     player.onGround = true;
                 }
             });
             
-            // Procedurally add and remove platforms
-            const lastPlatform = platforms[platforms.length - 1];
-            if (lastPlatform.position.x + lastPlatform.width < canvas.width + 200) {
-                generatePlatform(lastPlatform);
-            }
+            // Coin collision
+            coins.forEach((coin, index) => {
+                if (player.position.x < coin.position.x + coin.width &&
+                    player.position.x + player.width > coin.position.x &&
+                    player.position.y < coin.position.y + coin.height &&
+                    player.position.y + player.height > coin.position.y) {
+                    coins.splice(index, 1);
+                    updateScore(score + 1);
+                }
+            });
             
+            // Generate new content
+            if (platforms[platforms.length - 1].position.x < canvas.width) {
+                generatePlatformsAndCoins();
+            }
             platforms = platforms.filter(p => p.position.x + p.width > 0);
+            coins = coins.filter(c => c.position.x + c.width > 0);
             
-            // Win condition
-            if(scrollOffset >= WINNING_DISTANCE) {
-                winGame();
-            }
+            if(score >= WINNING_SCORE) winGame();
         }
         
-        function showWinScreen() {
+        function showEndScreen(title, finalScore) {
             gameRunning = false;
-            winMessage.textContent = 'You Survived!';
-            distanceMessage.textContent = `Distance: ${Math.floor(scrollOffset)}`;
+            winMessage.textContent = title;
+            scoreMessage.textContent = `Coins Collected: ${finalScore}`;
             messageBox.classList.remove('hidden');
-            setTimeout(init, 3000); // Restart after 3 seconds
+            setTimeout(init, 3000);
         }
 
-        function winGame() {
-            showWinScreen();
-        }
-        
-        // This function is called when the player falls off the screen
-        function loseGame() {
-            // Instantly restart the game by calling the initialization function.
-            init();
-        }
-
-        // --- Event listeners for controls ---
+        function winGame() { showEndScreen('You Win!', score); }
+        function loseGame() { init(); }
 
         window.addEventListener('keydown', ({ key }) => {
             switch (key) {
                 case 'ArrowLeft': keys.left.pressed = true; break;
                 case 'ArrowRight': keys.right.pressed = true; break;
-                case 'ArrowUp': case ' ':
-                    if (player.onGround) player.velocity.y = -player.jumpStrength;
-                    break;
+                case 'ArrowUp': case ' ': if (player.onGround) player.velocity.y = -player.jumpStrength; break;
             }
         });
-
         window.addEventListener('keyup', ({ key }) => {
             switch (key) {
                 case 'ArrowLeft': keys.left.pressed = false; break;
@@ -302,39 +324,30 @@
             }
         });
 
-        const leftBtn = document.getElementById('leftBtn');
-        const rightBtn = document.getElementById('rightBtn');
-        const jumpBtn = document.getElementById('jumpBtn');
-
-        function handleJump(e) {
-             e.preventDefault();
-             if (player.onGround) player.velocity.y = -player.jumpStrength;
-        }
-        
+        const leftBtn = document.getElementById('leftBtn'), rightBtn = document.getElementById('rightBtn'), jumpBtn = document.getElementById('jumpBtn');
+        function handleJump(e) { e.preventDefault(); if (player.onGround) player.velocity.y = -player.jumpStrength; }
         function handleLeftPress(e) { e.preventDefault(); keys.left.pressed = true; }
         function handleLeftRelease(e) { e.preventDefault(); keys.left.pressed = false; }
         function handleRightPress(e) { e.preventDefault(); keys.right.pressed = true; }
         function handleRightRelease(e) { e.preventDefault(); keys.right.pressed = false; }
-
-        leftBtn.addEventListener('mousedown', handleLeftPress);
-        leftBtn.addEventListener('touchstart', handleLeftPress);
-        leftBtn.addEventListener('mouseup', handleLeftRelease);
-        leftBtn.addEventListener('touchend', handleLeftRelease);
+        leftBtn.addEventListener('mousedown', handleLeftPress); leftBtn.addEventListener('touchstart', handleLeftPress);
+        leftBtn.addEventListener('mouseup', handleLeftRelease); leftBtn.addEventListener('touchend', handleLeftRelease);
         leftBtn.addEventListener('mouseleave', handleLeftRelease);
-
-        rightBtn.addEventListener('mousedown', handleRightPress);
-        rightBtn.addEventListener('touchstart', handleRightPress);
-        rightBtn.addEventListener('mouseup', handleRightRelease);
-        rightBtn.addEventListener('touchend', handleRightRelease);
+        rightBtn.addEventListener('mousedown', handleRightPress); rightBtn.addEventListener('touchstart', handleRightPress);
+        rightBtn.addEventListener('mouseup', handleRightRelease); rightBtn.addEventListener('touchend', handleRightRelease);
         rightBtn.addEventListener('mouseleave', handleRightRelease);
-        
-        jumpBtn.addEventListener('mousedown', handleJump);
-        jumpBtn.addEventListener('touchstart', handleJump);
+        jumpBtn.addEventListener('mousedown', handleJump); jumpBtn.addEventListener('touchstart', handleJump);
 
         function setCanvasResolution() {
-            canvas.width = 1280;
-            canvas.height = 720;
-            if(player) init();
+            // Use different resolutions for different screen aspect ratios
+            if (window.innerWidth < 1024) { // Mobile vertical layout
+                canvas.width = 720;
+                canvas.height = 1120;
+            } else { // Desktop landscape layout
+                canvas.width = 1280;
+                canvas.height = 720;
+            }
+            if (player) init();
         }
         
         window.onload = () => {
@@ -342,9 +355,7 @@
              init();
              animate();
         }
-        
         window.addEventListener('resize', setCanvasResolution);
-
     </script>
 </body>
 </html>
