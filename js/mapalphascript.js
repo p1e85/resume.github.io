@@ -34,7 +34,7 @@ let currentUser = null;
 let trackingWatcher = null;
 let routeCoordinates = [];
 let photoPins = [];
-// 'markers' array is deprecated
+// 'markers' array is now deprecated
 let map;
 let findMeMarker = null;
 let isCommunityViewOn = false;
