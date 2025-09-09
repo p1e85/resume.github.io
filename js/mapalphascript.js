@@ -34,6 +34,7 @@ let currentUser = null;
 let trackingWatcher = null;
 let routeCoordinates = [];
 let photoPins = [];
+// 'markers' array is now deprecated
 let map;
 let findMeMarker = null;
 let isCommunityViewOn = false;
@@ -298,14 +299,8 @@ function initializeMapLayers() {
             type: 'symbol', 
             source: 'user-pins-source', 
             minzoom: 14, 
-            layout: { 
-                'icon-image': 'camera-15', // Use a standard Mapbox Maki icon
-                'icon-size': 1.5, 
-                'icon-allow-overlap': true 
-            },
-            paint: { // Use paint to color the icon
-                'icon-color': '#007bff'
-            }
+            layout: { 'icon-image': 'camera-15', 'icon-size': 1.5, 'icon-allow-overlap': true },
+            paint: { 'icon-color': '#007bff' }
         });
     }
     
@@ -322,14 +317,8 @@ function initializeMapLayers() {
             type: 'symbol', 
             source: 'community-pins-source', 
             minzoom: 14, 
-            layout: { 
-                'icon-image': 'camera-15', // Use the same standard icon
-                'icon-size': 1.5, 
-                'icon-allow-overlap': true 
-            },
-            paint: { // Use paint to color it green
-                'icon-color': '#28a745'
-            }
+            layout: { 'icon-image': 'camera-15', 'icon-size': 1.5, 'icon-allow-overlap': true },
+            paint: { 'icon-color': '#28a745' }
         });
     }
 }
