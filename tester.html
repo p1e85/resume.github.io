@@ -178,18 +178,26 @@
             }
             draw() { ctx.drawImage(playerImage, this.position.x, this.position.y, this.width, this.height); }
             update() {
-                this.draw(); this.position.x += this.velocity.x; this.position.y += this.velocity.y;
-                if (this.position.y + this.height + this.velocity.y <= canvas.height) this.velocity.y += this.gravity;
-                else { this.velocity.y = 0; this.position.y = canvas.height - this.height; this.onGround = true; }
+                this.draw();
+                this.position.x += this.velocity.x;
+                this.position.y += this.velocity.y;
+
+                // Always apply gravity. Platform collision logic will handle stopping the fall.
+                this.velocity.y += this.gravity;
+                
                 if (this.position.x < 0) this.position.x = 0;
-                if (this.position.y > canvas.height) loseGame();
+                
+                // If player is below the canvas, it's a fall.
+                if (this.position.y > canvas.height) {
+                    loseGame();
+                }
             }
         }
-        class Platform { /* ... same as before ... */ 
+        class Platform { 
             constructor({ x, y, width, height }) { this.position = { x, y }; this.width = width; this.height = height; }
             draw() { ctx.drawImage(platformImage, this.position.x, this.position.y, this.width, this.height); }
         }
-        class Coin { /* ... same as before ... */ 
+        class Coin { 
             constructor({ x, y }) { this.position = { x, y }; this.width = 30; this.height = 30; }
             draw() { ctx.drawImage(coinImage, this.position.x, this.position.y, this.width, this.height); }
         }
@@ -260,12 +268,12 @@
 
             // Collisions
             player.onGround = false;
-            platforms.forEach(p => { /* ... collision logic same as before ... */
+            platforms.forEach(p => { 
                 if (player.position.y + player.height <= p.position.y && player.position.y + player.height + player.velocity.y >= p.position.y && player.position.x + player.width >= p.position.x && player.position.x <= p.position.x + p.width) {
                     player.velocity.y = 0; player.position.y = p.position.y - player.height; player.onGround = true;
                 }
             });
-            coins.forEach((c, i) => { /* ... collision logic same as before ... */
+            coins.forEach((c, i) => { 
                 if (player.position.x < c.position.x + c.width && player.position.x + player.width > c.position.x && player.position.y < c.position.y + c.height && player.position.y + player.height > c.position.y) {
                     coins.splice(i, 1); updateScore(score + 1);
                 }
@@ -354,7 +362,8 @@
         function handleRightPress(e) { e.preventDefault(); keys.right.pressed = true; }
         function handleRightRelease(e) { e.preventDefault(); keys.right.pressed = false; }
         leftBtn.addEventListener('mousedown', handleLeftPress); leftBtn.addEventListener('touchstart', handleLeftPress);
-        leftBtn.addEventListener('mouseup', handleLeftRelease); leftBtn.addEventListener('touchend', handleLeftRelease); leftBtn.addEventListener('mouseleave', handleLeftRelease);
+        leftBtn.addEventListener('mouseup', handleLeftRelease); leftBtn.addEventListener('touchend', handleLeftRelease);
+        leftBtn.addEventListener('mouseleave', handleLeftRelease);
         rightBtn.addEventListener('mousedown', handleRightPress); rightBtn.addEventListener('touchstart', handleRightPress);
         rightBtn.addEventListener('mouseup', handleRightRelease); rightBtn.addEventListener('touchend', handleRightRelease);
         rightBtn.addEventListener('mouseleave', handleRightRelease);
