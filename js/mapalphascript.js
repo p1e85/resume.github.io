@@ -366,12 +366,12 @@ function updateAuthModalUI() {
     document.getElementById('authError').textContent = '';
     
     if (isSignUpMode) {
-        authTitle.textContent = 'Create an Account';
+        authTitle.textContent = 'Create a Litter Bugs Account';
         authSubtitle.innerHTML = 'Or <a href="#" id="switchAuthModeLink">log in to an existing account.</a>';
         authActionBtn.textContent = 'Sign Up';
         authForm.classList.add('signup-mode'); authForm.classList.remove('login-mode');
     } else {
-        authTitle.textContent = 'Log In';
+        authTitle.textContent = 'Log In to Litter Bugs';
         authSubtitle.innerHTML = 'Or <a href="#" id="switchAuthModeLink">create a new account.</a>';
         authActionBtn.textContent = 'Log In';
         authForm.classList.add('login-mode'); authForm.classList.remove('signup-mode');
@@ -1020,3 +1020,4 @@ async function handleAccountDeletion() {
         }
     }
 }
+
