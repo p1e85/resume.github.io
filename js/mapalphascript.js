@@ -26,7 +26,9 @@ const firebaseConfig = {
 
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    // ... (All element references are the same) ...
+    // --- All element references are the same ---
+    const termsModal = document.getElementById('termsModal');
+    // ... etc.
 
     // --- Firebase Auth State Listener is now safely inside ---
     onAuthStateChanged(auth, async (user) => {
