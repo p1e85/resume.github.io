@@ -137,7 +137,7 @@
                     this.position.x = 0;
                 }
                 
-                // Fall off screen
+                // If player falls off the bottom of the screen, reset the game.
                 if (this.position.y > canvas.height) {
                     loseGame();
                 }
@@ -265,20 +265,22 @@
             }
         }
         
-        function showEndScreen(title, finalDistance) {
+        function showWinScreen() {
             gameRunning = false;
-            winMessage.textContent = title;
-            distanceMessage.textContent = `Distance: ${Math.floor(finalDistance)}`;
+            winMessage.textContent = 'You Survived!';
+            distanceMessage.textContent = `Distance: ${Math.floor(scrollOffset)}`;
             messageBox.classList.remove('hidden');
             setTimeout(init, 3000); // Restart after 3 seconds
         }
 
         function winGame() {
-            showEndScreen('You Survived!', scrollOffset);
+            showWinScreen();
         }
         
+        // This function is called when the player falls off the screen
         function loseGame() {
-            showEndScreen('Game Over!', scrollOffset);
+            // Instantly restart the game by calling the initialization function.
+            init();
         }
 
         // --- Event listeners for controls ---
