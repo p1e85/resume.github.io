@@ -22,31 +22,38 @@ body {
     right: 15px;
     z-index: 10;
     display: flex;
-    flex-wrap: wrap; 
+    flex-direction: column; 
+    gap: 10px;
+}
+
+.top-row {
+    display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
     gap: 10px;
 }
 
 .top-bar-left {
     display: flex;
-    align-items: center;
     gap: 10px;
 }
-.top-bar-right {
-    display: flex;
-    align-items: center;
+
+.bottom-row {
+    width: 100%;
 }
 
-@media (max-width: 520px) {
-    .top-bar-left {
-        flex-basis: 100%;
-        order: 1;
+@media (min-width: 640px) {
+    .top-bar-container {
+        flex-direction: row;
+        align-items: center;
     }
-    .top-bar-right {
-        flex-basis: 100%;
-        justify-content: flex-start;
-        order: 2;
+    .top-row {
+        width: auto;
+    }
+    .bottom-row {
+        width: auto;
+        margin-left: 10px; /* Add space between button groups */
     }
 }
 
@@ -102,7 +109,7 @@ body {
     cursor: pointer;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-    transition: background-color: 0.3s;
+    transition: background-color 0.3s;
     white-space: nowrap;
     text-decoration: none;
 }
@@ -112,6 +119,8 @@ body {
 }
 
 .community-button {
+    width: 100%;
+    box-sizing: border-box;
     background-color: #28a745;
     color: white;
     border-color: transparent;
@@ -402,7 +411,7 @@ body {
     text-align: center;
 }
 
-/* --- User Status Display --- */
+/* --- User Status Display & Photo Markers --- */
 .user-status-display {
     display: flex;
     background-color: rgba(255, 255, 255, 0.8);
@@ -416,4 +425,14 @@ body {
 #logoutBtn, #loginSignupBtn {
     border: none; background-color: #6c757d; color: white;
     padding: 5px 10px; border-radius: 5px; cursor: pointer;
+}
+.photo-marker {
+    width: 40px; 
+    height: 40px; 
+    border-radius: 50%;
+    border: 2px solid #fff; 
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    background-size: cover; 
+    background-position: center; 
+    cursor: pointer;
 }
