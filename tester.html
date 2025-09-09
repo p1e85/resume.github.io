@@ -70,14 +70,26 @@
             width: 80%;
             height: 80%;
         }
+        #mobile-controls {
+            background-color: #1a202c;
+            border-top: 2px solid #2d3748;
+        }
         .control-button {
-            transition: all 0.1s ease;
+            width: 112px;  /* Increased size */
+            height: 112px; /* Increased size */
+            font-size: 4rem; /* Increased arrow size */
+            border-radius: 9999px; /* Fully rounded */
+            background: linear-gradient(145deg, #3a475c, #2d3748);
+            border: 2px solid #4a5568;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3), inset 0 2px 2px rgba(255,255,255,0.1);
+            transition: all 0.1s ease-out;
             user-select: none;
             -webkit-user-select: none; /* Prevent text selection on taps */
         }
         .control-button:active {
-            background-color: rgba(160, 174, 192, 0.7); /* gray-500 with opacity */
-            transform: scale(0.95);
+            background: linear-gradient(145deg, #2d3748, #3a475c);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 4px 5px rgba(0,0,0,0.2);
+            transform: translateY(2px);
         }
         /* Hide mobile controls on large screens */
         @media (min-width: 1024px) {
@@ -109,12 +121,12 @@
     </div>
 
     <!-- Mobile Controls -->
-    <div id="mobile-controls" class="w-full flex justify-between items-center p-5 bg-gray-900 bg-opacity-80 z-10">
+    <div id="mobile-controls" class="w-full flex justify-between items-center p-5 z-10">
         <div class="flex gap-5">
-            <button id="leftBtn" class="control-button bg-gray-700 bg-opacity-50 text-white font-bold p-4 rounded-full w-24 h-24 text-5xl flex items-center justify-center">&#x2190;</button>
-            <button id="rightBtn" class="control-button bg-gray-700 bg-opacity-50 text-white font-bold p-4 rounded-full w-24 h-24 text-5xl flex items-center justify-center">&#x2192;</button>
+            <button id="leftBtn" class="control-button flex items-center justify-center text-white font-bold">&#x2190;</button>
+            <button id="rightBtn" class="control-button flex items-center justify-center text-white font-bold">&#x2192;</button>
         </div>
-        <button id="jumpBtn" class="control-button bg-gray-700 bg-opacity-50 text-white font-bold p-4 rounded-full w-24 h-24 text-5xl flex items-center justify-center">&#x2191;</button>
+        <button id="jumpBtn" class="control-button flex items-center justify-center text-white font-bold">&#x2191;</button>
     </div>
 
 
@@ -181,13 +193,8 @@
                 this.draw();
                 this.position.x += this.velocity.x;
                 this.position.y += this.velocity.y;
-
-                // Always apply gravity. Platform collision logic will handle stopping the fall.
                 this.velocity.y += this.gravity;
-                
                 if (this.position.x < 0) this.position.x = 0;
-                
-                // If player is below the canvas, it's a fall.
                 if (this.position.y > canvas.height) {
                     loseGame();
                 }
@@ -251,7 +258,6 @@
             [platforms, coins, powerUps].forEach(arr => arr.forEach(item => item.draw()));
             player.update();
 
-            // Scrolling and player movement
             const currentSpeed = player.speed;
             if (keys.right.pressed && player.position.x < canvas.width * 0.4) player.velocity.x = currentSpeed;
             else if (keys.left.pressed && player.position.x > 100) player.velocity.x = -currentSpeed;
@@ -266,10 +272,9 @@
                 }
             }
 
-            // Collisions
             player.onGround = false;
             platforms.forEach(p => { 
-                if (player.position.y + player.height <= p.position.y && player.position.y + player.height + player.velocity.y >= p.position.y && player.position.x + player.width >= p.position.x && player.position.x <= p.position.x + p.width) {
+                if (player.velocity.y >= 0 && player.position.y + player.height <= p.position.y && player.position.y + player.height + player.velocity.y >= p.position.y && player.position.x + player.width >= p.position.x && player.position.x <= p.position.x + p.width) {
                     player.velocity.y = 0; player.position.y = p.position.y - player.height; player.onGround = true;
                 }
             });
@@ -286,13 +291,11 @@
                 }
             });
 
-            // Generate new content
             if (platforms[platforms.length - 1].position.x < canvas.width) generateContent();
             [platforms, coins, powerUps] = [platforms, coins, powerUps].map(arr => arr.filter(item => item.position.x + (item.width || 0) > 0));
             if(score >= WINNING_SCORE) winGame();
         }
 
-        // --- UI & Power-Up Activation ---
         function updateScore(newScore) { score = newScore; coinCountDisplay.textContent = score; }
         function updateInventoryDisplay() {
             inventorySlots.forEach((slot, i) => {
@@ -304,11 +307,10 @@
             });
         }
         function usePowerUp(index) {
-            if (!inventory[index]) return;
+            if (!inventory[index] || activePowerUps[inventory[index]]) return;
             const type = inventory.splice(index, 1)[0];
             updateInventoryDisplay();
             
-            if (activePowerUps[type]) return; // Don't stack same powerup
             activePowerUps[type] = true;
 
             switch (type) {
@@ -327,7 +329,6 @@
             }, powerUpTypes[type].duration);
         }
 
-        // --- Game State Functions ---
         function winGame() { showEndScreen('You Win!', score); }
         function loseGame() { init(); }
         function showEndScreen(title, finalScore) {
@@ -336,7 +337,6 @@
             messageBox.classList.remove('hidden'); setTimeout(init, 3000);
         }
 
-        // --- EVENT LISTENERS ---
         window.addEventListener('keydown', ({ key }) => {
             switch (key) {
                 case 'ArrowLeft': keys.left.pressed = true; break;
@@ -354,7 +354,6 @@
             }
         });
 
-        // Mobile controls and inventory slots
         const leftBtn = document.getElementById('leftBtn'), rightBtn = document.getElementById('rightBtn'), jumpBtn = document.getElementById('jumpBtn');
         function handleJump(e) { e.preventDefault(); if (player.onGround) player.velocity.y = -player.jumpStrength; }
         function handleLeftPress(e) { e.preventDefault(); keys.left.pressed = true; }
