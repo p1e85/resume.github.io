@@ -26,9 +26,7 @@ const firebaseConfig = {
 
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    // --- All element references are the same ---
-    const termsModal = document.getElementById('termsModal');
-    // ... etc.
+    // ... (All element references are the same) ...
 
     // --- Firebase Auth State Listener is now safely inside ---
     onAuthStateChanged(auth, async (user) => {
@@ -37,10 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
-        termsModal.style.display = 'none';
+        document.getElementById('termsModal').style.display = 'none';
         document.getElementById('userStatus').style.display = 'flex';
     } else {
-        termsModal.style.display = 'flex';
+        document.getElementById('termsModal').style.display = 'flex';
     }
 
     // --- Mapbox Setup ---
@@ -60,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleMarkerVisibility();
     });
 
-    // --- All event listeners are the same ---
+    // --- All Event Listeners are the same ---
     // ...
 });
 
@@ -74,7 +72,7 @@ function initializeMapLayers() {
     if (!map.getLayer('user-route')) map.addLayer({ id: 'user-route', type: 'line', source: 'user-route', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': '#007bff', 'line-width': 5 } });
     
     // User Location Point
-    if (!map.getSource('user-location-point')) map.addSource('user-location-point', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'Point', coordinates: [] } } });
+    if (!map.getSource('user-location-point')) map.addSource('user-location-point', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'Point', 'coordinates': [] } } });
     if (!map.getLayer('user-location-pulse')) map.addLayer({ id: 'user-location-pulse', type: 'circle', source: 'user-location-point', paint: { 'circle-radius': 15, 'circle-color': '#007bff', 'circle-opacity': 0.2 } });
     if (!map.getLayer('user-location-dot')) map.addLayer({ id: 'user-location-dot', type: 'circle', source: 'user-location-point', paint: { 'circle-radius': 6, 'circle-color': '#fff', 'circle-stroke-width': 2, 'circle-stroke-color': '#007bff' } });
 
