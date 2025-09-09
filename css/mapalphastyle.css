@@ -22,7 +22,7 @@ body {
     right: 15px;
     z-index: 10;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: wrap; 
     justify-content: space-between;
     align-items: center;
     gap: 10px;
@@ -33,13 +33,11 @@ body {
     align-items: center;
     gap: 10px;
 }
-
 .top-bar-right {
     display: flex;
     align-items: center;
 }
 
-/* On mobile, force the left group to take full width */
 @media (max-width: 520px) {
     .top-bar-left {
         flex-basis: 100%;
@@ -320,7 +318,7 @@ body {
 .delete-session-btn {
     padding: 5px 10px; font-size: 12px; border: none;
     background-color: #dc3545; color: white; border-radius: 5px;
-    cursor: pointer; transition: background-color 0.2s;
+    cursor: pointer; transition: background-color: 0.2s;
 }
 .delete-session-btn:hover {
     background-color: #c82333;
