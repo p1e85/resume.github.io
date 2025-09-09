@@ -34,7 +34,6 @@ let currentUser = null;
 let trackingWatcher = null;
 let routeCoordinates = [];
 let photoPins = [];
-// 'markers' array is now deprecated
 let map;
 let findMeMarker = null;
 let isCommunityViewOn = false;
@@ -294,8 +293,20 @@ function initializeMapLayers() {
         map.addLayer({ id: 'user-pins-dots', type: 'circle', source: 'user-pins-source', maxzoom: 14, paint: { 'circle-radius': 6, 'circle-color': '#007bff', 'circle-stroke-width': 2, 'circle-stroke-color': '#ffffff' } });
     }
     if (!map.getLayer('user-pins-icons')) {
-        // Using a built-in Mapbox icon for simplicity and reliability
-        map.addLayer({ id: 'user-pins-icons', type: 'symbol', source: 'user-pins-source', minzoom: 14, layout: { 'icon-image': 'camera-15', 'icon-size': 1.5, 'icon-allow-overlap': true }, paint: { 'icon-color': '#007bff' } });
+        map.addLayer({ 
+            id: 'user-pins-icons', 
+            type: 'symbol', 
+            source: 'user-pins-source', 
+            minzoom: 14, 
+            layout: { 
+                'icon-image': 'camera-15', // Use a standard Mapbox Maki icon
+                'icon-size': 1.5, 
+                'icon-allow-overlap': true 
+            },
+            paint: { // Use paint to color the icon
+                'icon-color': '#007bff'
+            }
+        });
     }
     
     // Community Photo Pins Source and Layers
@@ -306,8 +317,20 @@ function initializeMapLayers() {
         map.addLayer({ id: 'community-pins-dots', type: 'circle', source: 'community-pins-source', maxzoom: 14, paint: { 'circle-radius': 6, 'circle-color': '#28a745', 'circle-stroke-width': 2, 'circle-stroke-color': '#ffffff' } });
     }
     if (!map.getLayer('community-pins-icons')) {
-        // Using a built-in Mapbox icon for simplicity and reliability
-        map.addLayer({ id: 'community-pins-icons', type: 'symbol', source: 'community-pins-source', minzoom: 14, layout: { 'icon-image': 'camera-15', 'icon-size': 1.5, 'icon-allow-overlap': true }, paint: { 'icon-color': '#28a745' } });
+        map.addLayer({ 
+            id: 'community-pins-icons', 
+            type: 'symbol', 
+            source: 'community-pins-source', 
+            minzoom: 14, 
+            layout: { 
+                'icon-image': 'camera-15', // Use the same standard icon
+                'icon-size': 1.5, 
+                'icon-allow-overlap': true 
+            },
+            paint: { // Use paint to color it green
+                'icon-color': '#28a745'
+            }
+        });
     }
 }
 
@@ -835,4 +858,3 @@ async function handleAccountDeletion() {
         } else { alert("An error occurred while deleting your account."); }
     }
 }
-
