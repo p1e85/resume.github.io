@@ -142,24 +142,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) {
             currentUser = user;
             try {
+                // Check private doc for stats
                 const userDocRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(userDocRef);
-                if (docSnap.exists()) {
-                    const userData = docSnap.data();
-                    if (userData.totalPins === undefined) {
-                        console.log(`User ${user.uid} is missing stats fields. Updating profile.`);
-                        await updateDoc(userDocRef, {
-                            totalPins: 0,
-                            totalDistance: 0,
-                            totalRoutes: 0,
-                            badges: {}
-                        });
-                    }
-                    if (userEmailSpan) userEmailSpan.textContent = `Logged in as: ${userData.username}`;
-                } else { if (userEmailSpan) userEmailSpan.textContent = `Logged in`; }
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists() && userDocSnap.data().totalPins === undefined) {
+                    await updateDoc(userDocRef, { totalPins: 0, totalDistance: 0, totalRoutes: 0, badges: {} });
+                }
+
+                // Get public doc for username display
+                const publicProfileRef = doc(db, "publicProfiles", user.uid);
+                const publicProfileSnap = await getDoc(publicProfileRef);
+                if (publicProfileSnap.exists()) {
+                    if (userEmailSpan) userEmailSpan.textContent = `Logged in as: ${publicProfileSnap.data().username}`;
+                }
+
             } catch (error) {
                 console.error("Error fetching or updating user profile:", error);
-                if (userEmailSpan) userEmailSpan.textContent = `Logged in`;
             }
             if (loggedInContent) loggedInContent.style.display = 'flex';
             if (guestContent) guestContent.style.display = 'none';
@@ -375,7 +373,9 @@ async function handleSignUp() {
     if (!username || username.trim().length < 3) { authError.textContent = 'Username must be at least 3 characters.'; return; }
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await setDoc(doc(db, "users", userCredential.user.uid), { username, email: userCredential.user.email, totalPins: 0, totalDistance: 0, totalRoutes: 0, badges: {} });
+        const userId = userCredential.user.uid;
+        await setDoc(doc(db, "users", userId), { email: userCredential.user.email, totalPins: 0, totalDistance: 0, totalRoutes: 0, badges: {} });
+        await setDoc(doc(db, "publicProfiles", userId), { username, bio: "This user is new to Litter Bugs!", location: "", buyMeACoffeeLink: "" });
     } catch (error) { authError.textContent = error.message; }
 }
 
@@ -463,7 +463,7 @@ async function handlePhoto(event) {
         }
         pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
     }, () => {
-        alert("Could not get your location. Photo was not pinned.");
+        alert("Could not get location. Photo was not pinned.");
         pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
     }, { enableHighAccuracy: true });
 }
@@ -596,8 +596,8 @@ async function publishRoute() {
     if (!currentUser) return;
     if (routeCoordinates.length < 2 || photoPins.length === 0) { alert("You need a tracked route and at least one photo pin to publish."); return; }
     try {
-        const userDocRef = doc(db, "users", currentUser.uid);
-        const docSnap = await getDoc(userDocRef);
+        const publicProfileRef = doc(db, "publicProfiles", currentUser.uid);
+        const docSnap = await getDoc(publicProfileRef);
         if (!docSnap.exists()) throw new Error("Could not find user profile.");
         const username = docSnap.data().username;
         await addDoc(collection(db, "publishedRoutes"), { userId: currentUser.uid, username, timestamp: new Date(), route: convertRouteForFirestore(routeCoordinates), pins: convertPinsForFirestore(photoPins) });
@@ -790,25 +790,22 @@ async function deletePublishedRoute(routeId) {
 async function loadProfileForEditing() {
     if (!currentUser) return;
     try {
-        const docSnap = await getDoc(doc(db, "users", currentUser.uid));
+        const docSnap = await getDoc(doc(db, "publicProfiles", currentUser.uid));
         if (docSnap.exists()) {
             const profileData = docSnap.data();
             document.getElementById('bioInput').value = profileData.bio || '';
             document.getElementById('locationInput').value = profileData.location || '';
             document.getElementById('coffeeLinkInput').value = profileData.buyMeACoffeeLink || '';
         }
-    } catch (error) { console.error("Error loading profile:", error); alert("Could not load your profile."); }
+    } catch (error) { console.error("Error loading profile:", error); alert("Could not load your profile for editing."); }
 }
 
 async function saveProfile() {
     if (!currentUser) return;
     const bio = document.getElementById('bioInput').value, location = document.getElementById('locationInput').value, coffeeLink = document.getElementById('coffeeLinkInput').value;
     try {
-        const userDocRef = doc(db, "users", currentUser.uid);
-        await updateDoc(userDocRef, { bio, location, buyMeACoffeeLink: coffeeLink });
-        const userEmailSpan = document.getElementById('userEmail');
-        const userProfile = await getDoc(userDocRef);
-        if (userProfile.exists() && userEmailSpan) userEmailSpan.textContent = `Logged in as: ${userProfile.data().username}`;
+        const publicProfileRef = doc(db, "publicProfiles", currentUser.uid);
+        await updateDoc(publicProfileRef, { bio, location, buyMeACoffeeLink: coffeeLink });
         alert("Profile updated successfully!");
         document.getElementById('profileModal').style.display = 'none';
     } catch (error) { console.error("Error saving profile:", error); alert("Error saving profile."); }
@@ -817,7 +814,7 @@ async function saveProfile() {
 async function showPublicProfile(userId) {
     if (!userId) return;
     try {
-        const docSnap = await getDoc(doc(db, "users", userId));
+        const docSnap = await getDoc(doc(db, "publicProfiles", userId));
         if (docSnap.exists()) {
             const profileData = docSnap.data();
             const publicProfileModal = document.getElementById('publicProfileModal');
@@ -826,21 +823,27 @@ async function showPublicProfile(userId) {
             document.getElementById('profileUsername').textContent = profileData.username || 'Anonymous User';
             document.getElementById('profileLocation').textContent = profileData.location || '';
             document.getElementById('profileBio').textContent = profileData.bio || 'This user has not written a bio yet.';
+            
+            // Fetch the private user doc for badges
+            const userDocSnap = await getDoc(doc(db, "users", userId));
             profileAchievementsContainer.innerHTML = '';
-            const userBadges = profileData.badges || {};
-            let earnedBadgesCount = 0;
-            for (const badgeKey in allBadges) {
-                if (userBadges[badgeKey] === true) {
-                    earnedBadgesCount++;
-                    const badgeInfo = allBadges[badgeKey];
-                    const badgeElement = document.createElement('div');
-                    badgeElement.className = 'badge-item';
-                    badgeElement.textContent = badgeInfo.icon;
-                    badgeElement.title = `${badgeInfo.name}: ${badgeInfo.description}`;
-                    profileAchievementsContainer.appendChild(badgeElement);
+            if (userDocSnap.exists()) {
+                const userBadges = userDocSnap.data().badges || {};
+                let earnedBadgesCount = 0;
+                for (const badgeKey in allBadges) {
+                    if (userBadges[badgeKey] === true) {
+                        earnedBadgesCount++;
+                        const badgeInfo = allBadges[badgeKey];
+                        const badgeElement = document.createElement('div');
+                        badgeElement.className = 'badge-item';
+                        badgeElement.textContent = badgeInfo.icon;
+                        badgeElement.title = `${badgeInfo.name}: ${badgeInfo.description}`;
+                        profileAchievementsContainer.appendChild(badgeElement);
+                    }
                 }
+                if (earnedBadgesCount === 0) profileAchievementsContainer.innerHTML = '<p class="no-badges-message">This user hasn\'t earned any badges yet.</p>';
             }
-            if (earnedBadgesCount === 0) profileAchievementsContainer.innerHTML = '<p class="no-badges-message">This user hasn\'t earned any badges yet.</p>';
+
             if (profileData.buyMeACoffeeLink) {
                 profileSupportBtn.style.display = 'block';
                 profileSupportBtn.onclick = () => window.open(profileData.buyMeACoffeeLink, '_blank');
@@ -865,7 +868,8 @@ async function handleAccountDeletion() {
         await Promise.all(publishedRoutesSnapshot.docs.map(d => deleteDoc(d.ref)));
         console.log("Published routes deleted.");
         await deleteDoc(doc(db, "users", currentUser.uid));
-        console.log("User profile document deleted.");
+        await deleteDoc(doc(db, "publicProfiles", currentUser.uid));
+        console.log("User documents deleted.");
         await deleteUser(currentUser);
         alert("Your account and all associated data have been permanently deleted.");
         document.getElementById('profileModal').style.display = 'none';
@@ -935,16 +939,20 @@ async function fetchAndDisplayLeaderboard(metric) {
         }
         leaderboardList.innerHTML = '';
         let rank = 1;
-        querySnapshot.forEach(doc => {
-            const userData = doc.data();
-            const li = document.createElement('li');
-            const score = metric === 'totalDistance'
-                ? `${(userData[metric] / 1000).toFixed(2)} km`
-                : userData[metric];
-            li.innerHTML = `<span class="leaderboard-rank">${rank}.</span><span class="leaderboard-name">${userData.username}</span><span class="leaderboard-score">${score}</span>`;
-            leaderboardList.appendChild(li);
-            rank++;
-        });
+        for (const userDoc of querySnapshot.docs) {
+            const userData = userDoc.data();
+            const publicProfileSnap = await getDoc(doc(db, "publicProfiles", userDoc.id));
+            if (publicProfileSnap.exists()) {
+                const username = publicProfileSnap.data().username;
+                const li = document.createElement('li');
+                const score = metric === 'totalDistance'
+                    ? `${(userData[metric] / 1000).toFixed(2)} km`
+                    : userData[metric];
+                li.innerHTML = `<span class="leaderboard-rank">${rank}.</span><span class="leaderboard-name">${username}</span><span class="leaderboard-score">${score}</span>`;
+                leaderboardList.appendChild(li);
+                rank++;
+            }
+        }
     } catch (error) {
         console.error("Error fetching leaderboard:", error);
         leaderboardList.innerHTML = '<li>Could not load leaderboard data.</li>';
