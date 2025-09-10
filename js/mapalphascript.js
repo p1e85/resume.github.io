@@ -697,8 +697,8 @@ function clearCurrentSession() {
 }
 
 function displaySessionData(data) {
-    photoPins = data.pins || [];
-    routeCoordinates = data.route || [];
+    photoPins = convertPinsFromFirestore(data.pins) || [];
+    routeCoordinates = convertRouteFromFirestore(data.route) || [];
     photoPins.forEach(pin => createAndAddMarker(pin, 'user'));
     updateUserPinsSource();
     if(map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
