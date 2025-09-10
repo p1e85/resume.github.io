@@ -142,18 +142,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) {
             currentUser = user;
             try {
-                // Check private doc for stats
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
                 if (userDocSnap.exists() && userDocSnap.data().totalPins === undefined) {
-                    await updateDoc(userDocRef, { totalPins: 0, totalDistance: 0, totalRoutes: 0, badges: {} });
+                    await updateDoc(userDocRef, { totalPins: 0, totalDistance: 0, totalRoutes: 0 });
                 }
-
-                // Get public doc for username display
                 const publicProfileRef = doc(db, "publicProfiles", user.uid);
                 const publicProfileSnap = await getDoc(publicProfileRef);
                 if (publicProfileSnap.exists()) {
-                    if (userEmailSpan) userEmailSpan.textContent = `Logged in as: ${publicProfileSnap.data().username}`;
+                    const username = publicProfileSnap.data().username;
+                    if (userEmailSpan) userEmailSpan.textContent = `Logged in as: ${username}`;
                 }
 
             } catch (error) {
@@ -374,8 +372,8 @@ async function handleSignUp() {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const userId = userCredential.user.uid;
-        await setDoc(doc(db, "users", userId), { email: userCredential.user.email, totalPins: 0, totalDistance: 0, totalRoutes: 0, badges: {} });
-        await setDoc(doc(db, "publicProfiles", userId), { username, bio: "This user is new to Litter Bugs!", location: "", buyMeACoffeeLink: "" });
+        await setDoc(doc(db, "users", userId), { email: userCredential.user.email, totalPins: 0, totalDistance: 0, totalRoutes: 0 });
+        await setDoc(doc(db, "publicProfiles", userId), { username, bio: "This user is new to Litter Bugs!", location: "", buyMeACoffeeLink: "", badges: {} });
     } catch (error) { authError.textContent = error.message; }
 }
 
@@ -814,7 +812,8 @@ async function saveProfile() {
 async function showPublicProfile(userId) {
     if (!userId) return;
     try {
-        const docSnap = await getDoc(doc(db, "publicProfiles", userId));
+        const publicProfileRef = doc(db, "publicProfiles", userId);
+        const docSnap = await getDoc(publicProfileRef);
         if (docSnap.exists()) {
             const profileData = docSnap.data();
             const publicProfileModal = document.getElementById('publicProfileModal');
@@ -823,27 +822,21 @@ async function showPublicProfile(userId) {
             document.getElementById('profileUsername').textContent = profileData.username || 'Anonymous User';
             document.getElementById('profileLocation').textContent = profileData.location || '';
             document.getElementById('profileBio').textContent = profileData.bio || 'This user has not written a bio yet.';
-            
-            // Fetch the private user doc for badges
-            const userDocSnap = await getDoc(doc(db, "users", userId));
             profileAchievementsContainer.innerHTML = '';
-            if (userDocSnap.exists()) {
-                const userBadges = userDocSnap.data().badges || {};
-                let earnedBadgesCount = 0;
-                for (const badgeKey in allBadges) {
-                    if (userBadges[badgeKey] === true) {
-                        earnedBadgesCount++;
-                        const badgeInfo = allBadges[badgeKey];
-                        const badgeElement = document.createElement('div');
-                        badgeElement.className = 'badge-item';
-                        badgeElement.textContent = badgeInfo.icon;
-                        badgeElement.title = `${badgeInfo.name}: ${badgeInfo.description}`;
-                        profileAchievementsContainer.appendChild(badgeElement);
-                    }
+            const userBadges = profileData.badges || {};
+            let earnedBadgesCount = 0;
+            for (const badgeKey in allBadges) {
+                if (userBadges[badgeKey] === true) {
+                    earnedBadgesCount++;
+                    const badgeInfo = allBadges[badgeKey];
+                    const badgeElement = document.createElement('div');
+                    badgeElement.className = 'badge-item';
+                    badgeElement.textContent = badgeInfo.icon;
+                    badgeElement.title = `${badgeInfo.name}: ${badgeInfo.description}`;
+                    profileAchievementsContainer.appendChild(badgeElement);
                 }
-                if (earnedBadgesCount === 0) profileAchievementsContainer.innerHTML = '<p class="no-badges-message">This user hasn\'t earned any badges yet.</p>';
             }
-
+            if (earnedBadgesCount === 0) profileAchievementsContainer.innerHTML = '<p class="no-badges-message">This user hasn\'t earned any badges yet.</p>';
             if (profileData.buyMeACoffeeLink) {
                 profileSupportBtn.style.display = 'block';
                 profileSupportBtn.onclick = () => window.open(profileData.buyMeACoffeeLink, '_blank');
@@ -931,23 +924,27 @@ async function fetchAndDisplayLeaderboard(metric) {
     const leaderboardList = document.getElementById('leaderboardList');
     leaderboardList.innerHTML = '<li>Loading...</li>';
     try {
-        const q = query(collection(db, "users"), orderBy(metric, "desc"), limit(10));
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, orderBy(metric, "desc"), limit(10));
         const querySnapshot = await getDocs(q);
+
         if (querySnapshot.empty) {
             leaderboardList.innerHTML = '<li>No user data yet. Be the first!</li>';
             return;
         }
+
         leaderboardList.innerHTML = '';
         let rank = 1;
         for (const userDoc of querySnapshot.docs) {
             const userData = userDoc.data();
             const publicProfileSnap = await getDoc(doc(db, "publicProfiles", userDoc.id));
+            
             if (publicProfileSnap.exists()) {
                 const username = publicProfileSnap.data().username;
                 const li = document.createElement('li');
                 const score = metric === 'totalDistance'
-                    ? `${(userData[metric] / 1000).toFixed(2)} km`
-                    : userData[metric];
+                    ? `${(userData.totalDistance / 1000).toFixed(2)} km`
+                    : userData.totalPins;
                 li.innerHTML = `<span class="leaderboard-rank">${rank}.</span><span class="leaderboard-name">${username}</span><span class="leaderboard-score">${score}</span>`;
                 leaderboardList.appendChild(li);
                 rank++;
@@ -961,3 +958,4 @@ async function fetchAndDisplayLeaderboard(metric) {
         }
     }
 }
+
