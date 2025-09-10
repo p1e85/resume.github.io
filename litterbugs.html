@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Litter Bugs - Clean Your World, One Step at a Time</title>
-    <meta name="description" content="Join a global community dedicated to cleaning up our planet. Track your cleanup routes, geotag litter with photos, and see our collective impact on an interactive map.">
+    <title>Litter Bugs (Beta) - A New Way to Clean Our Planet</title>
+    <meta name="description" content="Litter Bugs is a working beta app that lets you track cleanups, earn badges, and get tipped for your efforts. We're seeking backers to help us launch publicly.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪲</text></svg>">
     
     <!-- Tailwind CSS -->
@@ -18,7 +18,7 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0e9d6; /* Soft beige from Naturalist theme */
+            background-color: #f0e9d6;
         }
         .hero-bg {
             background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1618472634129-6e3e4a9a4b3d?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1920');
@@ -42,7 +42,16 @@
         }
         .feature-card:hover {
             transform: scale(1.05);
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        }
+        .beta-badge {
+            background-color: #ffc107;
+            color: #333;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
@@ -55,7 +64,7 @@
                 🪲 Litter Bugs
             </h1>
             <a href="https://www.p1creations.com/map.html" target="_blank" class="cta-button bg-[#28a745] text-white font-bold py-2 px-6 rounded-full hover:bg-[#218838]">
-                Launch App
+                Launch Beta App
             </a>
         </div>
     </header>
@@ -63,102 +72,62 @@
     <!-- Hero Section -->
     <section class="hero-bg text-white">
         <div class="container mx-auto px-6 py-24 md:py-32 text-center">
-            <h2 class="text-4xl md:text-6xl font-black leading-tight mb-4">Clean Your World, One Step at a Time.</h2>
-            <p class="text-lg md:text-xl mb-8 max-w-3xl mx-auto">Turn your daily walks into impactful cleanups. Track your progress, document your finds, and join a global movement dedicated to a cleaner planet.</p>
+            <div class="beta-badge">LIVE BETA</div>
+            <h2 class="text-4xl md:text-6xl font-black leading-tight mb-4">Help Us Build the Future of Cleanups.</h2>
+            <p class="text-lg md:text-xl mb-8 max-w-3xl mx-auto">Litter Bugs is a working beta app that lets you track cleanups, earn badges, and even get tipped for your efforts. Try it now and help us bring it to the world.</p>
             <a href="https://www.p1creations.com/map.html" target="_blank" class="cta-button bg-[#28a745] text-white font-bold text-lg py-4 px-10 rounded-full hover:bg-[#218838]">
-                Start Your First Cleanup
+                Try the Live Beta
             </a>
         </div>
     </section>
     
 
-    <!-- "How It Works" Section -->
-    <section class="py-20 bg-white">
-        <div class="container mx-auto px-6 text-center">
-            <h3 class="section-title text-[#2E4034] mb-12">Simple to Use, Powerful in Impact</h3>
-            <div class="grid md:grid-cols-3 gap-12">
-                <!-- Step 1: Track -->
-                <div class="flex flex-col items-center">
-                    <div class="bg-[#a8bba2] p-6 rounded-full mb-4">
-                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    </div>
-                    <h4 class="text-xl font-bold mb-2">1. Track Your Route</h4>
-                    <p>Press 'Start Tracking' and the app will draw your path on the map, showing exactly where you've cleaned.</p>
-                </div>
-                <!-- Step 2: Pin -->
-                <div class="flex flex-col items-center">
-                    <div class="bg-[#a8bba2] p-6 rounded-full mb-4">
-                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    </div>
-                    <h4 class="text-xl font-bold mb-2">2. Pin the Litter</h4>
-                    <p>Find some litter? Tap 'Pin Picture' to take a photo and geotag its location on your route. Each pin is a victory!</p>
-                </div>
-                <!-- Step 3: Share -->
-                <div class="flex flex-col items-center">
-                    <div class="bg-[#a8bba2] p-6 rounded-full mb-4">
-                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    </div>
-                    <h4 class="text-xl font-bold mb-2">3. Share Your Impact</h4>
-                    <p>Publish your completed route to the community map. Your efforts inspire others and contribute to a global heatmap of cleanup activity.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- "Join the Movement" Section -->
-    <section class="py-20">
-        <div class="container mx-auto px-6">
-            <div class="md:flex md:items-center md:gap-12">
-                <div class="md:w-1/2">
-                    <h3 class="section-title text-[#2E4034] mb-4">You Are Not Alone.</h3>
-                    <p class="mb-6">Every cleanup, big or small, is part of a larger story. The Community Map shows all the routes published by users like you from around the world. See the collective impact we're making together, and get inspired to clear a new path in your own neighborhood.</p>
-                    <a href="https://www.p1creations.com/map.html" target="_blank" class="cta-button bg-[#28a745] text-white font-bold py-3 px-8 rounded-full hover:bg-[#218838]">
-                        View the Community Map
-                    </a>
-                </div>
-                <div class="md:w-1/2 mt-8 md:mt-0">
-                    <img src="https://images.unsplash.com/photo-1595325746099-277156543b35?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1200" alt="Screenshot of the Litter Bugs community map" class="rounded-lg shadow-2xl">
-                </div>
-            </div>
-        </div>
-    </section>
-    
     <!-- Features Section -->
     <section class="py-20 bg-white">
         <div class="container mx-auto px-6 text-center">
-            <h3 class="section-title text-[#2E4034] mb-12">A Powerful Tool for Change</h3>
+            <h3 class="section-title text-[#2E4034] mb-12">Key Features in the Beta</h3>
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <!-- Feature 1: User Profiles -->
-                <div class="feature-card bg-gray-50 p-8 rounded-lg">
-                    <h4 class="text-xl font-bold mb-2">Public Profiles</h4>
-                    <p>Create a profile, write a bio, and earn achievement badges for your cleanup efforts. Let the community see the hero behind the cleanup!</p>
+                <div class="feature-card bg-gray-50 p-8 rounded-lg border">
+                    <h4 class="text-xl font-bold mb-2">Track Your Impact</h4>
+                    <p>Use your phone's GPS to draw your cleanup path on an interactive map. Every step is a victory for the planet.</p>
                 </div>
-                <!-- Feature 2: Save Sessions -->
-                <div class="feature-card bg-gray-50 p-8 rounded-lg">
-                    <h4 class="text-xl font-bold mb-2">Save Your Sessions</h4>
-                    <p>Keep a private log of all your cleanups. Save multiple named sessions to your account and track your personal history over time.</p>
+                <div class="feature-card bg-gray-50 p-8 rounded-lg border">
+                    <h4 class="text-xl font-bold mb-2">Pin Your Finds</h4>
+                    <p>Found some litter? Take a photo to geotag its location. Your data helps create a global heatmap of problem areas.</p>
                 </div>
-                <!-- Feature 3: Data Export -->
-                <div class="feature-card bg-gray-50 p-8 rounded-lg">
-                    <h4 class="text-xl font-bold mb-2">Export Your Data</h4>
-                    <p>Download your route and pin data as a GeoJSON file, perfect for analysis or use in other mapping and environmental software.</p>
+                <div class="feature-card bg-gray-50 p-8 rounded-lg border">
+                    <h4 class="text-xl font-bold mb-2">Earn Tips & Badges</h4>
+                    <p>The community can tip you for your hard work via your support link! Plus, unlock achievement badges for your cleanup milestones.</p>
                 </div>
-                <!-- Feature 4: Map Styles -->
-                <div class="feature-card bg-gray-50 p-8 rounded-lg">
-                    <h4 class="text-xl font-bold mb-2">Custom Map Styles</h4>
-                    <p>Choose the map that fits your mood. Toggle between multiple map styles, including Streets, Outdoors, Satellite, and more.</p>
+                <div class="feature-card bg-gray-50 p-8 rounded-lg border">
+                    <h4 class="text-xl font-bold mb-2">Join the Community</h4>
+                    <p>Publish your routes to a shared map to see the collective impact we're making together and compete on the community leaderboard.</p>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- NEW "From Beta to Mainstream" Section -->
+    <section class="py-20 bg-[#a8bba2]">
+        <div class="container mx-auto px-6 text-center text-white">
+            <h3 class="section-title text-white mb-4">From Beta to Global Impact</h3>
+            <p class="text-lg mb-8 max-w-3xl mx-auto">Litter Bugs is currently a passion project in a live beta phase. Every feature you see is fully functional, but we're just getting started. Our vision is to build native iOS & Android apps, create a "Cleanup Bounty" marketplace, and implement AI-powered tools to make our planet cleaner, faster.</p>
+            <h4 class="text-2xl font-bold mb-4">To get there, we need your help.</h4>
+            <p class="mb-8 max-w-3xl mx-auto">We are actively seeking **investors and backers** who believe in our mission and want to help scale a platform that can change the world. If you're interested in helping us grow, we would love to talk.</p>
+            <a href="mailto:your-investor-email@example.com?subject=Litter Bugs Investment Inquiry" class="cta-button bg-white text-[#2E4034] font-bold text-lg py-4 px-10 rounded-full hover:bg-gray-100">
+                Contact for Investors
+            </a>
+        </div>
+    </section>
+    
+
     <!-- Final CTA Section -->
-    <section class="py-24 bg-[#a8bba2]">
+    <section class="py-24">
         <div class="container mx-auto px-6 text-center">
-            <h3 class="text-3xl md:text-4xl font-black text-white mb-4">Ready to Make a Difference?</h3>
-            <p class="text-lg text-white/90 mb-8">Your first cleanup is just a click away. Launch the app now and join the Litter Bugs.</p>
-            <a href="https://www.p1creations.com/map.html" target="_blank" class="cta-button bg-white text-[#2E4034] font-bold text-lg py-4 px-10 rounded-full hover:bg-gray-100">
-                Launch Litter Bugs
+            <h3 class="text-3xl md:text-4xl font-black text-[#2E4034] mb-4">Ready to Make a Difference?</h3>
+            <p class="text-lg text-gray-700 mb-8">Your first cleanup is just a click away. Launch the beta app now and join the Litter Bugs community.</p>
+            <a href="https://www.p1creations.com/map.html" target="_blank" class="cta-button bg-[#28a745] text-white font-bold text-lg py-4 px-10 rounded-full hover:bg-[#218838]">
+                Launch Litter Bugs (Beta)
             </a>
         </div>
     </section>
@@ -173,3 +142,5 @@
 
 </body>
 </html>
+
+
