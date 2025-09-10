@@ -71,7 +71,8 @@ const allBadges = {
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- Element References ---
+    checkAndClearOldData();
+
     const termsModal = document.getElementById('termsModal');
     const authModal = document.getElementById('authModal');
     const agreeBtn = document.getElementById('agreeBtn');
@@ -119,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const changeStyleBtn = document.getElementById('changeStyleBtn');
     const centerOnRouteBtn = document.getElementById('centerOnRouteBtn');
 
-    // --- Firebase Auth State Listener ---
     onAuthStateChanged(auth, async (user) => {
         const userStatus = document.getElementById('userStatus');
         const loggedInContent = document.getElementById('loggedInContent');
@@ -160,7 +160,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
         termsModal.style.display = 'none';
         document.getElementById('userStatus').style.display = 'flex';
@@ -168,7 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
         termsModal.style.display = 'flex';
     }
 
-    // --- Mapbox Setup ---
     mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY2p6ajZvejJmMDZhaTNkcWpiN294dm12eCJ9.8ckNT6kfuJry7K7GAeIuxw';
     map = new mapboxgl.Map({
         container: 'map',
@@ -185,7 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleMarkerVisibility();
     });
 
-    // --- Event Listeners ---
     const validateSignUpForm = () => {
         const isEmailValid = emailInput.value.includes('@');
         const isPasswordValid = passwordInput.value.length >= 6;
@@ -308,6 +305,22 @@ function convertRouteForFirestore(coordsArray) { return coordsArray.map(coord =>
 function convertRouteFromFirestore(coordsData) { if (!coordsData || coordsData.length === 0) return []; if (Array.isArray(coordsData[0])) { return coordsData; } return coordsData.map(coord => [coord.lng, coord.lat]); }
 function convertPinsForFirestore(pinsArray) { if (!pinsArray) return []; return pinsArray.map(pin => { const newPin = { ...pin }; if (Array.isArray(newPin.coords)) { newPin.coords = { lng: newPin.coords[0], lat: newPin.coords[1] }; } return newPin; }); }
 function convertPinsFromFirestore(pinsData) { if (!pinsData || pinsData.length === 0) return []; return pinsData.map(pin => { const newPin = { ...pin }; if (newPin.coords && typeof newPin.coords === 'object' && !Array.isArray(newPin.coords)) { newPin.coords = [newPin.coords.lng, newPin.coords.lat]; } return newPin; }); }
+
+function checkAndClearOldData() {
+    const guestSessionsJSON = localStorage.getItem('guestSessions');
+    if (guestSessionsJSON) {
+        try {
+            const guestSessions = JSON.parse(guestSessionsJSON);
+            if (guestSessions.length > 0 && guestSessions[0].route && Array.isArray(guestSessions[0].route[0])) {
+                alert("The app has been updated. Your old locally saved sessions are no longer compatible and will be cleared.");
+                localStorage.removeItem('guestSessions');
+            }
+        } catch (error) {
+            console.error("Error parsing old guest sessions, clearing data.", error);
+            localStorage.removeItem('guestSessions');
+        }
+    }
+}
 
 function updateAuthModalUI() {
     const authForm = document.getElementById('authForm'), authTitle = document.getElementById('authTitle'), authSubtitle = document.getElementById('authSubtitle'), authActionBtn = document.getElementById('authActionBtn'), emailInput = document.getElementById('emailInput'), passwordInput = document.getElementById('passwordInput'), usernameInput = document.getElementById('usernameInput'), ageCheckbox = document.getElementById('ageCheckbox');
@@ -682,10 +695,8 @@ function clearCurrentSession() {
 }
 
 function displaySessionData(data) {
-    const convertedPins = convertPinsFromFirestore(data.pins);
-    const convertedRoute = convertRouteFromFirestore(data.route);
-    photoPins = convertedPins || [];
-    routeCoordinates = convertedRoute || [];
+    photoPins = convertPinsFromFirestore(data.pins) || [];
+    routeCoordinates = convertRouteFromFirestore(data.route) || [];
     photoPins.forEach(pin => createAndAddMarker(pin, 'user'));
     updateUserPinsSource();
     if(map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
@@ -828,19 +839,4 @@ async function handleAccountDeletion() {
             alert("This is a sensitive operation. Please log out and log back in to delete your account.");
         } else { alert("An error occurred while deleting your account."); }
     }
-}
-
-function centerOnRoute() {
-    if (routeCoordinates.length < 1) {
-        alert("No route is currently loaded to center on.");
-        return;
-    }
-    const bounds = new mapboxgl.LngLatBounds();
-    routeCoordinates.forEach(coord => {
-        bounds.extend(coord);
-    });
-    map.fitBounds(bounds, {
-        padding: 50,
-        maxZoom: 16
-    });
 }
