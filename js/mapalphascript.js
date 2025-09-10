@@ -463,7 +463,7 @@ async function handlePhoto(event) {
         }
         pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
     }, () => {
-        alert("Could not get location. Photo was not pinned.");
+        alert("Could not get your location. Photo was not pinned.");
         pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
     }, { enableHighAccuracy: true });
 }
