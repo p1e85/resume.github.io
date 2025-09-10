@@ -42,6 +42,7 @@ let isSignUpMode = true;
 let userMarkers = [];
 let communityMarkers = [];
 const ZOOM_THRESHOLD = 14;
+let trackingStartTime = null;
 
 const mapStyles = [
     { name: 'Streets', url: 'mapbox://styles/mapbox/streets-v12' },
@@ -119,6 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const safetyModalCloseBtn = safetyModal.querySelector('.close-btn');
     const changeStyleBtn = document.getElementById('changeStyleBtn');
     const centerOnRouteBtn = document.getElementById('centerOnRouteBtn');
+    const summaryModal = document.getElementById('summaryModal');
+    const summaryOkBtn = document.getElementById('summaryOkBtn');
+    const summaryModalCloseBtn = summaryModal.querySelector('.close-btn');
 
     onAuthStateChanged(auth, async (user) => {
         const userStatus = document.getElementById('userStatus');
@@ -240,10 +244,14 @@ document.addEventListener('DOMContentLoaded', () => {
         safetyModal.style.display = 'none';
         startTracking();
     });
+    summaryModalCloseBtn.addEventListener('click', () => summaryModal.style.display = 'none');
+    summaryOkBtn.addEventListener('click', () => summaryModal.style.display = 'none');
+    
     window.addEventListener('click', (event) => {
-        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal, profileModal, publicProfileModal, safetyModal];
+        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal, profileModal, publicProfileModal, safetyModal, summaryModal];
         if (modals.includes(event.target)) modals.forEach(m => m.style.display = 'none');
     });
+    
     saveBtn.addEventListener('click', saveSession);
     loadBtn.addEventListener('click', () => {
         dataModal.style.display = 'none';
@@ -270,6 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
     centerOnRouteBtn.addEventListener('click', centerOnRoute);
 });
 
+// --- Functions ---
 function initializeMapLayers() {
     if (!map.getSource('user-route')) map.addSource('user-route', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } } });
     if (!map.getLayer('user-route')) map.addLayer({ id: 'user-route', type: 'line', source: 'user-route', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': '#007bff', 'line-width': 5 } });
@@ -369,13 +378,14 @@ function toggleTracking() {
         trackBtn.textContent = '🛰️ Start Tracking';
         trackBtn.classList.remove('tracking');
         if (map.getSource('user-location-point')) map.getSource('user-location-point').setData({ type: 'Feature', geometry: { type: 'Point', coordinates: [] } });
+        showCleanupSummary();
     } else { document.getElementById('safetyModal').style.display = 'flex'; }
 }
 
 function startTracking() {
+    clearCurrentSession();
     const trackBtn = document.getElementById('trackBtn');
-    document.getElementById('centerOnRouteBtn').disabled = true;
-    routeCoordinates = [];
+    trackingStartTime = new Date();
     navigator.geolocation.getCurrentPosition(pos => map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 16 }));
     trackingWatcher = navigator.geolocation.watchPosition(pos => {
         const newCoord = [pos.coords.longitude, pos.coords.latitude];
@@ -429,7 +439,7 @@ async function handlePhoto(event) {
         }
         pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
     }, () => {
-        alert("Could not get your location. Photo was not pinned.");
+        alert("Could not get location. Photo was not pinned.");
         pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
     }, { enableHighAccuracy: true });
 }
