@@ -460,3 +460,35 @@ body {
     cursor: pointer;
 }
 
+/* NEW: Styles for the Post-Cleanup Summary Modal */
+.summary-modal {
+    max-width: 480px;
+    text-align: center;
+}
+
+.summary-stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 25px 0;
+    padding: 20px 0;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.summary-stats > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 2em;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.stat-label {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
