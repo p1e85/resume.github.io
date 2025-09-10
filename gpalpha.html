@@ -10,20 +10,24 @@
 </head>
 <body>
 
-    <!-- Top Bar Container (RESTRUCTURED) -->
+    <!-- Top Bar Container (MODIFIED) -->
     <div class="top-bar-container">
-        <div class="top-bar-left">
-            <button id="infoBtn" class="top-bar-button">ℹ️ Info</button>
-            <button id="changeStyleBtn" class="top-bar-button">🎨 Change Style</button>
-            <button id="centerOnRouteBtn" class="top-bar-button" disabled>🎯 Find Route</button>
+        <div class="top-row">
+            <div class="top-bar-left">
+                <button id="infoBtn" class="top-bar-button">ℹ️ Info</button>
+                <button id="changeStyleBtn" class="top-bar-button">🎨 Change Style</button>
+                <button id="centerOnRouteBtn" class="top-bar-button" disabled>🎯 Find Route</button>
+                <button id="leaderboardBtn" class="top-bar-button">🏆 Leaderboard</button> <!-- NEW -->
+            </div>
+            <div class="top-bar-right">
+                <a href="https://www.buymeacoffee.com/p1skates" target="_blank" class="donate-button">
+                    ☕ Support
+                </a>
+            </div>
         </div>
-        <div class="top-bar-right">
-            <a href="https://www.buymeacoffee.com/p1skates" target="_blank" class="donate-button">
-                ☕ Support
-            </a>
+        <div class="bottom-row">
+             <button id="communityBtn" class="community-button off">🌎 Community View: OFF</button>
         </div>
-        <!-- This is now a direct child for easier layout control -->
-        <button id="communityBtn" class="community-button off">🌎 Community View: OFF</button>
     </div>
 
     <!-- Info Modal -->
@@ -234,6 +238,21 @@
                 </div>
             </div>
             <button id="summaryOkBtn" class="modal-button">Awesome!</button>
+        </div>
+    </div>
+
+        <!-- NEW: Leaderboard Modal -->
+    <div id="leaderboardModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Community Leaderboard</h2>
+            <div class="leaderboard-tabs">
+                <button class="leaderboard-tab active" data-metric="totalPins">Most Pins Collected</button>
+                <button class="leaderboard-tab" data-metric="totalDistance">Most Distance Cleaned</button>
+            </div>
+            <ol id="leaderboardList" class="leaderboard-list">
+                <!-- Ranked users will be added here by JavaScript -->
+            </ol>
         </div>
     </div>
 
