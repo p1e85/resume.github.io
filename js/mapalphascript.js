@@ -144,12 +144,24 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const userDocRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(userDocRef);
+
                 if (docSnap.exists()) {
-                    const username = docSnap.data().username;
-                    if (userEmailSpan) userEmailSpan.textContent = `Logged in as: ${username}`;
-                } else { if (userEmailSpan) userEmailSpan.textContent = `Logged in`; }
+                    const userData = docSnap.data();
+                    if (userData.totalPins === undefined) {
+                        console.log(`User ${user.uid} is missing stats fields. Updating profile.`);
+                        await updateDoc(userDocRef, {
+                            totalPins: 0,
+                            totalDistance: 0,
+                            totalRoutes: 0,
+                            badges: {}
+                        });
+                    }
+                    if (userEmailSpan) userEmailSpan.textContent = `Logged in as: ${userData.username}`;
+                } else { 
+                    if (userEmailSpan) userEmailSpan.textContent = `Logged in`;
+                }
             } catch (error) {
-                console.error("Error fetching username:", error);
+                console.error("Error fetching or updating user profile:", error);
                 if (userEmailSpan) userEmailSpan.textContent = `Logged in`;
             }
             if (loggedInContent) loggedInContent.style.display = 'flex';
@@ -883,5 +895,65 @@ function centerOnRoute() {
         padding: 60,
         maxZoom: 16
     });
+}
+function showCleanupSummary() {
+    if (!trackingStartTime) return;
+    const durationMs = new Date() - trackingStartTime;
+    const distanceMeters = calculateRouteDistance(routeCoordinates);
+    const pinsCount = photoPins.length;
+    const distanceMiles = (distanceMeters * 0.000621371).toFixed(2);
+    const minutes = Math.floor(durationMs / 60000);
+    const seconds = ((durationMs % 60000) / 1000).toFixed(0);
+    document.getElementById('summaryDistance').textContent = `${distanceMiles} mi`;
+    document.getElementById('summaryPins').textContent = pinsCount;
+    document.getElementById('summaryDuration').textContent = `${minutes}m ${seconds}s`;
+    document.getElementById('summaryModal').style.display = 'flex';
+    trackingStartTime = null;
+}
+function calculateRouteDistance(coordinates) {
+    let totalDistance = 0;
+    for (let i = 0; i < coordinates.length - 1; i++) {
+        const p1 = { lat: coordinates[i][1], lng: coordinates[i][0] };
+        const p2 = { lat: coordinates[i+1][1], lng: coordinates[i+1][0] };
+        const R = 6371e3;
+        const φ1 = p1.lat * Math.PI / 180;
+        const φ2 = p2.lat * Math.PI / 180;
+        const Δφ = (p2.lat - p1.lat) * Math.PI / 180;
+        const Δλ = (p2.lng - p1.lng) * Math.PI / 180;
+        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        totalDistance += R * c;
+    }
+    return totalDistance;
+}
+async function fetchAndDisplayLeaderboard(metric) {
+    const leaderboardList = document.getElementById('leaderboardList');
+    leaderboardList.innerHTML = '<li>Loading...</li>';
+    try {
+        const q = query(collection(db, "users"), orderBy(metric, "desc"), limit(10));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            leaderboardList.innerHTML = '<li>No user data yet. Be the first!</li>';
+            return;
+        }
+        leaderboardList.innerHTML = '';
+        let rank = 1;
+        querySnapshot.forEach(doc => {
+            const userData = doc.data();
+            const li = document.createElement('li');
+            const score = metric === 'totalDistance'
+                ? `${(userData[metric] / 1000).toFixed(2)} km`
+                : userData[metric];
+            li.innerHTML = `<span class="leaderboard-rank">${rank}.</span><span class="leaderboard-name">${userData.username}</span><span class="leaderboard-score">${score}</span>`;
+            leaderboardList.appendChild(li);
+            rank++;
+        });
+    } catch (error) {
+        console.error("Error fetching leaderboard:", error);
+        leaderboardList.innerHTML = '<li>Could not load leaderboard data.</li>';
+        if (error.code === 'failed-precondition') {
+            alert("Leaderboard data requires a new database index. Please check the browser console for a link to create it automatically.");
+        }
+    }
 }
 
