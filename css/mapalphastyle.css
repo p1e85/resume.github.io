@@ -492,3 +492,66 @@ body {
     margin-top: 5px;
 }
 
+/* NEW: Styles for the Leaderboard Modal */
+.leaderboard-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.leaderboard-tab {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.leaderboard-tab.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.leaderboard-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.leaderboard-list li {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+.leaderboard-list li:first-child {
+    background-color: #ffd700; /* Gold */
+    font-weight: bold;
+}
+.leaderboard-list li:nth-child(2) {
+    background-color: #c0c0c0; /* Silver */
+}
+.leaderboard-list li:nth-child(3) {
+    background-color: #cd7f32; /* Bronze */
+}
+
+.leaderboard-rank {
+    font-size: 1.2em;
+    font-weight: bold;
+    width: 40px;
+    text-align: center;
+}
+.leaderboard-name {
+    flex-grow: 1;
+    margin-left: 15px;
+}
+.leaderboard-score {
+    font-weight: bold;
+    color: #007bff;
+}
+
