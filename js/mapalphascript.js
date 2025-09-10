@@ -1,6 +1,6 @@
 // --- Firebase SDK Setup ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, orderBy, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, orderBy, where, deleteDoc, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import {
     getAuth,
@@ -123,6 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const summaryModal = document.getElementById('summaryModal');
     const summaryOkBtn = document.getElementById('summaryOkBtn');
     const summaryModalCloseBtn = summaryModal.querySelector('.close-btn');
+    const leaderboardBtn = document.getElementById('leaderboardBtn');
+    const leaderboardModal = document.getElementById('leaderboardModal');
+    const leaderboardModalCloseBtn = leaderboardModal.querySelector('.close-btn');
+    const leaderboardTabs = document.querySelectorAll('.leaderboard-tab');
 
     onAuthStateChanged(auth, async (user) => {
         const userStatus = document.getElementById('userStatus');
@@ -246,9 +250,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     summaryModalCloseBtn.addEventListener('click', () => summaryModal.style.display = 'none');
     summaryOkBtn.addEventListener('click', () => summaryModal.style.display = 'none');
+    leaderboardBtn.addEventListener('click', () => {
+        leaderboardModal.style.display = 'flex';
+        fetchAndDisplayLeaderboard('totalPins');
+    });
+    leaderboardModalCloseBtn.addEventListener('click', () => leaderboardModal.style.display = 'none');
+    leaderboardTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            leaderboardTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            fetchAndDisplayLeaderboard(tab.dataset.metric);
+        });
+    });
     
     window.addEventListener('click', (event) => {
-        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal, profileModal, publicProfileModal, safetyModal, summaryModal];
+        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal, profileModal, publicProfileModal, safetyModal, summaryModal, leaderboardModal];
         if (modals.includes(event.target)) modals.forEach(m => m.style.display = 'none');
     });
     
@@ -278,7 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
     centerOnRouteBtn.addEventListener('click', centerOnRoute);
 });
 
-// --- Functions ---
 function initializeMapLayers() {
     if (!map.getSource('user-route')) map.addSource('user-route', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } } });
     if (!map.getLayer('user-route')) map.addLayer({ id: 'user-route', type: 'line', source: 'user-route', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': '#007bff', 'line-width': 5 } });
