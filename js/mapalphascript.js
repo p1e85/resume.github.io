@@ -301,7 +301,7 @@ function toggleMarkerVisibility() {
     communityMarkers.forEach(marker => marker.getElement().style.display = display);
 }
 
-function convertRouteForFirestore(coordsArray) { return coordsArray.map(coord => ({ lng: coord[0], lat: coord[1] })); }
+function convertRouteForFirestore(coordsArray) { if (!coordsArray) return []; return coordsArray.map(coord => ({ lng: coord[0], lat: coord[1] })); }
 function convertRouteFromFirestore(coordsData) { if (!coordsData || coordsData.length === 0) return []; if (Array.isArray(coordsData[0])) { return coordsData; } return coordsData.map(coord => [coord.lng, coord.lat]); }
 function convertPinsForFirestore(pinsArray) { if (!pinsArray) return []; return pinsArray.map(pin => { const newPin = { ...pin }; if (Array.isArray(newPin.coords)) { newPin.coords = { lng: newPin.coords[0], lat: newPin.coords[1] }; } return newPin; }); }
 function convertPinsFromFirestore(pinsData) { if (!pinsData || pinsData.length === 0) return []; return pinsData.map(pin => { const newPin = { ...pin }; if (newPin.coords && typeof newPin.coords === 'object' && !Array.isArray(newPin.coords)) { newPin.coords = [newPin.coords.lng, newPin.coords.lat]; } return newPin; }); }
@@ -578,7 +578,7 @@ async function saveSession() {
         const sessionName = prompt("Name this local session:", `Cleanup on ${new Date().toLocaleDateString()}`);
         if (sessionName) {
             const guestSessions = JSON.parse(localStorage.getItem('guestSessions')) || [];
-            guestSessions.push({ sessionName, timestamp: new Date().toISOString(), pins: photoPins, route: routeCoordinates });
+            guestSessions.push({ sessionName, timestamp: new Date().toISOString(), pins: convertPinsForFirestore(photoPins), route: convertRouteForFirestore(routeCoordinates) });
             localStorage.setItem('guestSessions', JSON.stringify(guestSessions));
             alert(`Session "${sessionName}" saved locally.`);
             dataModal.style.display = 'none';
@@ -634,7 +634,7 @@ function loadSpecificLocalSession(sessionIndex) {
     const sessionData = guestSessions[sessionIndex];
     if (sessionData) {
         clearCurrentSession();
-        displaySessionData(sessionData);
+        displaySessionData({ ...sessionData, pins: convertPinsFromFirestore(sessionData.pins), route: convertRouteFromFirestore(sessionData.route) });
         alert(`Session "${sessionData.sessionName}" loaded!`);
         document.getElementById('localSessionsModal').style.display = 'none';
         document.getElementById('centerOnRouteBtn').style.display = 'block';
@@ -695,8 +695,8 @@ function clearCurrentSession() {
 }
 
 function displaySessionData(data) {
-    photoPins = convertPinsFromFirestore(data.pins) || [];
-    routeCoordinates = convertRouteFromFirestore(data.route) || [];
+    photoPins = data.pins || [];
+    routeCoordinates = data.route || [];
     photoPins.forEach(pin => createAndAddMarker(pin, 'user'));
     updateUserPinsSource();
     if(map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
@@ -839,4 +839,18 @@ async function handleAccountDeletion() {
             alert("This is a sensitive operation. Please log out and log back in to delete your account.");
         } else { alert("An error occurred while deleting your account."); }
     }
+}
+function centerOnRoute() {
+    if (routeCoordinates.length < 1) {
+        alert("No route is currently loaded to center on.");
+        return;
+    }
+    const bounds = new mapboxgl.LngLatBounds();
+    routeCoordinates.forEach(coord => {
+        bounds.extend(coord);
+    });
+    map.fitBounds(bounds, {
+        padding: 50,
+        maxZoom: 16
+    });
 }
