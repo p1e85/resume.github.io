@@ -22,15 +22,9 @@ body {
     right: 15px;
     z-index: 10;
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.top-row {
-    display: flex;
+    flex-wrap: wrap; /* Allow wrapping */
     justify-content: space-between;
     align-items: center;
-    width: 100%;
     gap: 10px;
 }
 
@@ -39,21 +33,31 @@ body {
     gap: 10px;
 }
 
-.bottom-row {
-    width: 100%;
+.top-bar-right {
+    display: flex;
 }
 
-@media (min-width: 640px) {
+/* On mobile, force community button to take full width and be last */
+.community-button {
+    flex-basis: 100%;
+    order: 3;
+}
+
+/* On larger screens, reset the order and width */
+@media (min-width: 680px) {
+    .community-button {
+        flex-basis: auto;
+        order: 0;
+    }
+    .top-bar-left {
+        order: 1;
+    }
+    .top-bar-right {
+        order: 2;
+        margin-left: auto; /* Push the donate button to the far right */
+    }
     .top-bar-container {
-        flex-direction: row;
-        align-items: center;
-    }
-    .top-row {
-        width: auto;
-    }
-    .bottom-row {
-        width: auto;
-        margin-left: 10px;
+        flex-wrap: nowrap;
     }
 }
 
@@ -113,7 +117,6 @@ body {
     white-space: nowrap;
     text-decoration: none;
 }
-
 .top-bar-button:disabled {
     background-color: rgba(230, 230, 230, 0.5);
     color: #999;
@@ -129,8 +132,6 @@ body {
 }
 
 .community-button {
-    width: 100%;
-    box-sizing: border-box;
     background-color: #28a745;
     color: white;
     border-color: transparent;
