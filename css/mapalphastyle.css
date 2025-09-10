@@ -22,7 +22,7 @@ body {
     right: 15px;
     z-index: 10;
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Mobile-first: stack rows */
     gap: 10px;
 }
 
@@ -31,10 +31,9 @@ body {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    gap: 10px;
 }
 
-.top-bar-left {
+.top-bar-left, .top-bar-right {
     display: flex;
     gap: 10px;
 }
@@ -46,15 +45,20 @@ body {
 /* On larger screens (tablets and desktops), switch to a single row layout */
 @media (min-width: 640px) {
     .top-bar-container {
-        flex-direction: row;
+        flex-direction: row; /* One line */
+        justify-content: space-between;
         align-items: center;
     }
     .top-row {
-        width: auto; /* Allow the top row to shrink */
+        width: auto; /* Let it shrink to fit content */
+        order: 1; /* Ensure this group is on the left */
     }
     .bottom-row {
-        width: auto; /* Allow the bottom row to shrink */
-        margin-left: 10px; /* Add space between button groups */
+        width: auto;
+        order: 2; /* Move community button after the left group */
+    }
+    .top-bar-right {
+        order: 3; /* Move donate button to the far right */
     }
 }
 
