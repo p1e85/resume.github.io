@@ -71,7 +71,6 @@ const allBadges = {
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- Element References ---
     const termsModal = document.getElementById('termsModal');
     const authModal = document.getElementById('authModal');
     const agreeBtn = document.getElementById('agreeBtn');
@@ -118,7 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const safetyModalCloseBtn = safetyModal.querySelector('.close-btn');
     const changeStyleBtn = document.getElementById('changeStyleBtn');
 
-    // --- Firebase Auth State Listener ---
     onAuthStateChanged(auth, async (user) => {
         const userStatus = document.getElementById('userStatus');
         const loggedInContent = document.getElementById('loggedInContent');
@@ -159,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
         termsModal.style.display = 'none';
         document.getElementById('userStatus').style.display = 'flex';
@@ -167,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
         termsModal.style.display = 'flex';
     }
 
-    // --- Mapbox Setup ---
     mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY2p6ajZvejJmMDZhaTNkcWpiN294dm12eCJ9.8ckNT6kfuJry7K7GAeIuxw';
     map = new mapboxgl.Map({
         container: 'map',
@@ -184,7 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleMarkerVisibility();
     });
 
-    // --- Event Listeners ---
     const validateSignUpForm = () => {
         const isEmailValid = emailInput.value.includes('@');
         const isPasswordValid = passwordInput.value.length >= 6;
@@ -303,9 +298,9 @@ function toggleMarkerVisibility() {
 }
 
 function convertRouteForFirestore(coordsArray) { return coordsArray.map(coord => ({ lng: coord[0], lat: coord[1] })); }
-function convertRouteFromFirestore(coordsObjects) { if (!coordsObjects) return []; return coordsObjects.map(coord => [coord.lng, coord.lat]); }
-function convertPinsForFirestore(pinsArray) { return pinsArray.map(pin => ({ ...pin, coords: { lng: pin.coords[0], lat: pin.coords[1] } })); }
-function convertPinsFromFirestore(pinsObjects) { if (!pinsObjects) return []; return pinsObjects.map(pin => ({ ...pin, coords: [pin.coords.lng, pin.coords.lat] })); }
+function convertRouteFromFirestore(coordsObjects) { if (!coordsObjects) return []; if (Array.isArray(coordsObjects[0])) { return coordsObjects; } return coordsObjects.map(coord => [coord.lng, coord.lat]); }
+function convertPinsForFirestore(pinsArray) { if (!pinsArray) return []; return pinsArray.map(pin => { const newPin = { ...pin }; if (Array.isArray(newPin.coords)) { newPin.coords = { lng: newPin.coords[0], lat: newPin.coords[1] }; } return newPin; }); }
+function convertPinsFromFirestore(pinsObjects) { if (!pinsObjects) return []; return pinsObjects.map(pin => { const newPin = { ...pin }; if (newPin.coords && typeof newPin.coords === 'object' && !Array.isArray(newPin.coords)) { newPin.coords = [newPin.coords.lng, newPin.coords.lat]; } return newPin; }); }
 
 function updateAuthModalUI() {
     const authForm = document.getElementById('authForm'), authTitle = document.getElementById('authTitle'), authSubtitle = document.getElementById('authSubtitle'), authActionBtn = document.getElementById('authActionBtn'), emailInput = document.getElementById('emailInput'), passwordInput = document.getElementById('passwordInput'), usernameInput = document.getElementById('usernameInput'), ageCheckbox = document.getElementById('ageCheckbox');
@@ -387,13 +382,15 @@ async function handlePhoto(event) {
     }
     navigator.geolocation.getCurrentPosition(async (position) => {
         const coords = [position.coords.longitude, position.coords.latitude];
+        const defaultTitle = `Pin ${photoPins.length + 1}`;
         if (!currentUser) {
             const reader = new FileReader();
             reader.readAsDataURL(processedFile);
             reader.onload = e => {
-                const pinInfo = { id: `pin-${Date.now()}`, coords, image: e.target.result, title: `Pin ${photoPins.length + 1}`, category: 'Other' };
+                const pinInfo = { id: `pin-${Date.now()}`, coords, image: e.target.result, title: defaultTitle, category: 'Other' };
                 photoPins.push(pinInfo);
-                createAndAddMarker(pinInfo, 'user');
+                const newMarker = createAndAddMarker(pinInfo, 'user');
+                newMarker.togglePopup();
                 updateUserPinsSource();
             };
         } else {
@@ -402,9 +399,10 @@ async function handlePhoto(event) {
                 const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}-${processedFile.name}`);
                 const snapshot = await uploadBytes(storageRef, processedFile);
                 const downloadURL = await getDownloadURL(snapshot.ref);
-                const pinInfo = { id: `pin-${timestamp}`, coords, imageURL: downloadURL, title: `Pin ${photoPins.length + 1}`, category: 'Other' };
+                const pinInfo = { id: `pin-${timestamp}`, coords, imageURL: downloadURL, title: defaultTitle, category: 'Other' };
                 photoPins.push(pinInfo);
-                createAndAddMarker(pinInfo, 'user');
+                const newMarker = createAndAddMarker(pinInfo, 'user');
+                newMarker.togglePopup();
                 updateUserPinsSource();
             } catch (error) { console.error("Error uploading photo:", error); alert("Photo upload failed."); }
         }
@@ -428,6 +426,7 @@ function createAndAddMarker(pinInfo, type, routeInfo = {}) {
         el.style.borderColor = '#28a745';
         communityMarkers.push(marker);
     }
+    return marker;
 }
 
 function createPinPopup(pinInfo, type, routeInfo) {
