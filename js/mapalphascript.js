@@ -71,6 +71,7 @@ const allBadges = {
 // --- Main App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     
+    // --- Element References ---
     const termsModal = document.getElementById('termsModal');
     const authModal = document.getElementById('authModal');
     const agreeBtn = document.getElementById('agreeBtn');
@@ -118,6 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const changeStyleBtn = document.getElementById('changeStyleBtn');
     const centerOnRouteBtn = document.getElementById('centerOnRouteBtn');
 
+    // --- Firebase Auth State Listener ---
     onAuthStateChanged(auth, async (user) => {
         const userStatus = document.getElementById('userStatus');
         const loggedInContent = document.getElementById('loggedInContent');
@@ -158,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
         termsModal.style.display = 'none';
         document.getElementById('userStatus').style.display = 'flex';
@@ -165,6 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
         termsModal.style.display = 'flex';
     }
 
+    // --- Mapbox Setup ---
     mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY2p6ajZvejJmMDZhaTNkcWpiN294dm12eCJ9.8ckNT6kfuJry7K7GAeIuxw';
     map = new mapboxgl.Map({
         container: 'map',
@@ -181,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleMarkerVisibility();
     });
 
+    // --- Event Listeners ---
     const validateSignUpForm = () => {
         const isEmailValid = emailInput.value.includes('@');
         const isPasswordValid = passwordInput.value.length >= 6;
@@ -235,7 +240,6 @@ document.addEventListener('DOMContentLoaded', () => {
     publicProfileModalCloseBtn.addEventListener('click', () => publicProfileModal.style.display = 'none');
     safetyModalCloseBtn.addEventListener('click', () => safetyModal.style.display = 'none');
     safetyModalOkBtn.addEventListener('click', () => {
-        // sessionStorage.setItem('safetyWarningSeen', 'true');
         safetyModal.style.display = 'none';
         startTracking();
     });
@@ -411,7 +415,7 @@ async function handlePhoto(event) {
         }
         pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
     }, () => {
-        alert("Could not get your location. Photo was not pinned.");
+        alert("Could not get location. Photo was not pinned.");
         pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
     }, { enableHighAccuracy: true });
 }
@@ -620,6 +624,7 @@ function loadSpecificLocalSession(sessionIndex) {
         displaySessionData(sessionData);
         alert(`Session "${sessionData.sessionName}" loaded!`);
         document.getElementById('localSessionsModal').style.display = 'none';
+        document.getElementById('centerOnRouteBtn').style.display = 'block';
     }
 }
 
@@ -661,6 +666,7 @@ async function loadSpecificSession(sessionId) {
             displaySessionData({ ...sessionData, pins: convertPinsFromFirestore(sessionData.pins), route: convertRouteFromFirestore(sessionData.route) });
             alert(`Session "${sessionData.sessionName}" loaded!`);
             document.getElementById('sessionsModal').style.display = 'none';
+            document.getElementById('centerOnRouteBtn').style.display = 'block';
         }
     } catch (error) { console.error("Error loading specific session:", error); alert("Failed to load session."); }
 }
@@ -672,11 +678,14 @@ function clearCurrentSession() {
     routeCoordinates = [];
     updateUserPinsSource();
     if (map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
+    document.getElementById('centerOnRouteBtn').style.display = 'none';
 }
 
 function displaySessionData(data) {
-    photoPins = data.pins || [];
-    routeCoordinates = data.route || [];
+    const convertedPins = convertPinsFromFirestore(data.pins);
+    const convertedRoute = convertRouteFromFirestore(data.route);
+    photoPins = convertedPins || [];
+    routeCoordinates = convertedRoute || [];
     photoPins.forEach(pin => createAndAddMarker(pin, 'user'));
     updateUserPinsSource();
     if(map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
@@ -819,4 +828,19 @@ async function handleAccountDeletion() {
             alert("This is a sensitive operation. Please log out and log back in to delete your account.");
         } else { alert("An error occurred while deleting your account."); }
     }
+}
+
+function centerOnRoute() {
+    if (routeCoordinates.length < 1) {
+        alert("No route is currently loaded to center on.");
+        return;
+    }
+    const bounds = new mapboxgl.LngLatBounds();
+    routeCoordinates.forEach(coord => {
+        bounds.extend(coord);
+    });
+    map.fitBounds(bounds, {
+        padding: 50,
+        maxZoom: 16
+    });
 }
