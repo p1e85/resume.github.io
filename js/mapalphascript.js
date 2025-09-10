@@ -634,7 +634,8 @@ function loadSpecificLocalSession(sessionIndex) {
     const sessionData = guestSessions[sessionIndex];
     if (sessionData) {
         clearCurrentSession();
-        displaySessionData({ ...sessionData, pins: convertPinsFromFirestore(sessionData.pins), route: convertRouteFromFirestore(sessionData.route) });
+        const convertedData = { ...sessionData, pins: convertPinsFromFirestore(sessionData.pins), route: convertRouteFromFirestore(sessionData.route) };
+        displaySessionData(convertedData);
         alert(`Session "${sessionData.sessionName}" loaded!`);
         document.getElementById('localSessionsModal').style.display = 'none';
         document.getElementById('centerOnRouteBtn').style.display = 'block';
