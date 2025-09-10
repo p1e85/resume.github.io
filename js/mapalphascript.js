@@ -116,6 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const safetyModalOkBtn = document.getElementById('safetyModalOkBtn');
     const safetyModalCloseBtn = safetyModal.querySelector('.close-btn');
     const changeStyleBtn = document.getElementById('changeStyleBtn');
+    const centerOnRouteBtn = document.getElementById('centerOnRouteBtn');
 
     onAuthStateChanged(auth, async (user) => {
         const userStatus = document.getElementById('userStatus');
@@ -234,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
     publicProfileModalCloseBtn.addEventListener('click', () => publicProfileModal.style.display = 'none');
     safetyModalCloseBtn.addEventListener('click', () => safetyModal.style.display = 'none');
     safetyModalOkBtn.addEventListener('click', () => {
+        // sessionStorage.setItem('safetyWarningSeen', 'true');
         safetyModal.style.display = 'none';
         startTracking();
     });
@@ -264,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
     saveProfileBtn.addEventListener('click', saveProfile);
     deleteAccountBtn.addEventListener('click', handleAccountDeletion);
     changeStyleBtn.addEventListener('click', changeMapStyle);
+    centerOnRouteBtn.addEventListener('click', centerOnRoute);
 });
 
 function initializeMapLayers() {
@@ -298,9 +301,9 @@ function toggleMarkerVisibility() {
 }
 
 function convertRouteForFirestore(coordsArray) { return coordsArray.map(coord => ({ lng: coord[0], lat: coord[1] })); }
-function convertRouteFromFirestore(coordsObjects) { if (!coordsObjects) return []; if (Array.isArray(coordsObjects[0])) { return coordsObjects; } return coordsObjects.map(coord => [coord.lng, coord.lat]); }
+function convertRouteFromFirestore(coordsData) { if (!coordsData || coordsData.length === 0) return []; if (Array.isArray(coordsData[0])) { return coordsData; } return coordsData.map(coord => [coord.lng, coord.lat]); }
 function convertPinsForFirestore(pinsArray) { if (!pinsArray) return []; return pinsArray.map(pin => { const newPin = { ...pin }; if (Array.isArray(newPin.coords)) { newPin.coords = { lng: newPin.coords[0], lat: newPin.coords[1] }; } return newPin; }); }
-function convertPinsFromFirestore(pinsObjects) { if (!pinsObjects) return []; return pinsObjects.map(pin => { const newPin = { ...pin }; if (newPin.coords && typeof newPin.coords === 'object' && !Array.isArray(newPin.coords)) { newPin.coords = [newPin.coords.lng, newPin.coords.lat]; } return newPin; }); }
+function convertPinsFromFirestore(pinsData) { if (!pinsData || pinsData.length === 0) return []; return pinsData.map(pin => { const newPin = { ...pin }; if (newPin.coords && typeof newPin.coords === 'object' && !Array.isArray(newPin.coords)) { newPin.coords = [newPin.coords.lng, newPin.coords.lat]; } return newPin; }); }
 
 function updateAuthModalUI() {
     const authForm = document.getElementById('authForm'), authTitle = document.getElementById('authTitle'), authSubtitle = document.getElementById('authSubtitle'), authActionBtn = document.getElementById('authActionBtn'), emailInput = document.getElementById('emailInput'), passwordInput = document.getElementById('passwordInput'), usernameInput = document.getElementById('usernameInput'), ageCheckbox = document.getElementById('ageCheckbox');
@@ -408,7 +411,7 @@ async function handlePhoto(event) {
         }
         pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
     }, () => {
-        alert("Could not get location. Photo was not pinned.");
+        alert("Could not get your location. Photo was not pinned.");
         pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
     }, { enableHighAccuracy: true });
 }
