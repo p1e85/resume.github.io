@@ -10,7 +10,7 @@
 </head>
 <body>
 
-    <!-- Top Bar Container (RESTRUCTURED) -->
+    <!-- Top Bar Container -->
     <div class="top-bar-container">
         <div class="top-row">
             <div class="top-bar-left">
@@ -25,7 +25,6 @@
             </div>
         </div>
         <div class="bottom-row">
-             <button id="leaderboardBtn" class="top-bar-button">🏆 Leaderboard</button>
              <button id="communityBtn" class="community-button off">🌎 Community View: OFF</button>
         </div>
     </div>
@@ -140,7 +139,31 @@
             <button id="safetyModalOkBtn" class="modal-button">Got it, Let's Go!</button>
         </div>
     </div>
-
+    
+    <!-- Post-Cleanup Summary Modal -->
+    <div id="summaryModal" class="modal">
+        <div class="modal-content summary-modal">
+            <span class="close-btn">&times;</span>
+            <h2>Great Job!</h2>
+            <p>Here's a summary of your cleanup session:</p>
+            <div class="summary-stats">
+                <div>
+                    <span class="stat-value" id="summaryDistance">0.0 mi</span>
+                    <span class="stat-label">Distance</span>
+                </div>
+                <div>
+                    <span class="stat-value" id="summaryPins">0</span>
+                    <span class="stat-label">Items Pinned</span>
+                </div>
+                <div>
+                    <span class="stat-value" id="summaryDuration">0m 0s</span>
+                    <span class="stat-label">Duration</span>
+                </div>
+            </div>
+            <button id="summaryOkBtn" class="modal-button">Awesome!</button>
+        </div>
+    </div>
+    
     <!-- Leaderboard Modal -->
     <div id="leaderboardModal" class="modal">
         <div class="modal-content">
@@ -237,4 +260,5 @@
 
 </body>
 </html>
+
 
