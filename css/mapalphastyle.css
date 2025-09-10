@@ -28,27 +28,28 @@ body {
     gap: 10px;
 }
 
-.top-bar-left {
+.top-bar-left, .top-bar-right {
     display: flex;
     align-items: center;
     gap: 10px;
 }
-.top-bar-right {
-    display: flex;
-    align-items: center;
+
+/* On mobile, force the community button to take full width and be last */
+.community-button {
+    flex-basis: 100%;
+    order: 3;
 }
 
-@media (max-width: 680px) {
+/* On larger screens, reset to a single row layout */
+@media (min-width: 680px) {
+    .community-button {
+        flex-basis: auto;
+        order: 0;
+    }
     .top-bar-left {
-        flex-basis: 100%;
         order: 1;
     }
     .top-bar-right {
-        order: 3; /* Push to the end on its own line */
-        flex-basis: 100%;
-    }
-    .community-button {
-        flex-basis: 100%;
         order: 2;
     }
 }
