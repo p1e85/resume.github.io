@@ -144,7 +144,6 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const userDocRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(userDocRef);
-
                 if (docSnap.exists()) {
                     const userData = docSnap.data();
                     if (userData.totalPins === undefined) {
@@ -157,9 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                     }
                     if (userEmailSpan) userEmailSpan.textContent = `Logged in as: ${userData.username}`;
-                } else { 
-                    if (userEmailSpan) userEmailSpan.textContent = `Logged in`;
-                }
+                } else { if (userEmailSpan) userEmailSpan.textContent = `Logged in`; }
             } catch (error) {
                 console.error("Error fetching or updating user profile:", error);
                 if (userEmailSpan) userEmailSpan.textContent = `Logged in`;
@@ -745,7 +742,7 @@ function exportGeoJSON() {
     const now = new Date();
     const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
     const fileName = `litter_bugs_data_${timestamp}.geojson`;
-    const pinFeatures = photoPins.map(pin => ({ type: 'Feature', geometry: { type: 'Point', coordinates: pin.coords }, properties: { title: pin.title, image_url: pin.imageURL || 'local_data' } }));
+    const pinFeatures = photoPins.map(pin => ({ type: 'Feature', geometry: { type: 'Point', coordinates: pin.coords }, properties: { title: pin.title, image_url: pin.imageURL || 'local_data', category: pin.category } }));
     const routeFeature = { type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates }, properties: {} };
     const geojson = { type: 'FeatureCollection', features: [...pinFeatures, routeFeature] };
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(geojson, null, 2));
@@ -956,4 +953,3 @@ async function fetchAndDisplayLeaderboard(metric) {
         }
     }
 }
-
