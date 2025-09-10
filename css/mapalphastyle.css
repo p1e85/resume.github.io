@@ -22,44 +22,27 @@ body {
     right: 15px;
     z-index: 10;
     display: flex;
-    flex-wrap: wrap; 
+    flex-direction: column;
+    gap: 10px;
+}
+
+.top-row {
+    display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
     gap: 10px;
 }
 
-.top-bar-left {
+.top-bar-left, .top-bar-right {
     display: flex;
-    align-items: center;
     gap: 10px;
 }
-.top-bar-right {
+
+.bottom-row {
     display: flex;
-    align-items: center;
-}
-
-/* On mobile, community button takes full width and goes last */
-.community-button {
-    flex-basis: 100%;
-    order: 3;
-}
-
-/* On larger screens, reset to a single row layout */
-@media (min-width: 680px) {
-    .community-button {
-        flex-basis: auto;
-        order: 0;
-    }
-    .top-bar-left {
-        order: 1;
-    }
-    .top-bar-right {
-        order: 2;
-        margin-left: auto; /* Push the donate button to the far right */
-    }
-    .top-bar-container {
-        flex-wrap: nowrap;
-    }
+    gap: 10px;
+    width: 100%;
 }
 
 
@@ -117,6 +100,7 @@ body {
     transition: background-color: 0.3s;
     white-space: nowrap;
     text-decoration: none;
+    flex-grow: 1; /* Allow buttons to grow */
 }
 .top-bar-button:disabled {
     background-color: rgba(230, 230, 230, 0.5);
@@ -356,6 +340,29 @@ body {
     border-left: 4px solid #17a2b8;
 }
 
+.pin-popup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+.pin-popup-form input, .pin-popup-form select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+.pin-popup-form button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
 .profile-form {
     display: flex;
     flex-direction: column;
@@ -434,6 +441,63 @@ body {
     text-align: center;
 }
 
+.leaderboard-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+.leaderboard-tab {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+.leaderboard-tab.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+.leaderboard-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+.leaderboard-list li {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+.leaderboard-list li:first-child {
+    background-color: #ffd700;
+    font-weight: bold;
+}
+.leaderboard-list li:nth-child(2) {
+    background-color: #c0c0c0;
+}
+.leaderboard-list li:nth-child(3) {
+    background-color: #cd7f32;
+}
+.leaderboard-rank {
+    font-size: 1.2em;
+    font-weight: bold;
+    width: 40px;
+    text-align: center;
+}
+.leaderboard-name {
+    flex-grow: 1;
+    margin-left: 15px;
+}
+.leaderboard-score {
+    font-weight: bold;
+    color: #007bff;
+}
+
 /* --- User Status Display & Photo Markers --- */
 .user-status-display {
     display: flex;
@@ -458,100 +522,5 @@ body {
     background-size: cover; 
     background-position: center; 
     cursor: pointer;
-}
-
-/* NEW: Styles for the Post-Cleanup Summary Modal */
-.summary-modal {
-    max-width: 480px;
-    text-align: center;
-}
-
-.summary-stats {
-    display: flex;
-    justify-content: space-around;
-    margin: 25px 0;
-    padding: 20px 0;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-}
-
-.summary-stats > div {
-    display: flex;
-    flex-direction: column;
-}
-
-.stat-value {
-    font-size: 2em;
-    font-weight: bold;
-    color: #007bff;
-}
-
-.stat-label {
-    font-size: 0.9em;
-    color: #6c757d;
-    margin-top: 5px;
-}
-
-/* NEW: Styles for the Leaderboard Modal */
-.leaderboard-tabs {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin: 20px 0;
-}
-
-.leaderboard-tab {
-    padding: 10px 15px;
-    border: 1px solid #ccc;
-    border-radius: 20px;
-    background-color: #f0f0f0;
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.leaderboard-tab.active {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-
-.leaderboard-list {
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
-    max-height: 50vh;
-    overflow-y: auto;
-}
-
-.leaderboard-list li {
-    display: flex;
-    align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid #eee;
-}
-.leaderboard-list li:first-child {
-    background-color: #ffd700; /* Gold */
-    font-weight: bold;
-}
-.leaderboard-list li:nth-child(2) {
-    background-color: #c0c0c0; /* Silver */
-}
-.leaderboard-list li:nth-child(3) {
-    background-color: #cd7f32; /* Bronze */
-}
-
-.leaderboard-rank {
-    font-size: 1.2em;
-    font-weight: bold;
-    width: 40px;
-    text-align: center;
-}
-.leaderboard-name {
-    flex-grow: 1;
-    margin-left: 15px;
-}
-.leaderboard-score {
-    font-weight: bold;
-    color: #007bff;
 }
 
