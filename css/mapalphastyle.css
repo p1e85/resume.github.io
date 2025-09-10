@@ -43,17 +43,18 @@ body {
     width: 100%;
 }
 
+/* On larger screens (tablets and desktops), switch to a single row layout */
 @media (min-width: 640px) {
     .top-bar-container {
         flex-direction: row;
         align-items: center;
     }
     .top-row {
-        width: auto;
+        width: auto; /* Allow the top row to shrink */
     }
     .bottom-row {
-        width: auto;
-        margin-left: 10px;
+        width: auto; /* Allow the bottom row to shrink */
+        margin-left: 10px; /* Add space between button groups */
     }
 }
 
