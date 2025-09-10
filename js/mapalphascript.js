@@ -374,6 +374,7 @@ function toggleTracking() {
 
 function startTracking() {
     const trackBtn = document.getElementById('trackBtn');
+    document.getElementById('centerOnRouteBtn').disabled = true;
     routeCoordinates = [];
     navigator.geolocation.getCurrentPosition(pos => map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 16 }));
     trackingWatcher = navigator.geolocation.watchPosition(pos => {
@@ -428,7 +429,7 @@ async function handlePhoto(event) {
         }
         pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
     }, () => {
-        alert("Could not get your location. Photo was not pinned.");
+        alert("Could not get location. Photo was not pinned.");
         pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
     }, { enableHighAccuracy: true });
 }
@@ -692,7 +693,7 @@ function clearCurrentSession() {
     routeCoordinates = [];
     updateUserPinsSource();
     if (map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
-    document.getElementById('centerOnRouteBtn').style.display = 'none';
+    document.getElementById('centerOnRouteBtn').disabled = true;
 }
 
 function displaySessionData(data) {
@@ -850,8 +851,12 @@ function centerOnRoute() {
     routeCoordinates.forEach(coord => {
         bounds.extend(coord);
     });
+    photoPins.forEach(pin => {
+        bounds.extend(pin.coords);
+    });
     map.fitBounds(bounds, {
-        padding: 50,
+        padding: 60,
         maxZoom: 16
     });
 }
+
