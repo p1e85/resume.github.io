@@ -429,7 +429,7 @@ async function handlePhoto(event) {
         }
         pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
     }, () => {
-        alert("Could not get location. Photo was not pinned.");
+        alert("Could not get your location. Photo was not pinned.");
         pictureBtn.innerHTML = originalButtonText; pictureBtn.disabled = false; event.target.value = '';
     }, { enableHighAccuracy: true });
 }
@@ -639,7 +639,7 @@ function loadSpecificLocalSession(sessionIndex) {
         displaySessionData(convertedData);
         alert(`Session "${sessionData.sessionName}" loaded!`);
         document.getElementById('localSessionsModal').style.display = 'none';
-        document.getElementById('centerOnRouteBtn').style.display = 'block';
+        document.getElementById('centerOnRouteBtn').disabled = false;
     }
 }
 
@@ -681,7 +681,7 @@ async function loadSpecificSession(sessionId) {
             displaySessionData({ ...sessionData, pins: convertPinsFromFirestore(sessionData.pins), route: convertRouteFromFirestore(sessionData.route) });
             alert(`Session "${sessionData.sessionName}" loaded!`);
             document.getElementById('sessionsModal').style.display = 'none';
-            document.getElementById('centerOnRouteBtn').style.display = 'block';
+            document.getElementById('centerOnRouteBtn').disabled = false;
         }
     } catch (error) { console.error("Error loading specific session:", error); alert("Failed to load session."); }
 }
@@ -697,8 +697,8 @@ function clearCurrentSession() {
 }
 
 function displaySessionData(data) {
-    photoPins = convertPinsFromFirestore(data.pins) || [];
-    routeCoordinates = convertRouteFromFirestore(data.route) || [];
+    photoPins = data.pins || [];
+    routeCoordinates = data.route || [];
     photoPins.forEach(pin => createAndAddMarker(pin, 'user'));
     updateUserPinsSource();
     if(map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates } });
