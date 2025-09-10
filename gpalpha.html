@@ -10,21 +10,17 @@
 </head>
 <body>
 
-    <!-- Top Bar Container (RESTRUCTURED) -->
+    <!-- Top Bar Container -->
     <div class="top-bar-container">
-        <div class="top-row">
-            <div class="top-bar-left">
-                <button id="infoBtn" class="top-bar-button">ℹ️ Info</button>
-                <button id="changeStyleBtn" class="top-bar-button">🎨 Change Style</button>
-            </div>
-            <div class="top-bar-right">
-                <a href="https://www.buymeacoffee.com/p1skates" target="_blank" class="donate-button">
-                    ☕ Support the Mission
-                </a>
-            </div>
+        <div class="top-bar-left">
+            <button id="infoBtn" class="top-bar-button">ℹ️ Info</button>
+            <button id="changeStyleBtn" class="top-bar-button">🎨 Change Style</button>
+            <button id="communityBtn" class="community-button off">🌎 Community View: OFF</button>
         </div>
-        <div class="bottom-row">
-             <button id="communityBtn" class="community-button off">🌎 Community View: OFF</button>
+        <div class="top-bar-right">
+            <a href="https://www.buymeacoffee.com/p1skates" target="_blank" class="donate-button">
+                ☕ Support the Mission
+            </a>
         </div>
     </div>
 
@@ -198,6 +194,9 @@
             <span class="close-btn">&times;</span>
             <h2>Load a Local Session</h2>
             <p>Select a session saved on this browser to load it.</p>
+            <p class="disclaimer-text">
+                <strong>Note:</strong> As a guest, sessions are saved only to this browser. They will be lost if you clear your cache or switch devices. Sign up for a free account to save your data permanently!
+            </p>
             <ul id="localSessionList" class="session-list"></ul>
         </div>
     </div>
