@@ -22,43 +22,31 @@ body {
     right: 15px;
     z-index: 10;
     display: flex;
-    flex-direction: column; /* Mobile-first: stack rows */
-    gap: 10px;
-}
-
-.top-row {
-    display: flex;
+    flex-wrap: wrap; 
     justify-content: space-between;
     align-items: center;
-    width: 100%;
-}
-
-.top-bar-left, .top-bar-right {
-    display: flex;
     gap: 10px;
 }
 
-.bottom-row {
-    width: 100%;
+.top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.top-bar-right {
+    display: flex;
+    align-items: center;
 }
 
-/* On larger screens (tablets and desktops), switch to a single row layout */
-@media (min-width: 640px) {
-    .top-bar-container {
-        flex-direction: row; /* One line */
-        justify-content: space-between;
-        align-items: center;
-    }
-    .top-row {
-        width: auto; /* Let it shrink to fit content */
-        order: 1; /* Ensure this group is on the left */
-    }
-    .bottom-row {
-        width: auto;
-        order: 2; /* Move community button after the left group */
+@media (max-width: 520px) {
+    .top-bar-left {
+        flex-basis: 100%;
+        order: 1;
     }
     .top-bar-right {
-        order: 3; /* Move donate button to the far right */
+        flex-basis: 100%;
+        justify-content: flex-start;
+        order: 2;
     }
 }
 
@@ -124,8 +112,6 @@ body {
 }
 
 .community-button {
-    width: 100%;
-    box-sizing: border-box;
     background-color: #28a745;
     color: white;
     border-color: transparent;
@@ -338,6 +324,17 @@ body {
     background-color: #c82333;
 }
 
+.disclaimer-text {
+    font-size: 0.9em;
+    font-style: italic;
+    color: #6c757d;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 15px 0;
+    border-left: 4px solid #17a2b8;
+}
+
 .profile-form {
     display: flex;
     flex-direction: column;
@@ -416,7 +413,7 @@ body {
     text-align: center;
 }
 
-/* --- User Status Display & Photo Markers --- */
+/* --- User Status Display --- */
 .user-status-display {
     display: flex;
     background-color: rgba(255, 255, 255, 0.8);
