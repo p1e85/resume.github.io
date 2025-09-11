@@ -145,15 +145,33 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) {
             currentUser = user;
             try {
+                // --- START: Self-Healing Profile Fix ---
+                // This block checks if a public profile exists, and if not, creates one.
+                // This fixes the error for existing users without a profile.
+                const publicProfileRef = doc(db, "publicProfiles", user.uid);
+                const publicProfileSnap = await getDoc(publicProfileRef);
+                if (!publicProfileSnap.exists()) {
+                    console.log("User profile missing! Creating a default one.");
+                    // Use the part of the email before the "@" as a default username
+                    const defaultUsername = user.email.split('@')[0];
+                    await setDoc(publicProfileRef, {
+                        username: defaultUsername,
+                        bio: "This user is new to Litter Bugs!",
+                        location: "",
+                        buyMeACoffeeLink: "",
+                        badges: {}
+                    });
+                }
+                // --- END: Self-Healing Profile Fix ---
+
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
                 if (userDocSnap.exists() && userDocSnap.data().totalPins === undefined) {
                     await updateDoc(userDocRef, { totalPins: 0, totalDistance: 0, totalRoutes: 0 });
                 }
-                const publicProfileRef = doc(db, "publicProfiles", user.uid);
-                const publicProfileSnap = await getDoc(publicProfileRef);
-                if (publicProfileSnap.exists()) {
-                    const username = publicProfileSnap.data().username;
+                const updatedPublicProfileSnap = await getDoc(publicProfileRef); // Re-fetch after potential creation
+                if (updatedPublicProfileSnap.exists()) {
+                    const username = updatedPublicProfileSnap.data().username;
                     if (userEmailSpan) userEmailSpan.textContent = `Logged in as: ${username}`;
                 }
 
