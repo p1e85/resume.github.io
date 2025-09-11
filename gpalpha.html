@@ -6,11 +6,10 @@
     <title>Litter Bugs - Map Tracker</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪲</text></svg>">
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />
-    <link rel="stylesheet" href="css/mapalphastyle.css">
+    <link rel="stylesheet" href="css/mapstyle.css"> 
 </head>
 <body>
 
-    <!-- Top Bar Container -->
     <div class="top-bar-container">
         <div class="top-row">
             <div class="top-bar-left">
@@ -30,7 +29,6 @@
         </div>
     </div>
 
-    <!-- Info Modal -->
     <div id="infoModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -52,7 +50,6 @@
         </div>
     </div>
     
-    <!-- Terms of Use Modal -->
     <div id="termsModal" class="modal-overlay">
         <div class="modal-content">
             <h2>Terms of Use</h2>
@@ -71,7 +68,6 @@
         </div>
     </div>
     
-    <!-- Authentication Modal -->
     <div id="authModal" class="modal-overlay">
         <div class="modal-content auth-modal">
             <h2 id="authTitle">Create a Litter Bugs Account</h2>
@@ -92,7 +88,6 @@
         </div>
     </div>
     
-    <!-- Modal for Editing User Profile -->
     <div id="profileModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -112,7 +107,6 @@
         </div>
     </div>
 
-    <!-- Modal for Viewing a Public User Profile -->
     <div id="publicProfileModal" class="modal">
         <div class="modal-content profile-modal">
             <span class="close-btn">&times;</span>
@@ -126,7 +120,6 @@
         </div>
     </div>
 
-    <!-- Safety Reminder Modal -->
     <div id="safetyModal" class="modal">
         <div class="modal-content safety-modal">
             <span class="close-btn">&times;</span>
@@ -141,7 +134,6 @@
         </div>
     </div>
     
-    <!-- Post-Cleanup Summary Modal -->
     <div id="summaryModal" class="modal">
         <div class="modal-content summary-modal">
             <span class="close-btn">&times;</span>
@@ -165,7 +157,6 @@
         </div>
     </div>
     
-    <!-- Leaderboard Modal -->
     <div id="leaderboardModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -178,10 +169,8 @@
         </div>
     </div>
 
-    <!-- Map container -->
     <div id='map'></div>
 
-    <!-- Bottom Container -->
     <div class="bottom-container">
         <div id="userStatus" class="user-status-display">
             <div id="loggedInContent">
@@ -202,7 +191,6 @@
         </div>
     </div>
 
-    <!-- Data Management Modal -->
     <div id="dataModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -221,7 +209,6 @@
         </div>
     </div>
 
-    <!-- Saved Cloud Sessions Modal -->
     <div id="sessionsModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -231,7 +218,6 @@
         </div>
     </div>
 
-    <!-- Saved Local Sessions Modal -->
     <div id="localSessionsModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -244,7 +230,6 @@
         </div>
     </div>
 
-    <!-- Published Routes Modal -->
     <div id="publishedRoutesModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -254,12 +239,9 @@
         </div>
     </div>
 
-    <!-- JavaScript Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
-    <script src="js/mapalphascript.js" type="module"></script>
+    <script src="js/mapscript.js" type="module"></script>
 
 </body>
 </html>
-
-
