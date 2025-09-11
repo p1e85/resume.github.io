@@ -145,14 +145,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) {
             currentUser = user;
             try {
-                // --- START: Self-Healing Profile Fix ---
-                // This block checks if a public profile exists, and if not, creates one.
-                // This fixes the error for existing users without a profile.
+                // --- START: CORRECTED Self-Healing Profile Logic ---
                 const publicProfileRef = doc(db, "publicProfiles", user.uid);
                 const publicProfileSnap = await getDoc(publicProfileRef);
-                if (!publicProfileSnap.exists()) {
+                let username;
+
+                if (publicProfileSnap.exists()) {
+                    // If the profile exists, use its username.
+                    username = publicProfileSnap.data().username;
+                } else {
+                    // If the profile is missing, create a default one and use the default username.
                     console.log("User profile missing! Creating a default one.");
-                    // Use the part of the email before the "@" as a default username
                     const defaultUsername = user.email.split('@')[0];
                     await setDoc(publicProfileRef, {
                         username: defaultUsername,
@@ -161,18 +164,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         buyMeACoffeeLink: "",
                         badges: {}
                     });
+                    username = defaultUsername; // Use the default username for the current session.
                 }
-                // --- END: Self-Healing Profile Fix ---
 
+                if (userEmailSpan) {
+                    userEmailSpan.textContent = `Logged in as: ${username}`;
+                }
+                // --- END: CORRECTED Self-Healing Profile Logic ---
+
+                // You can still check the private user document for other data if needed
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
                 if (userDocSnap.exists() && userDocSnap.data().totalPins === undefined) {
                     await updateDoc(userDocRef, { totalPins: 0, totalDistance: 0, totalRoutes: 0 });
-                }
-                const updatedPublicProfileSnap = await getDoc(publicProfileRef); // Re-fetch after potential creation
-                if (updatedPublicProfileSnap.exists()) {
-                    const username = updatedPublicProfileSnap.data().username;
-                    if (userEmailSpan) userEmailSpan.textContent = `Logged in as: ${username}`;
                 }
 
             } catch (error) {
