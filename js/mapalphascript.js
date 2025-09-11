@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     checkAndClearOldData();
 
+    // --- Element References ---
     const termsModal = document.getElementById('termsModal');
     const authModal = document.getElementById('authModal');
     const agreeBtn = document.getElementById('agreeBtn');
@@ -128,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const leaderboardModalCloseBtn = leaderboardModal.querySelector('.close-btn');
     const leaderboardTabs = document.querySelectorAll('.leaderboard-tab');
 
+    // --- Firebase Auth State Listener ---
     onAuthStateChanged(auth, async (user) => {
         const userStatus = document.getElementById('userStatus');
         const loggedInContent = document.getElementById('loggedInContent');
@@ -173,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
         termsModal.style.display = 'none';
         document.getElementById('userStatus').style.display = 'flex';
@@ -180,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
         termsModal.style.display = 'flex';
     }
 
+    // --- Mapbox Setup ---
     mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY2p6ajZvejJmMDZhaTNkcWpiN294dm12eCJ9.8ckNT6kfuJry7K7GAeIuxw';
     map = new mapboxgl.Map({
         container: 'map',
@@ -196,6 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleMarkerVisibility();
     });
 
+    // --- Event Listeners ---
     const validateSignUpForm = () => {
         const isEmailValid = emailInput.value.includes('@');
         const isPasswordValid = passwordInput.value.length >= 6;
@@ -814,6 +819,7 @@ async function showPublicProfile(userId) {
     try {
         const publicProfileRef = doc(db, "publicProfiles", userId);
         const docSnap = await getDoc(publicProfileRef);
+
         if (docSnap.exists()) {
             const profileData = docSnap.data();
             const publicProfileModal = document.getElementById('publicProfileModal');
@@ -822,6 +828,7 @@ async function showPublicProfile(userId) {
             document.getElementById('profileUsername').textContent = profileData.username || 'Anonymous User';
             document.getElementById('profileLocation').textContent = profileData.location || '';
             document.getElementById('profileBio').textContent = profileData.bio || 'This user has not written a bio yet.';
+            
             profileAchievementsContainer.innerHTML = '';
             const userBadges = profileData.badges || {};
             let earnedBadgesCount = 0;
@@ -837,6 +844,7 @@ async function showPublicProfile(userId) {
                 }
             }
             if (earnedBadgesCount === 0) profileAchievementsContainer.innerHTML = '<p class="no-badges-message">This user hasn\'t earned any badges yet.</p>';
+
             if (profileData.buyMeACoffeeLink) {
                 profileSupportBtn.style.display = 'block';
                 profileSupportBtn.onclick = () => window.open(profileData.buyMeACoffeeLink, '_blank');
