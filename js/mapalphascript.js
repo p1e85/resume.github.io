@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     checkAndClearOldData();
 
-    // --- Element References ---
+    // Core Modals & Buttons
     const termsModal = document.getElementById('termsModal');
     const authModal = document.getElementById('authModal');
     const agreeBtn = document.getElementById('agreeBtn');
@@ -121,15 +121,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const safetyModalCloseBtn = safetyModal.querySelector('.close-btn');
     const changeStyleBtn = document.getElementById('changeStyleBtn');
     const centerOnRouteBtn = document.getElementById('centerOnRouteBtn');
-    const summaryModal = document.getElementById('summaryModal');
-    const summaryOkBtn = document.getElementById('summaryOkBtn');
-    const summaryModalCloseBtn = summaryModal.querySelector('.close-btn');
     const leaderboardBtn = document.getElementById('leaderboardBtn');
     const leaderboardModal = document.getElementById('leaderboardModal');
     const leaderboardModalCloseBtn = leaderboardModal.querySelector('.close-btn');
     const leaderboardTabs = document.querySelectorAll('.leaderboard-tab');
 
-    // --- Firebase Auth State Listener ---
+    // --- START: ACTIVATED SUMMARY FEATURE ELEMENTS ---
+    const summaryModal = document.getElementById('summaryModal');
+    const summaryOkBtn = document.getElementById('summaryOkBtn');
+    const summaryModalCloseBtn = summaryModal.querySelector('.close-btn');
+    // --- END: ACTIVATED SUMMARY FEATURE ELEMENTS ---
+
     onAuthStateChanged(auth, async (user) => {
         const userStatus = document.getElementById('userStatus');
         const loggedInContent = document.getElementById('loggedInContent');
@@ -144,16 +146,38 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) {
             currentUser = user;
             try {
+                // --- START: CORRECTED Self-Healing Profile Logic ---
+                const publicProfileRef = doc(db, "publicProfiles", user.uid);
+                const publicProfileSnap = await getDoc(publicProfileRef);
+                let username;
+
+                if (publicProfileSnap.exists()) {
+                    // If the profile exists, use its username.
+                    username = publicProfileSnap.data().username;
+                } else {
+                    // If the profile is missing, create a default one and use the default username.
+                    console.log("User profile missing! Creating a default one.");
+                    const defaultUsername = user.email.split('@')[0];
+                    await setDoc(publicProfileRef, {
+                        username: defaultUsername,
+                        bio: "This user is new to Litter Bugs!",
+                        location: "",
+                        buyMeACoffeeLink: "",
+                        badges: {}
+                    });
+                    username = defaultUsername; // Use the default username for the current session.
+                }
+
+                if (userEmailSpan) {
+                    userEmailSpan.textContent = `Logged in as: ${username}`;
+                }
+                // --- END: CORRECTED Self-Healing Profile Logic ---
+
+                // You can still check the private user document for other data if needed
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
                 if (userDocSnap.exists() && userDocSnap.data().totalPins === undefined) {
                     await updateDoc(userDocRef, { totalPins: 0, totalDistance: 0, totalRoutes: 0 });
-                }
-                const publicProfileRef = doc(db, "publicProfiles", user.uid);
-                const publicProfileSnap = await getDoc(publicProfileRef);
-                if (publicProfileSnap.exists()) {
-                    const username = publicProfileSnap.data().username;
-                    if (userEmailSpan) userEmailSpan.textContent = `Logged in as: ${username}`;
                 }
 
             } catch (error) {
@@ -175,7 +199,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
         termsModal.style.display = 'none';
         document.getElementById('userStatus').style.display = 'flex';
@@ -183,7 +206,6 @@ document.addEventListener('DOMContentLoaded', () => {
         termsModal.style.display = 'flex';
     }
 
-    // --- Mapbox Setup ---
     mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY2p6ajZvejJmMDZhaTNkcWpiN294dm12eCJ9.8ckNT6kfuJry7K7GAeIuxw';
     map = new mapboxgl.Map({
         container: 'map',
@@ -200,7 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleMarkerVisibility();
     });
 
-    // --- Event Listeners ---
     const validateSignUpForm = () => {
         const isEmailValid = emailInput.value.includes('@');
         const isPasswordValid = passwordInput.value.length >= 6;
@@ -258,8 +279,12 @@ document.addEventListener('DOMContentLoaded', () => {
         safetyModal.style.display = 'none';
         startTracking();
     });
+    
+    // --- START: ACTIVATED SUMMARY FEATURE LISTENERS ---
     summaryModalCloseBtn.addEventListener('click', () => summaryModal.style.display = 'none');
     summaryOkBtn.addEventListener('click', () => summaryModal.style.display = 'none');
+    // --- END: ACTIVATED SUMMARY FEATURE LISTENERS ---
+
     leaderboardBtn.addEventListener('click', () => {
         leaderboardModal.style.display = 'flex';
         fetchAndDisplayLeaderboard('totalPins');
@@ -274,8 +299,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     window.addEventListener('click', (event) => {
+        // Add summaryModal to this list so clicking the background closes it
         const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal, profileModal, publicProfileModal, safetyModal, summaryModal, leaderboardModal];
-        if (modals.includes(event.target)) modals.forEach(m => m.style.display = 'none');
+        if (modals.includes(event.target)) {
+            modals.forEach(m => m.style.display = 'none');
+        }
     });
     
     saveBtn.addEventListener('click', saveSession);
@@ -405,8 +433,12 @@ function toggleTracking() {
         trackBtn.textContent = '🛰️ Start Tracking';
         trackBtn.classList.remove('tracking');
         if (map.getSource('user-location-point')) map.getSource('user-location-point').setData({ type: 'Feature', geometry: { type: 'Point', coordinates: [] } });
-        showCleanupSummary();
-    } else { document.getElementById('safetyModal').style.display = 'flex'; }
+        
+        showCleanupSummary(); // This function will now work correctly
+    
+    } else { 
+        document.getElementById('safetyModal').style.display = 'flex'; 
+    }
 }
 
 function startTracking() {
@@ -613,7 +645,7 @@ async function publishRoute() {
 async function saveSession() {
     const dataModal = document.getElementById('dataModal');
     if (!currentUser) {
-        const sessionName = prompt("Name this local session:", `Cleanup on ${new Date().toLocaleDateString()}`);
+        const sessionName = prompt("Name this Litter Bugs session:", `Cleanup on ${new Date().toLocaleDateString()}`);
         if (sessionName) {
             const guestSessions = JSON.parse(localStorage.getItem('guestSessions')) || [];
             guestSessions.push({ sessionName, timestamp: new Date().toISOString(), pins: convertPinsForFirestore(photoPins), route: convertRouteForFirestore(routeCoordinates) });
@@ -623,7 +655,7 @@ async function saveSession() {
         }
         return;
     }
-    const sessionName = prompt("Name this cloud session:", `Cleanup on ${new Date().toLocaleDateString()}`);
+    const sessionName = prompt("Name this Litter Bugs session:", `Cleanup on ${new Date().toLocaleDateString()}`);
     if (sessionName) {
         try {
             await addDoc(collection(db, "users", currentUser.uid, "privateSessions"), { sessionName, timestamp: new Date(), pins: convertPinsForFirestore(photoPins), route: convertRouteForFirestore(routeCoordinates) });
@@ -676,7 +708,7 @@ function loadSpecificLocalSession(sessionIndex) {
         displaySessionData(convertedData);
         alert(`Session "${sessionData.sessionName}" loaded!`);
         document.getElementById('localSessionsModal').style.display = 'none';
-        document.getElementById('centerOnRouteBtn').disabled = false;
+        centerOnRouteBtn.disabled = false;
     }
 }
 
@@ -718,7 +750,7 @@ async function loadSpecificSession(sessionId) {
             displaySessionData({ ...sessionData, pins: convertPinsFromFirestore(sessionData.pins), route: convertRouteFromFirestore(sessionData.route) });
             alert(`Session "${sessionData.sessionName}" loaded!`);
             document.getElementById('sessionsModal').style.display = 'none';
-            document.getElementById('centerOnRouteBtn').disabled = false;
+            centerOnRouteBtn.disabled = false;
         }
     } catch (error) { console.error("Error loading specific session:", error); alert("Failed to load session."); }
 }
@@ -730,7 +762,7 @@ function clearCurrentSession() {
     routeCoordinates = [];
     updateUserPinsSource();
     if (map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
-    document.getElementById('centerOnRouteBtn').disabled = true;
+    centerOnRouteBtn.disabled = true;
 }
 
 function displaySessionData(data) {
@@ -824,26 +856,29 @@ async function showPublicProfile(userId) {
             const profileData = docSnap.data();
             const publicProfileModal = document.getElementById('publicProfileModal');
             const profileSupportBtn = document.getElementById('profileSupportBtn');
-            const profileAchievementsContainer = document.getElementById('profileAchievements');
+            const profileAchievementsContainer = document.getElementById('profileAchievements'); 
+
             document.getElementById('profileUsername').textContent = profileData.username || 'Anonymous User';
             document.getElementById('profileLocation').textContent = profileData.location || '';
             document.getElementById('profileBio').textContent = profileData.bio || 'This user has not written a bio yet.';
             
-            profileAchievementsContainer.innerHTML = '';
-            const userBadges = profileData.badges || {};
-            let earnedBadgesCount = 0;
-            for (const badgeKey in allBadges) {
-                if (userBadges[badgeKey] === true) {
-                    earnedBadgesCount++;
-                    const badgeInfo = allBadges[badgeKey];
-                    const badgeElement = document.createElement('div');
-                    badgeElement.className = 'badge-item';
-                    badgeElement.textContent = badgeInfo.icon;
-                    badgeElement.title = `${badgeInfo.name}: ${badgeInfo.description}`;
-                    profileAchievementsContainer.appendChild(badgeElement);
+            if (profileAchievementsContainer) {
+                profileAchievementsContainer.innerHTML = '';
+                const userBadges = profileData.badges || {};
+                let earnedBadgesCount = 0;
+                for (const badgeKey in allBadges) {
+                    if (userBadges[badgeKey] === true) {
+                        earnedBadgesCount++;
+                        const badgeInfo = allBadges[badgeKey];
+                        const badgeElement = document.createElement('div');
+                        badgeElement.className = 'badge-item';
+                        badgeElement.textContent = badgeInfo.icon;
+                        badgeElement.title = `${badgeInfo.name}: ${badgeInfo.description}`;
+                        profileAchievementsContainer.appendChild(badgeElement);
+                    }
                 }
+                if (earnedBadgesCount === 0) profileAchievementsContainer.innerHTML = '<p class="no-badges-message">This user hasn\'t earned any badges yet.</p>';
             }
-            if (earnedBadgesCount === 0) profileAchievementsContainer.innerHTML = '<p class="no-badges-message">This user hasn\'t earned any badges yet.</p>';
 
             if (profileData.buyMeACoffeeLink) {
                 profileSupportBtn.style.display = 'block';
@@ -881,8 +916,9 @@ async function handleAccountDeletion() {
         } else { alert("An error occurred while deleting your account."); }
     }
 }
+
 function centerOnRoute() {
-    if (routeCoordinates.length < 1) {
+    if (routeCoordinates.length < 1 && photoPins.length < 1) {
         alert("No route is currently loaded to center on.");
         return;
     }
@@ -894,30 +930,41 @@ function centerOnRoute() {
         bounds.extend(pin.coords);
     });
     map.fitBounds(bounds, {
-        padding: 60,
+        padding: {top: 150, bottom: 150, left: 60, right: 60},
         maxZoom: 16
     });
 }
+
+// --- START: ACTIVATED SUMMARY FEATURE FUNCTION ---
 function showCleanupSummary() {
     if (!trackingStartTime) return;
     const durationMs = new Date() - trackingStartTime;
     const distanceMeters = calculateRouteDistance(routeCoordinates);
     const pinsCount = photoPins.length;
+
+    // Convert meters to miles
     const distanceMiles = (distanceMeters * 0.000621371).toFixed(2);
+
+    // Format duration
     const minutes = Math.floor(durationMs / 60000);
     const seconds = ((durationMs % 60000) / 1000).toFixed(0);
+    
     document.getElementById('summaryDistance').textContent = `${distanceMiles} mi`;
     document.getElementById('summaryPins').textContent = pinsCount;
     document.getElementById('summaryDuration').textContent = `${minutes}m ${seconds}s`;
+    
     document.getElementById('summaryModal').style.display = 'flex';
     trackingStartTime = null;
 }
+// --- END: ACTIVATED SUMMARY FEATURE FUNCTION ---
+
 function calculateRouteDistance(coordinates) {
     let totalDistance = 0;
+    if (coordinates.length < 2) return 0;
     for (let i = 0; i < coordinates.length - 1; i++) {
         const p1 = { lat: coordinates[i][1], lng: coordinates[i][0] };
         const p2 = { lat: coordinates[i+1][1], lng: coordinates[i+1][0] };
-        const R = 6371e3;
+        const R = 6371e3; // Radius of the Earth in meters
         const φ1 = p1.lat * Math.PI / 180;
         const φ2 = p2.lat * Math.PI / 180;
         const Δφ = (p2.lat - p1.lat) * Math.PI / 180;
@@ -930,10 +977,11 @@ function calculateRouteDistance(coordinates) {
 }
 async function fetchAndDisplayLeaderboard(metric) {
     const leaderboardList = document.getElementById('leaderboardList');
+    if (!leaderboardList) return;
     leaderboardList.innerHTML = '<li>Loading...</li>';
     try {
-        const usersRef = collection(db, "users");
-        const q = query(usersRef, orderBy(metric, "desc"), limit(10));
+        const profilesRef = collection(db, "publicProfiles");
+        const q = query(profilesRef, orderBy(metric, "desc"), limit(10));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
@@ -943,21 +991,22 @@ async function fetchAndDisplayLeaderboard(metric) {
 
         leaderboardList.innerHTML = '';
         let rank = 1;
-        for (const userDoc of querySnapshot.docs) {
-            const userData = userDoc.data();
-            const publicProfileSnap = await getDoc(doc(db, "publicProfiles", userDoc.id));
+        querySnapshot.forEach(doc => {
+            const profileData = doc.data();
+            const li = document.createElement('li');
             
-            if (publicProfileSnap.exists()) {
-                const username = publicProfileSnap.data().username;
-                const li = document.createElement('li');
-                const score = metric === 'totalDistance'
-                    ? `${(userData.totalDistance / 1000).toFixed(2)} km`
-                    : userData.totalPins;
-                li.innerHTML = `<span class="leaderboard-rank">${rank}.</span><span class="leaderboard-name">${username}</span><span class="leaderboard-score">${score}</span>`;
-                leaderboardList.appendChild(li);
-                rank++;
-            }
-        }
+            const score = metric === 'totalDistance'
+                ? `${(profileData.totalDistance / 1000).toFixed(2)} km`
+                : profileData.totalPins;
+
+            li.innerHTML = `
+                <span class="leaderboard-rank">${rank}.</span>
+                <span class="leaderboard-name">${profileData.username}</span>
+                <span class="leaderboard-score">${score}</span>
+            `;
+            leaderboardList.appendChild(li);
+            rank++;
+        });
     } catch (error) {
         console.error("Error fetching leaderboard:", error);
         leaderboardList.innerHTML = '<li>Could not load leaderboard data.</li>';
@@ -966,4 +1015,3 @@ async function fetchAndDisplayLeaderboard(metric) {
         }
     }
 }
-
