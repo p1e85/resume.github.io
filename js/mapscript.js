@@ -1,6 +1,6 @@
 // --- Firebase SDK Setup ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, orderBy, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, orderBy, where, deleteDoc, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import {
     getAuth,
@@ -42,6 +42,7 @@ let isSignUpMode = true;
 let userMarkers = [];
 let communityMarkers = [];
 const ZOOM_THRESHOLD = 14;
+let trackingStartTime = null;
 
 const mapStyles = [
     { name: 'Streets', url: 'mapbox://styles/mapbox/streets-v12' },
@@ -67,11 +68,12 @@ const allBadges = {
     community_pillar: { name: 'Community Pillar', icon: '🏛️', description: 'Published 100 routes. You are a legend!' }
 };
 
+
 // --- Main App Initialization ---
-// This listener ensures NO code runs until the HTML is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- All Element References are now safely inside here ---
+    checkAndClearOldData();
+
     const termsModal = document.getElementById('termsModal');
     const authModal = document.getElementById('authModal');
     const agreeBtn = document.getElementById('agreeBtn');
@@ -117,8 +119,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const safetyModalOkBtn = document.getElementById('safetyModalOkBtn');
     const safetyModalCloseBtn = safetyModal.querySelector('.close-btn');
     const changeStyleBtn = document.getElementById('changeStyleBtn');
+    const centerOnRouteBtn = document.getElementById('centerOnRouteBtn');
+    const summaryModal = document.getElementById('summaryModal');
+    const summaryOkBtn = document.getElementById('summaryOkBtn');
+    const summaryModalCloseBtn = summaryModal.querySelector('.close-btn');
+    const leaderboardBtn = document.getElementById('leaderboardBtn');
+    const leaderboardModal = document.getElementById('leaderboardModal');
+    const leaderboardModalCloseBtn = leaderboardModal.querySelector('.close-btn');
+    const leaderboardTabs = document.querySelectorAll('.leaderboard-tab');
 
-    // --- Firebase Auth State Listener is now safely inside ---
     onAuthStateChanged(auth, async (user) => {
         const userStatus = document.getElementById('userStatus');
         const loggedInContent = document.getElementById('loggedInContent');
@@ -134,14 +143,19 @@ document.addEventListener('DOMContentLoaded', () => {
             currentUser = user;
             try {
                 const userDocRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(userDocRef);
-                if (docSnap.exists()) {
-                    const username = docSnap.data().username;
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists() && userDocSnap.data().totalPins === undefined) {
+                    await updateDoc(userDocRef, { totalPins: 0, totalDistance: 0, totalRoutes: 0 });
+                }
+                const publicProfileRef = doc(db, "publicProfiles", user.uid);
+                const publicProfileSnap = await getDoc(publicProfileRef);
+                if (publicProfileSnap.exists()) {
+                    const username = publicProfileSnap.data().username;
                     if (userEmailSpan) userEmailSpan.textContent = `Logged in as: ${username}`;
-                } else { if (userEmailSpan) userEmailSpan.textContent = `Logged in`; }
+                }
+
             } catch (error) {
-                console.error("Error fetching username:", error);
-                if (userEmailSpan) userEmailSpan.textContent = `Logged in`;
+                console.error("Error fetching or updating user profile:", error);
             }
             if (loggedInContent) loggedInContent.style.display = 'flex';
             if (guestContent) guestContent.style.display = 'none';
@@ -159,7 +173,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Initial UI Setup ---
     if (sessionStorage.getItem('termsAccepted')) {
         termsModal.style.display = 'none';
         document.getElementById('userStatus').style.display = 'flex';
@@ -167,7 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
         termsModal.style.display = 'flex';
     }
 
-    // --- Mapbox Setup ---
     mapboxgl.accessToken = 'pk.eyJ1IjoicDFjcmVhdGlvbnMiLCJhIjoiY2p6ajZvejJmMDZhaTNkcWpiN294dm12eCJ9.8ckNT6kfuJry7K7GAeIuxw';
     map = new mapboxgl.Map({
         container: 'map',
@@ -184,7 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleMarkerVisibility();
     });
 
-    // --- Event Listeners ---
     const validateSignUpForm = () => {
         const isEmailValid = emailInput.value.includes('@');
         const isPasswordValid = passwordInput.value.length >= 6;
@@ -200,7 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
     passwordInput.addEventListener('input', validateSignUpForm);
     usernameInput.addEventListener('input', validateSignUpForm);
     ageCheckbox.addEventListener('change', validateSignUpForm);
-
     infoBtn.addEventListener('click', () => infoModal.style.display = 'flex');
     infoModalCloseBtn.addEventListener('click', () => infoModal.style.display = 'none');
     viewTermsLink.addEventListener('click', (e) => {
@@ -243,10 +253,26 @@ document.addEventListener('DOMContentLoaded', () => {
         safetyModal.style.display = 'none';
         startTracking();
     });
+    summaryModalCloseBtn.addEventListener('click', () => summaryModal.style.display = 'none');
+    summaryOkBtn.addEventListener('click', () => summaryModal.style.display = 'none');
+    leaderboardBtn.addEventListener('click', () => {
+        leaderboardModal.style.display = 'flex';
+        fetchAndDisplayLeaderboard('totalPins');
+    });
+    leaderboardModalCloseBtn.addEventListener('click', () => leaderboardModal.style.display = 'none');
+    leaderboardTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            leaderboardTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            fetchAndDisplayLeaderboard(tab.dataset.metric);
+        });
+    });
+    
     window.addEventListener('click', (event) => {
-        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal, profileModal, publicProfileModal, safetyModal];
+        const modals = [dataModal, sessionsModal, localSessionsModal, infoModal, authModal, publishedRoutesModal, profileModal, publicProfileModal, safetyModal, summaryModal, leaderboardModal];
         if (modals.includes(event.target)) modals.forEach(m => m.style.display = 'none');
     });
+    
     saveBtn.addEventListener('click', saveSession);
     loadBtn.addEventListener('click', () => {
         dataModal.style.display = 'none';
@@ -270,9 +296,8 @@ document.addEventListener('DOMContentLoaded', () => {
     saveProfileBtn.addEventListener('click', saveProfile);
     deleteAccountBtn.addEventListener('click', handleAccountDeletion);
     changeStyleBtn.addEventListener('click', changeMapStyle);
+    centerOnRouteBtn.addEventListener('click', centerOnRoute);
 });
-
-// --- Functions ---
 
 function initializeMapLayers() {
     if (!map.getSource('user-route')) map.addSource('user-route', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } } });
@@ -293,6 +318,7 @@ function changeMapStyle() {
         initializeMapLayers();
         userMarkers.forEach(marker => marker.addTo(map));
         communityMarkers.forEach(marker => marker.addTo(map));
+        toggleMarkerVisibility();
         if (isCommunityViewOn) fetchAndDisplayCommunityRoutes();
         updateUserPinsSource();
     });
@@ -304,10 +330,26 @@ function toggleMarkerVisibility() {
     communityMarkers.forEach(marker => marker.getElement().style.display = display);
 }
 
-function convertRouteForFirestore(coordsArray) { return coordsArray.map(coord => ({ lng: coord[0], lat: coord[1] })); }
-function convertRouteFromFirestore(coordsObjects) { if (!coordsObjects) return []; return coordsObjects.map(coord => [coord.lng, coord.lat]); }
-function convertPinsForFirestore(pinsArray) { return pinsArray.map(pin => ({ ...pin, coords: { lng: pin.coords[0], lat: pin.coords[1] } })); }
-function convertPinsFromFirestore(pinsObjects) { if (!pinsObjects) return []; return pinsObjects.map(pin => ({ ...pin, coords: [pin.coords.lng, pin.coords.lat] })); }
+function convertRouteForFirestore(coordsArray) { if (!coordsArray) return []; return coordsArray.map(coord => ({ lng: coord[0], lat: coord[1] })); }
+function convertRouteFromFirestore(coordsData) { if (!coordsData || coordsData.length === 0) return []; if (Array.isArray(coordsData[0])) { return coordsData; } return coordsData.map(coord => [coord.lng, coord.lat]); }
+function convertPinsForFirestore(pinsArray) { if (!pinsArray) return []; return pinsArray.map(pin => { const newPin = { ...pin }; if (Array.isArray(newPin.coords)) { newPin.coords = { lng: newPin.coords[0], lat: newPin.coords[1] }; } return newPin; }); }
+function convertPinsFromFirestore(pinsData) { if (!pinsData || pinsData.length === 0) return []; return pinsData.map(pin => { const newPin = { ...pin }; if (newPin.coords && typeof newPin.coords === 'object' && !Array.isArray(newPin.coords)) { newPin.coords = [newPin.coords.lng, newPin.coords.lat]; } return newPin; }); }
+
+function checkAndClearOldData() {
+    const guestSessionsJSON = localStorage.getItem('guestSessions');
+    if (guestSessionsJSON) {
+        try {
+            const guestSessions = JSON.parse(guestSessionsJSON);
+            if (guestSessions.length > 0 && guestSessions[0].route && Array.isArray(guestSessions[0].route[0])) {
+                alert("The app has been updated. Your old locally saved sessions are no longer compatible and will be cleared.");
+                localStorage.removeItem('guestSessions');
+            }
+        } catch (error) {
+            console.error("Error parsing old guest sessions, clearing data.", error);
+            localStorage.removeItem('guestSessions');
+        }
+    }
+}
 
 function updateAuthModalUI() {
     const authForm = document.getElementById('authForm'), authTitle = document.getElementById('authTitle'), authSubtitle = document.getElementById('authSubtitle'), authActionBtn = document.getElementById('authActionBtn'), emailInput = document.getElementById('emailInput'), passwordInput = document.getElementById('passwordInput'), usernameInput = document.getElementById('usernameInput'), ageCheckbox = document.getElementById('ageCheckbox');
@@ -329,7 +371,9 @@ async function handleSignUp() {
     if (!username || username.trim().length < 3) { authError.textContent = 'Username must be at least 3 characters.'; return; }
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await setDoc(doc(db, "users", userCredential.user.uid), { username, email: userCredential.user.email, totalPins: 0, totalDistance: 0, totalRoutes: 0, badges: {} });
+        const userId = userCredential.user.uid;
+        await setDoc(doc(db, "users", userId), { email: userCredential.user.email, totalPins: 0, totalDistance: 0, totalRoutes: 0 });
+        await setDoc(doc(db, "publicProfiles", userId), { username, bio: "This user is new to Litter Bugs!", location: "", buyMeACoffeeLink: "", badges: {} });
     } catch (error) { authError.textContent = error.message; }
 }
 
@@ -356,12 +400,14 @@ function toggleTracking() {
         trackBtn.textContent = '🛰️ Start Tracking';
         trackBtn.classList.remove('tracking');
         if (map.getSource('user-location-point')) map.getSource('user-location-point').setData({ type: 'Feature', geometry: { type: 'Point', coordinates: [] } });
+        showCleanupSummary();
     } else { document.getElementById('safetyModal').style.display = 'flex'; }
 }
 
 function startTracking() {
+    clearCurrentSession();
     const trackBtn = document.getElementById('trackBtn');
-    routeCoordinates = [];
+    trackingStartTime = new Date();
     navigator.geolocation.getCurrentPosition(pos => map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 16 }));
     trackingWatcher = navigator.geolocation.watchPosition(pos => {
         const newCoord = [pos.coords.longitude, pos.coords.latitude];
@@ -389,13 +435,15 @@ async function handlePhoto(event) {
     }
     navigator.geolocation.getCurrentPosition(async (position) => {
         const coords = [position.coords.longitude, position.coords.latitude];
+        const defaultTitle = `Pin ${photoPins.length + 1}`;
         if (!currentUser) {
             const reader = new FileReader();
             reader.readAsDataURL(processedFile);
             reader.onload = e => {
-                const pinInfo = { id: `pin-${Date.now()}`, coords, image: e.target.result, title: 'New Photo' };
+                const pinInfo = { id: `pin-${Date.now()}`, coords, image: e.target.result, title: defaultTitle, category: 'Other' };
                 photoPins.push(pinInfo);
-                createAndAddMarker(pinInfo, 'user');
+                const newMarker = createAndAddMarker(pinInfo, 'user');
+                newMarker.togglePopup();
                 updateUserPinsSource();
             };
         } else {
@@ -404,9 +452,10 @@ async function handlePhoto(event) {
                 const storageRef = ref(storage, `photos/${currentUser.uid}/${timestamp}-${processedFile.name}`);
                 const snapshot = await uploadBytes(storageRef, processedFile);
                 const downloadURL = await getDownloadURL(snapshot.ref);
-                const pinInfo = { id: `pin-${timestamp}`, coords, imageURL: downloadURL, title: 'New Photo' };
+                const pinInfo = { id: `pin-${timestamp}`, coords, imageURL: downloadURL, title: defaultTitle, category: 'Other' };
                 photoPins.push(pinInfo);
-                createAndAddMarker(pinInfo, 'user');
+                const newMarker = createAndAddMarker(pinInfo, 'user');
+                newMarker.togglePopup();
                 updateUserPinsSource();
             } catch (error) { console.error("Error uploading photo:", error); alert("Photo upload failed."); }
         }
@@ -430,29 +479,40 @@ function createAndAddMarker(pinInfo, type, routeInfo = {}) {
         el.style.borderColor = '#28a745';
         communityMarkers.push(marker);
     }
+    return marker;
 }
 
 function createPinPopup(pinInfo, type, routeInfo) {
     let popupHTML;
     if (type === 'user') {
-        popupHTML = `<div><img src="${pinInfo.imageURL || pinInfo.image}" alt="User photo" style="width:100%; height:auto; border-radius: 4px;"/><input type="text" id="title-${pinInfo.id}" value="${pinInfo.title}" placeholder="Enter a title" style="width: 95%; margin-top: 10px;"><div style="display: flex; justify-content: space-between; margin-top: 5px;"><button id="save-${pinInfo.id}">Save Title</button><button id="delete-${pinInfo.id}" style="background-color: #dc3545;">Delete</button></div></div>`;
+        const categories = ['Plastic', 'Glass', 'Metal', 'Paper', 'Other'];
+        const optionsHTML = categories.map(cat => `<option value="${cat}" ${pinInfo.category === cat ? 'selected' : ''}>${cat}</option>`).join('');
+        popupHTML = `<div><img src="${pinInfo.imageURL || pinInfo.image}" alt="User photo" style="width:100%; height:auto; border-radius: 4px;"/><div class="pin-popup-form"><input type="text" id="title-${pinInfo.id}" value="${pinInfo.title}" placeholder="Enter a title"><select id="category-${pinInfo.id}">${optionsHTML}</select><div style="display: flex; justify-content: space-between; gap: 10px;"><button id="update-${pinInfo.id}" style="flex-grow: 1;">Update</button><button id="delete-${pinInfo.id}" style="background-color: #dc3545;">Delete</button></div></div></div>`;
     } else {
-        popupHTML = `<div><img src="${pinInfo.imageURL}" alt="Community photo" style="width:100%; border-radius: 4px;"/><p style="margin: 5px 0 0;"><strong>${pinInfo.title}</strong></p><small>By: <a href="#" class="profile-link" data-userid="${routeInfo.userId}">${routeInfo.username || 'A user'}</a></small></div>`;
+        popupHTML = `<div><img src="${pinInfo.imageURL}" alt="Community photo" style="width:100%; border-radius: 4px;"/><p style="margin: 5px 0 0;"><strong>${pinInfo.title}</strong></p><p style="margin: 5px 0 0; font-style: italic; color: #555;">Category: ${pinInfo.category || 'Other'}</p><small>By: <a href="#" class="profile-link" data-userid="${routeInfo.userId}">${routeInfo.username || 'A user'}</a></small></div>`;
     }
     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(popupHTML);
     popup.on('open', () => {
         if (type === 'user') {
-            document.getElementById(`save-${pinInfo.id}`)?.addEventListener('click', () => {
+            document.getElementById(`update-${pinInfo.id}`)?.addEventListener('click', () => {
                 const pin = photoPins.find(p => p.id === pinInfo.id);
-                if (pin) pin.title = document.getElementById(`title-${pinInfo.id}`).value;
-                popup.remove(); alert("Title updated! Remember to save your session.");
+                if (pin) {
+                    pin.title = document.getElementById(`title-${pinInfo.id}`).value;
+                    pin.category = document.getElementById(`category-${pinInfo.id}`).value;
+                }
+                popup.remove(); alert("Pin updated! Remember to save your session.");
             });
             document.getElementById(`delete-${pinInfo.id}`)?.addEventListener('click', () => {
                 if (confirm("Are you sure?")) {
                     photoPins = photoPins.filter(p => p.id !== pinInfo.id);
-                    const markerToRemove = userMarkers.find(m => m.getLngLat().lng === pinInfo.coords[0] && m.getLngLat().lat === pinInfo.coords[1]);
-                    if(markerToRemove) markerToRemove.remove();
-                    userMarkers = userMarkers.filter(m => m !== markerToRemove);
+                    const markerToRemove = userMarkers.find(m => {
+                        const lngLat = m.getLngLat();
+                        return lngLat.lng === pinInfo.coords[0] && lngLat.lat === pinInfo.coords[1];
+                    });
+                    if (markerToRemove) {
+                        markerToRemove.remove();
+                        userMarkers = userMarkers.filter(m => m !== markerToRemove);
+                    }
                     updateUserPinsSource();
                     popup.remove();
                 }
@@ -473,7 +533,9 @@ function updateUserPinsSource() {
         geometry: { type: 'Point', coordinates: pin.coords },
         properties: {}
     }));
-    if (map.getSource('user-pins-source')) map.getSource('user-pins-source').setData({ type: 'FeatureCollection', features });
+    if (map.getSource('user-pins-source')) {
+        map.getSource('user-pins-source').setData({ type: 'FeatureCollection', features });
+    }
 }
 
 async function toggleCommunityView() {
@@ -532,8 +594,8 @@ async function publishRoute() {
     if (!currentUser) return;
     if (routeCoordinates.length < 2 || photoPins.length === 0) { alert("You need a tracked route and at least one photo pin to publish."); return; }
     try {
-        const userDocRef = doc(db, "users", currentUser.uid);
-        const docSnap = await getDoc(userDocRef);
+        const publicProfileRef = doc(db, "publicProfiles", currentUser.uid);
+        const docSnap = await getDoc(publicProfileRef);
         if (!docSnap.exists()) throw new Error("Could not find user profile.");
         const username = docSnap.data().username;
         await addDoc(collection(db, "publishedRoutes"), { userId: currentUser.uid, username, timestamp: new Date(), route: convertRouteForFirestore(routeCoordinates), pins: convertPinsForFirestore(photoPins) });
@@ -549,7 +611,7 @@ async function saveSession() {
         const sessionName = prompt("Name this local session:", `Cleanup on ${new Date().toLocaleDateString()}`);
         if (sessionName) {
             const guestSessions = JSON.parse(localStorage.getItem('guestSessions')) || [];
-            guestSessions.push({ sessionName, timestamp: new Date().toISOString(), pins: photoPins, route: routeCoordinates });
+            guestSessions.push({ sessionName, timestamp: new Date().toISOString(), pins: convertPinsForFirestore(photoPins), route: convertRouteForFirestore(routeCoordinates) });
             localStorage.setItem('guestSessions', JSON.stringify(guestSessions));
             alert(`Session "${sessionName}" saved locally.`);
             dataModal.style.display = 'none';
@@ -605,9 +667,11 @@ function loadSpecificLocalSession(sessionIndex) {
     const sessionData = guestSessions[sessionIndex];
     if (sessionData) {
         clearCurrentSession();
-        displaySessionData(sessionData);
+        const convertedData = { ...sessionData, pins: convertPinsFromFirestore(sessionData.pins), route: convertRouteFromFirestore(sessionData.route) };
+        displaySessionData(convertedData);
         alert(`Session "${sessionData.sessionName}" loaded!`);
         document.getElementById('localSessionsModal').style.display = 'none';
+        document.getElementById('centerOnRouteBtn').disabled = false;
     }
 }
 
@@ -649,6 +713,7 @@ async function loadSpecificSession(sessionId) {
             displaySessionData({ ...sessionData, pins: convertPinsFromFirestore(sessionData.pins), route: convertRouteFromFirestore(sessionData.route) });
             alert(`Session "${sessionData.sessionName}" loaded!`);
             document.getElementById('sessionsModal').style.display = 'none';
+            document.getElementById('centerOnRouteBtn').disabled = false;
         }
     } catch (error) { console.error("Error loading specific session:", error); alert("Failed to load session."); }
 }
@@ -660,6 +725,7 @@ function clearCurrentSession() {
     routeCoordinates = [];
     updateUserPinsSource();
     if (map && map.getSource('user-route')) map.getSource('user-route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
+    document.getElementById('centerOnRouteBtn').disabled = true;
 }
 
 function displaySessionData(data) {
@@ -674,7 +740,7 @@ function exportGeoJSON() {
     const now = new Date();
     const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
     const fileName = `litter_bugs_data_${timestamp}.geojson`;
-    const pinFeatures = photoPins.map(pin => ({ type: 'Feature', geometry: { type: 'Point', coordinates: pin.coords }, properties: { title: pin.title, image_url: pin.imageURL || 'local_data' } }));
+    const pinFeatures = photoPins.map(pin => ({ type: 'Feature', geometry: { type: 'Point', coordinates: pin.coords }, properties: { title: pin.title, image_url: pin.imageURL || 'local_data', category: pin.category } }));
     const routeFeature = { type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoordinates }, properties: {} };
     const geojson = { type: 'FeatureCollection', features: [...pinFeatures, routeFeature] };
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(geojson, null, 2));
@@ -722,25 +788,22 @@ async function deletePublishedRoute(routeId) {
 async function loadProfileForEditing() {
     if (!currentUser) return;
     try {
-        const docSnap = await getDoc(doc(db, "users", currentUser.uid));
+        const docSnap = await getDoc(doc(db, "publicProfiles", currentUser.uid));
         if (docSnap.exists()) {
             const profileData = docSnap.data();
             document.getElementById('bioInput').value = profileData.bio || '';
             document.getElementById('locationInput').value = profileData.location || '';
             document.getElementById('coffeeLinkInput').value = profileData.buyMeACoffeeLink || '';
         }
-    } catch (error) { console.error("Error loading profile:", error); alert("Could not load your profile."); }
+    } catch (error) { console.error("Error loading profile:", error); alert("Could not load your profile for editing."); }
 }
 
 async function saveProfile() {
     if (!currentUser) return;
     const bio = document.getElementById('bioInput').value, location = document.getElementById('locationInput').value, coffeeLink = document.getElementById('coffeeLinkInput').value;
     try {
-        const userDocRef = doc(db, "users", currentUser.uid);
-        await updateDoc(userDocRef, { bio, location, buyMeACoffeeLink: coffeeLink });
-        const userEmailSpan = document.getElementById('userEmail');
-        const userProfile = await getDoc(userDocRef);
-        if (userProfile.exists() && userEmailSpan) userEmailSpan.textContent = `Logged in as: ${userProfile.data().username}`;
+        const publicProfileRef = doc(db, "publicProfiles", currentUser.uid);
+        await updateDoc(publicProfileRef, { bio, location, buyMeACoffeeLink: coffeeLink });
         alert("Profile updated successfully!");
         document.getElementById('profileModal').style.display = 'none';
     } catch (error) { console.error("Error saving profile:", error); alert("Error saving profile."); }
@@ -749,7 +812,9 @@ async function saveProfile() {
 async function showPublicProfile(userId) {
     if (!userId) return;
     try {
-        const docSnap = await getDoc(doc(db, "users", userId));
+        const publicProfileRef = doc(db, "publicProfiles", userId);
+        const docSnap = await getDoc(publicProfileRef);
+
         if (docSnap.exists()) {
             const profileData = docSnap.data();
             const publicProfileModal = document.getElementById('publicProfileModal');
@@ -758,6 +823,7 @@ async function showPublicProfile(userId) {
             document.getElementById('profileUsername').textContent = profileData.username || 'Anonymous User';
             document.getElementById('profileLocation').textContent = profileData.location || '';
             document.getElementById('profileBio').textContent = profileData.bio || 'This user has not written a bio yet.';
+            
             profileAchievementsContainer.innerHTML = '';
             const userBadges = profileData.badges || {};
             let earnedBadgesCount = 0;
@@ -773,6 +839,7 @@ async function showPublicProfile(userId) {
                 }
             }
             if (earnedBadgesCount === 0) profileAchievementsContainer.innerHTML = '<p class="no-badges-message">This user hasn\'t earned any badges yet.</p>';
+
             if (profileData.buyMeACoffeeLink) {
                 profileSupportBtn.style.display = 'block';
                 profileSupportBtn.onclick = () => window.open(profileData.buyMeACoffeeLink, '_blank');
@@ -797,7 +864,8 @@ async function handleAccountDeletion() {
         await Promise.all(publishedRoutesSnapshot.docs.map(d => deleteDoc(d.ref)));
         console.log("Published routes deleted.");
         await deleteDoc(doc(db, "users", currentUser.uid));
-        console.log("User profile document deleted.");
+        await deleteDoc(doc(db, "publicProfiles", currentUser.uid));
+        console.log("User documents deleted.");
         await deleteUser(currentUser);
         alert("Your account and all associated data have been permanently deleted.");
         document.getElementById('profileModal').style.display = 'none';
@@ -808,3 +876,90 @@ async function handleAccountDeletion() {
         } else { alert("An error occurred while deleting your account."); }
     }
 }
+function centerOnRoute() {
+    if (routeCoordinates.length < 1) {
+        alert("No route is currently loaded to center on.");
+        return;
+    }
+    const bounds = new mapboxgl.LngLatBounds();
+    routeCoordinates.forEach(coord => {
+        bounds.extend(coord);
+    });
+    photoPins.forEach(pin => {
+        bounds.extend(pin.coords);
+    });
+    map.fitBounds(bounds, {
+        padding: 60,
+        maxZoom: 16
+    });
+}
+function showCleanupSummary() {
+    if (!trackingStartTime) return;
+    const durationMs = new Date() - trackingStartTime;
+    const distanceMeters = calculateRouteDistance(routeCoordinates);
+    const pinsCount = photoPins.length;
+    const distanceMiles = (distanceMeters * 0.000621371).toFixed(2);
+    const minutes = Math.floor(durationMs / 60000);
+    const seconds = ((durationMs % 60000) / 1000).toFixed(0);
+    document.getElementById('summaryDistance').textContent = `${distanceMiles} mi`;
+    document.getElementById('summaryPins').textContent = pinsCount;
+    document.getElementById('summaryDuration').textContent = `${minutes}m ${seconds}s`;
+    document.getElementById('summaryModal').style.display = 'flex';
+    trackingStartTime = null;
+}
+function calculateRouteDistance(coordinates) {
+    let totalDistance = 0;
+    for (let i = 0; i < coordinates.length - 1; i++) {
+        const p1 = { lat: coordinates[i][1], lng: coordinates[i][0] };
+        const p2 = { lat: coordinates[i+1][1], lng: coordinates[i+1][0] };
+        const R = 6371e3;
+        const φ1 = p1.lat * Math.PI / 180;
+        const φ2 = p2.lat * Math.PI / 180;
+        const Δφ = (p2.lat - p1.lat) * Math.PI / 180;
+        const Δλ = (p2.lng - p1.lng) * Math.PI / 180;
+        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        totalDistance += R * c;
+    }
+    return totalDistance;
+}
+async function fetchAndDisplayLeaderboard(metric) {
+    const leaderboardList = document.getElementById('leaderboardList');
+    leaderboardList.innerHTML = '<li>Loading...</li>';
+    try {
+        const profilesRef = collection(db, "publicProfiles");
+        const q = query(profilesRef, orderBy(metric, "desc"), limit(10));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            leaderboardList.innerHTML = '<li>No user data yet. Be the first!</li>';
+            return;
+        }
+
+        leaderboardList.innerHTML = '';
+        let rank = 1;
+        querySnapshot.forEach(doc => {
+            const profileData = doc.data();
+            const li = document.createElement('li');
+            
+            const score = metric === 'totalDistance'
+                ? `${(profileData.totalDistance / 1000).toFixed(2)} km`
+                : profileData.totalPins;
+
+            li.innerHTML = `
+                <span class="leaderboard-rank">${rank}.</span>
+                <span class="leaderboard-name">${profileData.username}</span>
+                <span class="leaderboard-score">${score}</span>
+            `;
+            leaderboardList.appendChild(li);
+            rank++;
+        });
+    } catch (error) {
+        console.error("Error fetching leaderboard:", error);
+        leaderboardList.innerHTML = '<li>Could not load leaderboard data.</li>';
+        if (error.code === 'failed-precondition') {
+            alert("Leaderboard data requires a new database index. Please check the browser console for a link to create it automatically.");
+        }
+    }
+}
+
