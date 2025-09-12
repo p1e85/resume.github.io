@@ -92,6 +92,61 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 4px 5px rgba(0,0,0,0.2);
             transform: translateY(2px);
         }
+         #character-menu-btn-mobile {
+            font-size: 0.75rem;
+            padding: 0.5rem;
+            background-color: #4a5568;
+            border-radius: 5px;
+        }
+        
+        /* Character Menu */
+        #character-menu {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .character-menu-content {
+            background-color: #2d3748;
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 3px solid #4a5568;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .character-card {
+            background-color: #4a5568;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .character-card.selected {
+            border-color: #f6e05e;
+            box-shadow: 0 0 15px #f6e05e;
+        }
+        .character-card.locked {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .character-card svg {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+        
         /* Hide mobile controls on large screens */
         @media (min-width: 1024px) {
             #mobile-controls, #collectibles-bar { display: none; }
@@ -106,7 +161,7 @@
     <div class="game-wrapper">
         <canvas id="gameCanvas"></canvas>
         <div id="messageBox" class="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-70 text-white text-2xl md:text-4xl hidden rounded-lg text-center p-4">
-            <span id="winMessage">You Won!</span>
+            <span id="winMessage"></span>
             <span id="scoreMessage" class="text-xl md:text-2xl mt-4"></span>
         </div>
     </div>
@@ -117,6 +172,7 @@
             <span class="text-yellow-400">Coins: <span id="coin-count">0</span></span><br>
             <span class="text-white">High: <span id="high-score-count">0</span></span>
         </div>
+        <button id="character-menu-btn-mobile">Chars</button>
         <div id="inventory">
             <div class="inventory-slot" id="slot-0"></div>
             <div class="inventory-slot" id="slot-1"></div>
@@ -133,6 +189,17 @@
         <button id="jumpBtn" class="control-button flex items-center justify-center text-white font-bold">&#x2191;</button>
     </div>
 
+    <!-- Character Menu -->
+    <div id="character-menu" class="hidden">
+        <div class="character-menu-content">
+            <h2 class="text-3xl">Select Character</h2>
+            <div id="character-grid" class="character-grid">
+                <!-- Character cards will be populated by JS -->
+            </div>
+            <button id="close-char-menu" class="px-4 py-2 bg-red-600 rounded">Close</button>
+        </div>
+    </div>
+
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -147,24 +214,35 @@
             document.getElementById('slot-1'),
             document.getElementById('slot-2'),
         ];
+        const characterMenu = document.getElementById('character-menu');
+        const characterGrid = document.getElementById('character-grid');
+        const closeCharMenuBtn = document.getElementById('close-char-menu');
+        const openCharMenuBtnMobile = document.getElementById('character-menu-btn-mobile');
+
 
         let gameRunning = true;
-        const WINNING_SCORE = 50;
         const BASE_GRAVITY = 0.8;
         const BASE_JUMP = 19;
         let BASE_SPEED;
 
         // Game state
-        let player, platforms, coins, powerUps, keys, scrollOffset, score, inventory, highScore;
+        let player, platforms, coins, powerUps, keys, scrollOffset, score, inventory, highScore, selectedCharacterId;
         let activePowerUps = { speed: false, jump: false, gravity: false, magnet: false, shield: false };
         let lastPlatformY;
+
+        // --- CHARACTER DATA ---
+        const characters = [
+            { id: 'blue', name: 'Default', unlockScore: 0, svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#4299e1" rx="15"/><circle cx="30" cy="35" r="10" fill="white"/><circle cx="70" cy="35" r="10" fill="white"/><rect x="25" y="65" width="50" height="10" rx="5" fill="white"/></svg>` },
+            { id: 'green', name: 'Greenie', unlockScore: 25, svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#48bb78" rx="15"/><circle cx="30" cy="35" r="10" fill="white"/><circle cx="70" cy="35" r="10" fill="white"/><rect x="25" y="65" width="50" height="10" rx="5" fill="white"/></svg>` },
+            { id: 'red', name: 'Red', unlockScore: 50, svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#f56565" rx="15"/><circle cx="30" cy="35" r="10" fill="white"/><circle cx="70" cy="35" r="10" fill="white"/><rect x="25" y="65" width="50" height="10" rx="5" fill="white"/></svg>` },
+            { id: 'gold', name: 'Goldie', unlockScore: 100, svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#f6e05e" rx="15"/><circle cx="30" cy="35" r="10" fill="#2d3748"/><circle cx="70" cy="35" r="10" fill="#2d3748"/><rect x="25" y="65" width="50" height="10" rx="5" fill="#2d3748"/></svg>` },
+        ];
 
 
         // --- IMAGES ---
         const playerImage = new Image(), platformImage = new Image(), coinImage = new Image(), backgroundImage = new Image();
         const speedBoostImage = new Image(), jumpBoostImage = new Image(), lowGravityImage = new Image(), magnetImage = new Image(), shieldImage = new Image();
 
-        const playerSVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#4299e1" rx="15"/><circle cx="30" cy="35" r="10" fill="white"/><circle cx="70" cy="35" r="10" fill="white"/><rect x="25" y="65" width="50" height="10" rx="5" fill="white"/></svg>`;
         const platformSVG = `<svg viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="50" fill="#a0aec0" rx="10"/></svg>`;
         const coinSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><radialGradient id="grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%"><stop offset="0%" style="stop-color:rgb(255,255,224);stop-opacity:1" /><stop offset="100%" style="stop-color:rgb(251,211,141);stop-opacity:1" /></radialGradient></defs><circle cx="50" cy="50" r="45" fill="#fbb040"/><circle cx="50" cy="50" r="38" fill="url(#grad1)"/><path d="M50,15 C69.33,15 85,30.67 85,50 C85,69.33 69.33,85 50,85 C30.67,85 15,69.33 15,50 C15,30.67 30.67,15 50,15 M50,5 A45,45 0 0,0 5,50 A45,45 0 0,0 50,95 A45,45 0 0,0 95,50 A45,45 0 0,0 50,5 Z" fill="#f7931e"/><text x="50" y="62" font-family="'Press Start 2P', cursive" font-size="30" fill="#f7931e" text-anchor="middle">C</text></svg>`;
         const backgroundSVG = `<svg viewBox="0 0 800 1200" xmlns="http://www.w3.org/2000/svg"><rect width="800" height="1200" fill="#2d3748"/><circle cx="700" cy="150" r="50" fill="#f6e05e"/></svg>`;
@@ -174,7 +252,6 @@
         const magnetSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f687b3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 00-10 10v10a4 4 0 004 4h12a4 4 0 004-4V12A10 10 0 0012 2zM12 10v12"/></svg>`;
         const shieldSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#a0aec0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
 
-        playerImage.src = 'data:image/svg+xml;base64,' + btoa(playerSVG);
         platformImage.src = 'data:image/svg+xml;base64,' + btoa(platformSVG);
         coinImage.src = 'data:image/svg+xml;base64,' + btoa(coinSVG);
         backgroundImage.src = 'data:image/svg+xml;base64,' + btoa(backgroundSVG);
@@ -185,11 +262,9 @@
         shieldImage.src = 'data:image/svg+xml;base64,' + btoa(shieldSVG);
 
         const powerUpTypes = {
-            speed: { image: speedBoostImage, duration: 5000 },
-            jump: { image: jumpBoostImage, duration: 10000 },
-            gravity: { image: lowGravityImage, duration: 10000 },
-            magnet: { image: magnetImage, duration: 8000 },
-            shield: { image: shieldImage, duration: -1 }, // -1 for single use
+            speed: { image: speedBoostImage, duration: 5000 }, jump: { image: jumpBoostImage, duration: 10000 },
+            gravity: { image: lowGravityImage, duration: 10000 }, magnet: { image: magnetImage, duration: 8000 },
+            shield: { image: shieldImage, duration: -1 },
         };
         
         // --- CLASSES ---
@@ -206,15 +281,8 @@
                 if (this.position.x < 0) this.position.x = 0;
                 if (this.position.y > canvas.height) {
                     if (activePowerUps.shield) {
-                        activePowerUps.shield = false;
-                        const inventoryIndex = inventory.indexOf('shield');
-                        if (inventoryIndex > -1) inventory.splice(inventoryIndex, 1);
-                        updateInventoryDisplay();
-                        this.position.y = lastPlatformY - this.height;
-                        this.velocity.y = 0;
-                    } else {
-                        loseGame();
-                    }
+                        activePowerUps.shield = false; this.position.y = lastPlatformY - this.height; this.velocity.y = 0;
+                    } else { loseGame(); }
                 }
             }
         }
@@ -252,6 +320,8 @@
         function init() {
             gameRunning = true; scrollOffset = 0; score = 0; lastPlatformY = canvas.height - 60;
             highScore = parseInt(localStorage.getItem('platformerHighScore')) || 0;
+            selectedCharacterId = localStorage.getItem('platformerSelectedChar') || 'blue';
+            playerImage.src = 'data:image/svg+xml;base64,' + btoa(characters.find(c => c.id === selectedCharacterId).svg);
             highScoreCountDisplay.textContent = highScore;
             inventory = []; updateScore(0); updateInventoryDisplay();
             messageBox.classList.add('hidden');
@@ -270,9 +340,7 @@
                 ctx.fillStyle = 'white'; ctx.font = '24px "Press Start 2P"';
                 ctx.fillText(`Coins: ${score}`, 20, 40);
                 ctx.fillText(`High: ${highScore}`, 20, 80);
-                inventory.forEach((p, i) => {
-                    ctx.drawImage(powerUpTypes[p].image, 20 + i * 50, 100, 40, 40);
-                });
+                // Desktop UI would also need character button and inventory
             }
             [platforms, coins, powerUps].forEach(arr => arr.forEach(item => item.draw()));
             player.update();
@@ -297,16 +365,12 @@
                 }
             });
 
-            // Coin Magnet Logic
             if (activePowerUps.magnet) {
                 coins.forEach(coin => {
                     const dx = (player.position.x + player.width / 2) - (coin.position.x + coin.width / 2);
                     const dy = (player.position.y + player.height / 2) - (coin.position.y + coin.height / 2);
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < 200) {
-                        coin.position.x += dx / 20;
-                        coin.position.y += dy / 20;
-                    }
+                    if (distance < 200) { coin.position.x += dx / 20; coin.position.y += dy / 20; }
                 });
             }
 
@@ -324,9 +388,9 @@
             });
             if (platforms[platforms.length - 1].position.x < canvas.width) generateContent();
             [platforms, coins, powerUps] = [platforms, coins, powerUps].map(arr => arr.filter(item => item.position.x + (item.width || 0) > 0));
-            if(score >= WINNING_SCORE) winGame();
         }
 
+        // --- UI & Power-Up Activation ---
         function updateScore(newScore) { score = newScore; coinCountDisplay.textContent = score; }
         function updateInventoryDisplay() {
             inventorySlots.forEach((slot, i) => {
@@ -338,17 +402,11 @@
             });
         }
         function usePowerUp(index) {
-            if (!inventory[index] || activePowerUps[inventory[index]]) return;
-            const type = inventory[index]; // Peek, don't remove shield yet
+            if (!inventory[index]) return;
+            const type = inventory[index];
+            if (activePowerUps[type] && type !== 'shield') return;
 
-            if (type === 'shield') {
-                activePowerUps.shield = true;
-                inventory.splice(index, 1)[0];
-                updateInventoryDisplay();
-                return;
-            }
-
-            inventory.splice(index, 1)[0];
+            inventory.splice(index, 1);
             updateInventoryDisplay();
             activePowerUps[type] = true;
 
@@ -356,7 +414,6 @@
                 case 'speed': player.speed = BASE_SPEED * 1.8; break;
                 case 'jump': player.jumpStrength = BASE_JUMP * 1.5; break;
                 case 'gravity': player.gravity = BASE_GRAVITY * 0.5; break;
-                case 'magnet': /* handled in animate loop */ break;
             }
 
             if (powerUpTypes[type].duration > 0) {
@@ -371,6 +428,41 @@
             }
         }
 
+        // --- Character Menu ---
+        function populateCharacterMenu() {
+            characterGrid.innerHTML = '';
+            const currentHighScore = parseInt(localStorage.getItem('platformerHighScore')) || 0;
+            const currentSelectedId = localStorage.getItem('platformerSelectedChar') || 'blue';
+
+            characters.forEach(char => {
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                const isUnlocked = currentHighScore >= char.unlockScore;
+                
+                card.innerHTML = `
+                    ${char.svg}
+                    <p class="mt-2 text-sm">${char.name}</p>
+                    ${!isUnlocked ? `<p class="text-xs text-yellow-400">Score ${char.unlockScore}</p>` : ''}
+                `;
+
+                if (isUnlocked) {
+                    if (char.id === currentSelectedId) {
+                        card.classList.add('selected');
+                    }
+                    card.addEventListener('click', () => {
+                        localStorage.setItem('platformerSelectedChar', char.id);
+                        populateCharacterMenu(); // Re-populate to show selection
+                    });
+                } else {
+                    card.classList.add('locked');
+                }
+                characterGrid.appendChild(card);
+            });
+        }
+        function openCharacterMenu() { gameRunning = false; characterMenu.classList.remove('hidden'); populateCharacterMenu(); }
+        function closeCharacterMenu() { characterMenu.classList.add('hidden'); init(); }
+
+        // --- Game State Functions ---
         function checkHighScore() {
             if (score > highScore) {
                 highScore = score;
@@ -380,19 +472,16 @@
             return false;
         }
 
-        function winGame() { showEndScreen('You Win!', score); }
         function loseGame() {
-            checkHighScore();
-            init();
-        }
-        function showEndScreen(title, finalScore) {
             gameRunning = false;
             const isNewHighScore = checkHighScore();
-            winMessage.textContent = isNewHighScore ? 'New High Score!' : title;
-            scoreMessage.textContent = `Score: ${finalScore} | High: ${highScore}`;
-            messageBox.classList.remove('hidden'); setTimeout(init, 3000);
+            winMessage.textContent = isNewHighScore ? 'New High Score!' : 'Game Over';
+            scoreMessage.textContent = `Score: ${score} | High: ${highScore}`;
+            messageBox.classList.remove('hidden'); 
+            setTimeout(init, 3000);
         }
 
+        // --- EVENT LISTENERS ---
         window.addEventListener('keydown', ({ key }) => {
             switch (key) {
                 case 'ArrowLeft': keys.left.pressed = true; break;
@@ -424,6 +513,8 @@
         rightBtn.addEventListener('mouseleave', handleRightRelease);
         jumpBtn.addEventListener('mousedown', handleJump); jumpBtn.addEventListener('touchstart', handleJump);
         inventorySlots.forEach((slot, i) => slot.addEventListener('click', () => usePowerUp(i)));
+        openCharMenuBtnMobile.addEventListener('click', openCharacterMenu);
+        closeCharMenuBtn.addEventListener('click', closeCharacterMenu);
         
         function setCanvasResolution() {
             if (window.innerWidth < 1024) { // Mobile
@@ -431,7 +522,7 @@
             } else { // Desktop
                 canvas.width = 1280; canvas.height = 720; BASE_SPEED = 4;
             }
-            if (player) init();
+            if (!player) init();
         }
         
         window.onload = () => { setCanvasResolution(); init(); animate(); }
