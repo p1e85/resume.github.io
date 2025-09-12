@@ -189,7 +189,7 @@ const gameState = {
         text: "The Kitchen is a stark contrast to the rest of the floor, with iron stoves and butcher blocks. A simple door leads down into darkness.",
         objects: {
             'cooking stove': { description: "A huge, cast-iron beast. Inside, you find only ashes." },
-            'butcher's block': { description: "The wood is stained and scarred from years of use." }
+            'butcher\'s block': { description: "The wood is stained and scarred from years of use." }
         },
         options: { 'go north': 'dining_hall', 'go down': 'wine_cellar' }
     },
@@ -401,7 +401,6 @@ async function checkWinCondition() {
     return false;
 }
 
-// --- NEW: CONTEXTUAL HELP FUNCTION ---
 async function provideHelp() {
     await displayText(`\n> help`);
     const room = gameState[currentPlayerLocation];
@@ -465,7 +464,6 @@ async function parseCommand(command) {
         return;
     }
     
-    // --- NEW: HELP COMMAND ---
     if (command === 'help') {
         if (gamePhase === 'playing') {
             await provideHelp();
@@ -640,12 +638,16 @@ async function parseCommand(command) {
                             ? objData.race_specific[player.race]
                             : objData.description;
 
+                        // FIX: Correctly loop through and add all items from an object.
                         if (objData.items && objData.items.length > 0) {
-                            const foundItem = objData.items[0];
-                            player.inventory.push(objData.items.pop()); 
-                            searchText += `\nYou find: ${foundItem}.`;
+                            let foundItemsText = "\nYou find:";
+                            for (const item of objData.items) {
+                                player.inventory.push(item);
+                                foundItemsText += ` ${item}.`;
+                            }
+                            searchText += foundItemsText;
+                            objData.items = []; // Clear items from the room object after taking them.
                             if(await checkWinCondition()) return;
-                            objData.items = [];
                         }
                         await displayText(searchText);
                     } else {
