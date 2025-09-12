@@ -451,7 +451,10 @@
                     const dx = (player.position.x + player.width / 2) - (coin.position.x + coin.width / 2);
                     const dy = (player.position.y + player.height / 2) - (coin.position.y + coin.height / 2);
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < 200) { coin.position.x += dx / 20; coin.position.y += dy / 20; }
+                    if (distance < 350) { // Increased magnet range
+                        coin.position.x += dx / 10; // Increased magnet speed
+                        coin.position.y += dy / 10; // Increased magnet speed
+                    }
                 });
             }
 
@@ -512,7 +515,7 @@
         // --- Info Menu ---
         function openInfoMenu() { gameRunning = false; infoMenu.classList.remove('hidden'); }
         function closeInfoMenu() { infoMenu.classList.add('hidden'); gameRunning = true; }
-        
+
         // --- Character Menu ---
         function populateCharacterMenu() {
             characterGrid.innerHTML = '';
