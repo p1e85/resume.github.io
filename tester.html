@@ -346,7 +346,7 @@
             highScoreCountDisplay.textContent = highScore;
             inventory = []; updateScore(0); updateInventoryDisplay();
             messageBox.classList.add('hidden');
-            characterMenu.classList.add('hidden'); // Ensure menu is hidden on init
+            characterMenu.classList.add('hidden');
             player = new Player();
             platforms = [ new Platform({ x: 0, y: canvas.height - 60, width: 600, height: 60 }) ];
             coins = []; powerUps = [];
@@ -361,7 +361,6 @@
                 ctx.fillStyle = 'white'; ctx.font = '24px "Press Start 2P"';
                 ctx.fillText(`Coins: ${score}`, 20, 40);
                 ctx.fillText(`High: ${highScore}`, 20, 80);
-                // Desktop UI would also need character button and inventory
             }
             [platforms, coins, powerUps].forEach(arr => arr.forEach(item => item.draw()));
             player.update();
@@ -509,52 +508,64 @@
             }, 3000);
         }
 
-        // --- EVENT LISTENERS ---
-        window.addEventListener('keydown', ({ key }) => {
-            switch (key) {
-                case 'ArrowLeft': keys.left.pressed = true; break;
-                case 'ArrowRight': keys.right.pressed = true; break;
-                case 'ArrowUp': case ' ': if (player.onGround) player.velocity.y = -player.jumpStrength; break;
-                case '1': usePowerUp(0); break;
-                case '2': usePowerUp(1); break;
-                case '3': usePowerUp(2); break;
-            }
-        });
-        window.addEventListener('keyup', ({ key }) => {
-            switch (key) {
-                case 'ArrowLeft': keys.left.pressed = false; break;
-                case 'ArrowRight': keys.right.pressed = false; break;
-            }
-        });
-
-        const leftBtn = document.getElementById('leftBtn'), rightBtn = document.getElementById('rightBtn'), jumpBtn = document.getElementById('jumpBtn');
-        function handleJump(e) { e.preventDefault(); if (player.onGround) player.velocity.y = -player.jumpStrength; }
-        function handleLeftPress(e) { e.preventDefault(); keys.left.pressed = true; }
-        function handleLeftRelease(e) { e.preventDefault(); keys.left.pressed = false; }
-        function handleRightPress(e) { e.preventDefault(); keys.right.pressed = true; }
-        function handleRightRelease(e) { e.preventDefault(); keys.right.pressed = false; }
-        leftBtn.addEventListener('mousedown', handleLeftPress); leftBtn.addEventListener('touchstart', handleLeftPress);
-        leftBtn.addEventListener('mouseup', handleLeftRelease); leftBtn.addEventListener('touchend', handleLeftRelease);
-        leftBtn.addEventListener('mouseleave', handleLeftRelease);
-        rightBtn.addEventListener('mousedown', handleRightPress); rightBtn.addEventListener('touchstart', handleRightPress);
-        rightBtn.addEventListener('mouseup', handleRightRelease); rightBtn.addEventListener('touchend', handleRightRelease);
-        rightBtn.addEventListener('mouseleave', handleRightRelease);
-        jumpBtn.addEventListener('mousedown', handleJump); jumpBtn.addEventListener('touchstart', handleJump);
-        inventorySlots.forEach((slot, i) => slot.addEventListener('click', () => usePowerUp(i)));
-        openCharMenuBtn.addEventListener('click', openCharacterMenu);
-        closeCharMenuBtn.addEventListener('click', closeCharacterMenu);
-        
         function setCanvasResolution() {
             if (window.innerWidth < 1024) { // Mobile
                 canvas.width = 720; canvas.height = 1120; BASE_SPEED = 7;
             } else { // Desktop
                 canvas.width = 1280; canvas.height = 720; BASE_SPEED = 4;
             }
-            if (!player) init();
+        }
+
+        function setupEventListeners() {
+             window.addEventListener('resize', () => {
+                setCanvasResolution();
+                init();
+             });
+             window.addEventListener('keydown', ({ key }) => {
+                switch (key) {
+                    case 'ArrowLeft': keys.left.pressed = true; break;
+                    case 'ArrowRight': keys.right.pressed = true; break;
+                    case 'ArrowUp': case ' ': if (player.onGround) player.velocity.y = -player.jumpStrength; break;
+                    case '1': usePowerUp(0); break;
+                    case '2': usePowerUp(1); break;
+                    case '3': usePowerUp(2); break;
+                }
+            });
+            window.addEventListener('keyup', ({ key }) => {
+                switch (key) {
+                    case 'ArrowLeft': keys.left.pressed = false; break;
+                    case 'ArrowRight': keys.right.pressed = false; break;
+                }
+            });
+
+            const leftBtn = document.getElementById('leftBtn'), rightBtn = document.getElementById('rightBtn'), jumpBtn = document.getElementById('jumpBtn');
+            function handleJump(e) { e.preventDefault(); if (player.onGround) player.velocity.y = -player.jumpStrength; }
+            function handleLeftPress(e) { e.preventDefault(); keys.left.pressed = true; }
+            function handleLeftRelease(e) { e.preventDefault(); keys.left.pressed = false; }
+            function handleRightPress(e) { e.preventDefault(); keys.right.pressed = true; }
+            function handleRightRelease(e) { e.preventDefault(); keys.right.pressed = false; }
+            leftBtn.addEventListener('mousedown', handleLeftPress); leftBtn.addEventListener('touchstart', handleLeftPress);
+            leftBtn.addEventListener('mouseup', handleLeftRelease); leftBtn.addEventListener('touchend', handleLeftRelease);
+            leftBtn.addEventListener('mouseleave', handleLeftRelease);
+            rightBtn.addEventListener('mousedown', handleRightPress); rightBtn.addEventListener('touchstart', handleRightPress);
+            rightBtn.addEventListener('mouseup', handleRightRelease); rightBtn.addEventListener('touchend', handleRightRelease);
+            rightBtn.addEventListener('mouseleave', handleRightRelease);
+            jumpBtn.addEventListener('mousedown', handleJump); jumpBtn.addEventListener('touchstart', handleJump);
+            inventorySlots.forEach((slot, i) => slot.addEventListener('click', () => usePowerUp(i)));
+            openCharMenuBtn.addEventListener('click', openCharacterMenu);
+            closeCharMenuBtn.addEventListener('click', closeCharacterMenu);
         }
         
-        window.onload = () => { setCanvasResolution(); init(); animate(); }
-        window.addEventListener('resize', setCanvasResolution);
+        // --- Main Game Initialization ---
+        function main() {
+            setCanvasResolution();
+            init();
+            setupEventListeners();
+            animate();
+        }
+
+        main();
+
     </script>
 </body>
 </html>
