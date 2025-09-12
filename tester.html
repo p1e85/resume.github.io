@@ -253,11 +253,8 @@
         }
 
         function animate() {
-            if (!gameRunning) {
-                 requestAnimationFrame(animate);
-                 return;
-            }
             requestAnimationFrame(animate);
+            if (!gameRunning) return;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
@@ -417,7 +414,6 @@
         
         // --- Main Game Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
-            characterMenu.classList.add('hidden'); // Ensure it's hidden first
             setCanvasResolution();
             setupEventListeners();
             init();
