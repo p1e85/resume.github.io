@@ -53,7 +53,7 @@ const gameState = {
         multiple solutions, and some secrets can only be uncovered by a
         specific race. To see everything, you'll have to play more than once!
 
-        - To move: north, south, east, west
+        - To move: Type the name of a place, e.g., 'grand staircase'
         - To look around: look around
         - To inspect: search [object] or look at [object]
         - To see inventory: inventory (or inv, or i)
@@ -94,20 +94,23 @@ const gameState = {
         }
     },
     foyer: {
-        text: "You are in the Grand Foyer. Dust motes dance in a single beam of moonlight. A grand staircase sweeps upwards to the west, a wide archway leads north, and a smaller door stands to the east.\n\nType 'look around' to see more detail.",
+        text: "You are in the Grand Foyer. Dust motes dance in a single beam of moonlight. A (grand staircase) sweeps upwards, a (wide archway) leads into a hall, and a (small door) stands to the east.\n\nType 'look around' to see more detail.",
         objects: {
             'grand staircase': { 
                 description: "The staircase is impressive, carved from dark wood. Thick cobwebs cling to the banister.",
+                destination: 'staircase',
                 race_specific: {
                     human: "The staircase is impressive, carved from dark wood. As someone with an eye for architecture, you notice the woodwork is unusually complex for a family mansion, almost like a fortress."
                 }
             },
             'small door': {
                 description: "This is a simple, plain door. A small brass key is sticking out of the keyhole.",
+                destination: 'parlor',
                 items: ['a small brass key']
             },
             'wide archway': { 
                 description: "The archway is framed with ornate carvings. It leads into what appears to be a grand hall.",
+                destination: 'grand_hall',
                 race_specific: {
                     elf: "The archway is framed with ornate carvings. Your keen eyes notice faint Elven runes etched into the stone, almost invisible to others. They seem to tell a story."
                 }
@@ -116,12 +119,15 @@ const gameState = {
                 description: "You focus on the runes. They speak of a noble family, a cursed bloodline, and a 'gem of life' hidden away to break the curse. It seems the mansion itself is a puzzle to protect it.",
                 visible_to: 'elf'
             }
-        },
-        options: { 'go north': 'grand_hall', 'go west': 'staircase', 'go east': 'parlor' }
+        }
     },
     parlor: {
-        text: "You are in the Parlor. Furniture lies draped in white sheets, like a congregation of ghosts. A soot-stained fireplace stands on the far wall.",
+        text: "You are in the Parlor. Furniture lies draped in white sheets, like a congregation of ghosts. A soot-stained fireplace stands on the far wall. The only way out is through the (western doorway).",
         objects: {
+            'western doorway': {
+                description: "The doorway leads back to the Grand Foyer.",
+                destination: 'foyer'
+            },
             'sheet-covered furniture': { description: "You pull back the musty sheets. The furniture beneath is of high quality, but impossibly cold to the touch." },
             'soot-stained fireplace': {
                 description: "The fireplace is cold, choked with ash.",
@@ -142,7 +148,6 @@ const gameState = {
             }
         },
         options: { 
-            'go west': 'foyer',
             'smash music box': {
                 race: 'orc',
                 text: "Your large fingers can't work the delicate latch, so you resort to a simpler method. You smash the box against the mantelpiece. It shatters into splinters, but the **silver locket** clatters to the floor.",
@@ -152,8 +157,16 @@ const gameState = {
         }
     },
     grand_hall: {
-        text: "This is the Grand Hall. The sheer size of the room is breathtaking. A massive tapestry dominates the northern wall. A door is set in the east wall.",
+        text: "This is the Grand Hall. The sheer size of the room is breathtaking. A (massive tapestry) dominates one wall. You see the (wide archway) you came through and an (eastern door).",
         objects: {
+            'wide archway': {
+                description: "The archway leads back to the Grand Foyer.",
+                destination: 'foyer'
+            },
+            'eastern door': {
+                description: "A solid oak door leading to another part of the mansion.",
+                destination: 'dining_hall'
+            },
             'massive tapestry': {
                 description: "It depicts a noble family: a king, a queen, and a sad-looking princess. The king is pointing towards a stylized mountain.",
                 race_specific: { elf: "You recognize the Elven stitch-work. The mountain isn't a mountain; it's the Elven symbol for 'secret'." },
@@ -163,12 +176,19 @@ const gameState = {
                     item: 'a heavy iron key'
                 }
             }
-        },
-        options: { 'go south': 'foyer', 'go east': 'dining_hall' }
+        }
     },
     dining_hall: {
-        text: "You've entered a grand Dining Hall. A long table, set for a feast that never happened, dominates the room. A heavy sideboard rests against the east wall.",
+        text: "You've entered a grand Dining Hall. A long table, set for a feast that never happened, dominates the room. A heavy sideboard rests against one wall. There is a (door) to the west and a (southern doorway).",
         objects: {
+            'door': {
+                description: "This door leads back to the Grand Hall.",
+                destination: 'grand_hall'
+            },
+            'southern doorway': {
+                description: "This doorway opens into the mansion's kitchen.",
+                destination: 'kitchen'
+            },
             'long dining table': { description: "The table is set with tarnished silverware. The food has long since rotted into black lumps." },
             'heavy sideboard': {
                 description: "A massive piece of oak furniture. You try to push it, but it won't budge an inch.",
@@ -182,20 +202,30 @@ const gameState = {
                     item: 'a ceremonial dagger'
                 }
             }
-        },
-        options: { 'go west': 'grand_hall', 'go south': 'kitchen' }
+        }
     },
     kitchen: {
-        text: "The Kitchen is a stark contrast to the rest of the floor, with iron stoves and butcher blocks. A simple door leads down into darkness.",
+        text: "The Kitchen is a stark contrast to the rest of the floor, with iron stoves and butcher blocks. A (doorway) leads back to the dining hall, and a heavy (cellar door) leads down into darkness.",
         objects: {
+            'doorway': {
+                description: "This leads back to the Dining Hall.",
+                destination: 'dining_hall'
+            },
+            'cellar door': {
+                description: "A heavy wooden door that leads down to the wine cellar.",
+                destination: 'wine_cellar'
+            },
             'cooking stove': { description: "A huge, cast-iron beast. Inside, you find only ashes." },
             'butcher\'s block': { description: "The wood is stained and scarred from years of use." }
-        },
-        options: { 'go north': 'dining_hall', 'go down': 'wine_cellar' }
+        }
     },
     wine_cellar: {
-        text: "You are in a damp Wine Cellar, lined with dusty racks. A heavy iron gate blocks the way east.",
+        text: "You are in a damp Wine Cellar, lined with dusty racks. A heavy (iron gate) blocks the way east. You can return via the (stairs up).",
         objects: {
+            'stairs up': {
+                description: "These stairs lead back to the kitchen.",
+                destination: 'kitchen'
+            },
             'wine racks': {
                 description: "Hundreds of dusty bottles. One has an unusual label: 'King's Folly, 1888. Only the patient will find the prize.'",
                 action: {
@@ -211,12 +241,15 @@ const gameState = {
                 destination: 'boiler_room',
                 locked: true
             }
-        },
-        options: { 'go up': 'kitchen', 'go east': 'boiler_room' }
+        }
     },
     boiler_room: {
-        text: "The air is hot and thick with the smell of ozone. A massive iron boiler hums in the center of the room.",
+        text: "The air is hot and thick with the smell of ozone. A massive iron boiler hums in the center of the room. The only exit is the (iron gate) you came through.",
         objects: {
+            'iron gate': {
+                description: "The gate leads back to the wine cellar.",
+                destination: 'wine_cellar'
+            },
             'iron boiler': { description: "It's still warm, radiating a deep heat. A pressure valve hisses softly." },
             'copper pipes': {
                 description: "A network of hot copper pipes crisscrosses the ceiling. You notice something glinting on top of the largest pipe, just out of reach. It's too high and too hot to touch.",
@@ -230,24 +263,38 @@ const gameState = {
                     item: 'a set of lockpicks'
                 }
             }
-        },
-        options: { 'go west': 'wine_cellar' }
+        }
     },
     staircase: {
-        text: "You stand at the top of the Grand Staircase, on the second floor landing. A large, dusty portrait hangs on the wall. Passages lead north and south.",
+        text: "You stand at the top of the Grand Staircase, on the second floor landing. A large, dusty portrait hangs on the wall. You can go down the (grand staircase), or through the (northern passage) or (southern passage).",
         objects: {
+             'grand staircase': {
+                description: "The main staircase leading back down to the foyer.",
+                destination: 'foyer'
+            },
+            'northern passage': {
+                description: "A dark hallway leading to the master bedroom.",
+                destination: 'master_bedroom'
+            },
+            'southern passage': {
+                description: "A hallway leading to what was likely the nursery.",
+                destination: 'nursery'
+            },
             'large portrait': {
                 description: "It's a portrait of the sad-looking princess, Lady Elara. Her eyes seem to plead with you.",
                 requires: 'a silver locket',
-                action_text: "You hold the silver locket up to the portrait. It resonates with a soft hum. The portrait swings inward, revealing a hidden, narrow staircase leading up into the darkness.",
-                unlocks: { 'go up': 'attic_landing' }
+                action_text: "You hold the silver locket up to the portrait. It resonates with a soft hum. The portrait swings inward, revealing a hidden, narrow staircase leading up into the darkness. A new path is available: (attic stairs).",
+                unlocks: { 'attic stairs': 'attic_landing' }
             }
-        },
-        options: { 'go down': 'foyer', 'go north': 'master_bedroom', 'go south': 'nursery' }
+        }
     },
     master_bedroom: {
-        text: "This must be the Master Bedroom. A large four-poster bed sits against the far wall, flanked by a wardrobe and a writing desk.",
+        text: "This must be the Master Bedroom. A large four-poster bed sits against the far wall, flanked by a wardrobe and a writing desk. A (doorway) leads back to the landing.",
         objects: {
+            'doorway': {
+                description: "This leads back to the second floor landing.",
+                destination: 'staircase'
+            },
             'four-poster bed': {
                 description: "A grand but faded bed. Tucked under a pillow, you find a small, ornate **boudoir key**.",
                 items: ['a boudoir key']
@@ -263,12 +310,15 @@ const gameState = {
                 },
                 item: 'the Architect\'s Journal'
             }
-        },
-        options: { 'go south': 'staircase' }
+        }
     },
     nursery: {
-        text: "This small room was clearly a nursery. Faded drawings line one wall, and a lonely rocking horse sits in the center.",
+        text: "This small room was clearly a nursery. Faded drawings line one wall, and a lonely rocking horse sits in the center. The only exit is the (doorway).",
         objects: {
+            'doorway': {
+                description: "This leads back to the second floor landing.",
+                destination: 'staircase'
+            },
             'rocking horse': { description: "A beautifully carved wooden horse. It rocks with an eerie creak when you touch it." },
             'chalk drawings': { description: "Stick-figure drawings of a family. One shows a little girl pointing at a toy chest." },
             'small chest': {
@@ -277,12 +327,15 @@ const gameState = {
                 action_text: "The small key fits perfectly. You turn it and the lid pops open.",
                 item: 'a flawless crystal prism'
             }
-        },
-        options: { 'go north': 'staircase' }
+        }
     },
     attic_landing: {
-        text: "You've climbed the narrow stairs to the Attic landing. The air is still and heavy with the scent of old paper and dust. A single sturdy door stands before you, and a stone pedestal is set beside it.",
+        text: "You've climbed the narrow stairs to the Attic landing. The air is still and heavy with the scent of old paper and dust. A single (sturdy door) stands before you, and a (stone pedestal) is set beside it. You can return down the (narrow stairs).",
         objects: {
+            'narrow stairs': {
+                description: "The hidden stairs leading back down to the second floor landing.",
+                destination: 'staircase'
+            },
             'dusty furniture': { description: "Old chairs and tables lie under thick sheets, like sleeping giants." },
             'stone pedestal': {
                 description: "A stone pedestal with a round depression in the top. It seems to be waiting for something.",
@@ -293,12 +346,15 @@ const gameState = {
                 description: "This door has no handle or lock. It's sealed tight.",
                 destination: 'ritual_chamber'
             }
-        },
-        options: { 'go down': 'staircase', 'go through door': 'ritual_chamber' }
+        }
     },
     ritual_chamber: {
-        text: "You are in the heart of the mansion. The air crackles with latent energy. Three large, unlit braziers stand in the center of the room, each marked with a symbol you saw on the door.",
+        text: "You are in the heart of the mansion. The air crackles with latent energy. Three large, unlit braziers stand in the center of the room, each marked with a symbol you saw on the door. You can leave through the (doorway).",
         objects: {
+            'doorway': {
+                description: "The doorway leads back to the attic landing.",
+                destination: 'attic_landing'
+            },
             'crown brazier': {
                 description: "A brazier marked with a Crown.",
                 action: {
@@ -329,8 +385,7 @@ const gameState = {
                     item: 'the Gem of Life'
                 },
             }
-        },
-        options: { 'leave room': 'attic_landing' }
+        }
     },
     end: {
         text: `
@@ -407,19 +462,22 @@ async function provideHelp() {
     let hints = [];
 
     // 1. Hint for available directions
-    const exits = Object.keys(room.options || {});
+    const exits = Object.keys(room.objects || {}).filter(key => room.objects[key].destination);
+     if (room.options) {
+        exits.push(...Object.keys(room.options));
+    }
     if (exits.length > 0) {
-        hints.push(`From here, you can try to go: ${exits.map(e => e.replace('go ','')).join(', ')}.`);
+        hints.push(`From here, you could try going to: ${exits.join(', ')}.`);
     }
 
     // 2. Hint for interactable objects
-    const objects = Object.keys(room.objects || {}).filter(key => !room.objects[key].visible_to || room.objects[key].visible_to === player.race);
+    const objects = Object.keys(room.objects || {}).filter(key => !room.objects[key].destination && (!room.objects[key].visible_to || room.objects[key].visible_to === player.race));
     if (objects.length > 0) {
         hints.push(`You see several things of interest: ${objects.join(', ')}.`);
     }
 
     // 3. Contextual puzzle hints from objects
-    for (const objectKey of objects) {
+    for (const objectKey in room.objects) {
         const objData = room.objects[objectKey];
         if (objData.requires && player.inventory.includes(objData.requires) && (objData.locked === true || objData.unlocks)) {
              hints.push(`That '${objData.requires}' you're carrying might be useful on the ${objectKey}.`);
@@ -433,7 +491,7 @@ async function provideHelp() {
     }
     
     // 4. Contextual puzzle hints from room options
-    for (const optionKey of exits) {
+    for (const optionKey in room.options) {
         const optionData = room.options[optionKey];
         if (optionData.race && optionData.race === player.race && optionData.item) {
             hints.push(`As an ${player.race}, you might be able to '${optionKey}'.`);
@@ -542,11 +600,25 @@ async function parseCommand(command) {
                 return;
             }
 
-            const directions = ['north', 'east', 'south', 'west', 'up', 'down', 'back', 'through door'];
-            if (directions.includes(command)) {
-                command = 'go ' + command;
+            // --- NAVIGATION ---
+            const allObjects = Object.keys(room.objects || {});
+            const navObjectKey = allObjects.find(key => command.startsWith(key));
+
+            if (navObjectKey && room.objects[navObjectKey].destination) {
+                const navObject = room.objects[navObjectKey];
+                if (navObject.locked) {
+                    await displayText(`\n> ${command}\n\nThe way is locked.`);
+                    return;
+                }
+                actionTaken = true;
+                await displayText(`\n> ${command}`);
+                currentPlayerLocation = navObject.destination;
+                await sleep(500);
+                await displayText(gameState[currentPlayerLocation].text, true);
+                return; // End command processing after navigation
             }
             
+            // --- COMPLEX ACTIONS (like 'try the door' or 'smash music box') ---
             const availableOptions = room.options || {};
             let matchedCommand = Object.keys(availableOptions).find(c => command.startsWith(c));
 
@@ -555,49 +627,35 @@ async function parseCommand(command) {
                 if (option.race && option.race !== player.race) {
                     // This action is not for the current player's race
                 } else {
-                    const targetObjectForNav = Object.values(room.objects || {}).find(obj => obj.destination === option && obj.locked);
-                    if (targetObjectForNav) {
-                        await displayText(`\n> ${command}\n\nThe way is locked.`);
-                        return;
-                    }
-                    
                     actionTaken = true;
                     await displayText(`\n> ${command}`);
                     
-                    if (typeof option === 'string') {
-                        // This handles simple navigation like 'go north': 'grand_hall'
-                        currentPlayerLocation = option;
-                        await displayText(gameState[currentPlayerLocation].text);
-                    } else {
-                        // This handles complex action objects
-                        if (option.descriptions) {
-                            await displayText(option.descriptions[player.race]);
-                        }
-                        if (option.text) {
-                            await displayText(option.text);
-                        }
-                        if (option.destination) {
-                            currentPlayerLocation = option.destination;
-                            await sleep(500);
-                            // The 'true' clears the screen for the new room description
-                            await displayText(gameState[currentPlayerLocation].text, true);
-                        }
-                        if (option.item) {
-                            player.inventory.push(option.item);
-                            await displayText(`You obtained: ${option.item}.`);
-                            if(await checkWinCondition()) return;
-                        }
-
-                        if(option.removes) {
-                            delete room.objects[option.removes];
-                        }
+                    if (option.descriptions) {
+                        await displayText(option.descriptions[player.race]);
+                    }
+                    if (option.text) {
+                        await displayText(option.text);
+                    }
+                    if (option.destination) {
+                        currentPlayerLocation = option.destination;
+                        await sleep(500);
+                        await displayText(gameState[currentPlayerLocation].text, true);
+                    }
+                    if (option.item) {
+                        player.inventory.push(option.item);
+                        await displayText(`You obtained: ${option.item}.`);
+                        if(await checkWinCondition()) return;
+                    }
+                    if(option.removes) {
+                        delete room.objects[option.removes];
+                        delete room.options[matchedCommand];
                     }
                 }
             }
 
+            // --- CUSTOM VERB ACTIONS ON OBJECTS ---
             if (!actionTaken) {
-                const objectKeys = Object.keys(room.objects || {});
-                for (const key of objectKeys) {
+                for (const key of allObjects) {
                     const obj = room.objects[key];
                     if (obj.action && obj.action.command.some(c => command.startsWith(c))) {
                          actionTaken = true;
@@ -619,12 +677,12 @@ async function parseCommand(command) {
                 }
             }
 
+            // --- STANDARD VERBS (look, search, use) ---
             if (!actionTaken) {
                 const commandParts = command.split(' ');
                 const verb = commandParts[0];
                 let noun = commandParts.slice(1).join(' ');
 
-                const allObjects = Object.keys(room.objects || {});
                 const matchedNounKey = allObjects.find(key => key.includes(noun));
                 if(matchedNounKey) noun = matchedNounKey;
 
@@ -648,7 +706,6 @@ async function parseCommand(command) {
                             ? objData.race_specific[player.race]
                             : objData.description;
 
-                        // FIX: Correctly loop through and add all items from an object.
                         if (objData.items && objData.items.length > 0) {
                             let foundItemsText = "\nYou find:";
                             for (const item of objData.items) {
@@ -656,7 +713,7 @@ async function parseCommand(command) {
                                 foundItemsText += ` ${item}.`;
                             }
                             searchText += foundItemsText;
-                            objData.items = []; // Clear items from the room object after taking them.
+                            objData.items = []; 
                             if(await checkWinCondition()) return;
                         }
                         await displayText(searchText);
@@ -696,7 +753,12 @@ async function parseCommand(command) {
                             delete objData.item;
                         }
                         if (objData.unlocks) {
-                            Object.assign(room.options, objData.unlocks);
+                             Object.keys(objData.unlocks).forEach(key => {
+                                room.objects[key] = {
+                                    description: `The way to the ${objData.unlocks[key]}`,
+                                    destination: objData.unlocks[key]
+                                };
+                            });
                             delete objData.unlocks;
                         }
                         if (objData.locked) {
@@ -731,5 +793,4 @@ commandForm.addEventListener('submit', async function(event) {
 });
 
 displayText(gameState.title.text, true);
-
 
