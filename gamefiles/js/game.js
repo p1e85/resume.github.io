@@ -53,6 +53,8 @@ const gameState = {
 
         - To see what's in a room, type 'look around'.
           Example: look around
+        
+        - To see what you are carrying, type 'inventory' (or 'inv' or 'i').
 
         - To interact with objects, type 'search' and the object's name.
           Example: search small door
@@ -386,13 +388,12 @@ async function parseCommand(command) {
         
         case 'name_selection':
             playerName = command.charAt(0).toUpperCase() + command.slice(1);
-            gamePhase = 'instructions'; // NEW PHASE
+            gamePhase = 'instructions';
             await displayText(`Welcome, ${playerName}.`, true);
             await sleep(1000);
             await displayText(gameState.instructions.text, true);
             break;
         
-        // NEW: Handle the instructions phase
         case 'instructions':
             if (command.startsWith('begin')) {
                 gamePhase = 'playing';
@@ -405,7 +406,24 @@ async function parseCommand(command) {
             const room = gameState[currentPlayerLocation];
             let actionTaken = false;
 
-            // **NEW: Simplified Navigation Logic**
+            // --- NEW: INVENTORY COMMAND (PHASE 1) ---
+            if (command === 'inventory' || command === 'inv' || command === 'i') {
+                actionTaken = true;
+                await displayText(`\n> ${command}`);
+                let inventoryText = "You are carrying:\n";
+                if (player.inventory.length === 0) {
+                    inventoryText = "Your inventory is empty.";
+                } else {
+                    player.inventory.forEach(item => {
+                        inventoryText += `- ${item}\n`;
+                    });
+                }
+                await displayText(inventoryText);
+                return; // Stop further processing for this command
+            }
+
+
+            // **Simplified Navigation Logic**
             const directions = ['north', 'east', 'south', 'west', 'up', 'down', 'back'];
             if (directions.includes(command)) {
                 command = 'go ' + command; // Standardize the command
@@ -460,8 +478,11 @@ async function parseCommand(command) {
                         let searchText = objData.description;
                         if (objData.items && objData.items.length > 0) {
                             const foundItem = objData.items[0];
+                            // Use pop to remove the item from the room and add to inventory
+                            player.inventory.push(objData.items.pop()); 
                             searchText += `\nYou find: ${foundItem}.`;
-                            player.inventory.push(objData.items.pop());
+                            // Clear the items array in the room so it can't be found again
+                            objData.items = [];
                         }
                         await displayText(searchText);
                     } else {
@@ -490,4 +511,5 @@ commandForm.addEventListener('submit', async function(event) {
     commandInput.focus();
 });
 
+// Initial game start
 displayText(gameState.title.text, true);
