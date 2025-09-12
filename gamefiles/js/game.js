@@ -327,7 +327,7 @@ const gameState = {
                     text: "You light the Brazier of the Mountain... A brilliant light erupts, and when it fades, the **Gem of Life** materializes in the flames.",
                     default_text: "You try to light it, but the flame sputters and dies. A voice whispers in your mind... '*That is not your path.*'",
                     item: 'the Gem of Life'
-                }
+                },
             }
         },
         options: { 'leave room': 'attic_landing' }
