@@ -7,10 +7,8 @@
     <meta name="description" content="Litter Bugs is a working alpha app that lets you track cleanups, earn badges, and get tipped for your efforts. We're seeking backers to help us launch publicly.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪲</text></svg>">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
@@ -57,7 +55,6 @@
 </head>
 <body class="text-gray-800">
 
-    <!-- Header -->
     <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-[#2E4034]">
@@ -69,7 +66,6 @@
         </div>
     </header>
 
-    <!-- Hero Section -->
     <section class="hero-bg text-white">
         <div class="container mx-auto px-6 py-24 md:py-32 text-center">
             <div class="alpha-badge">LIVE ALPHA</div>
@@ -81,8 +77,6 @@
         </div>
     </section>
     
-
-    <!-- Features Section -->
     <section class="py-20 bg-white">
         <div class="container mx-auto px-6 text-center">
             <h3 class="section-title text-[#2E4034] mb-12">Key Features in the Alpha</h3>
@@ -107,7 +101,26 @@
         </div>
     </section>
 
-    <!-- "From Alpha to Mainstream" Section -->
+    <section class="py-20">
+        <div class="container mx-auto px-6 text-center">
+            <h3 class="section-title text-[#2E4034] mb-4">Be the First to Know</h3>
+            <p class="text-lg text-gray-700 mb-8 max-w-2xl mx-auto">Join our mailing list for updates on our official launch, new features, and the project roadmap. Help us build the future of cleanups!</p>
+            
+            <div class="max-w-xl mx-auto">
+                <form action="#" method="POST" class="w-full">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <input type="text" name="first_name" required class="w-full py-3 px-4 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#28a745]" placeholder="First Name">
+                        <input type="email" name="email" required class="w-full py-3 px-4 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#28a745]" placeholder="Email Address">
+                        <button type="submit" class="cta-button bg-[#28a745] text-white font-bold py-3 px-6 rounded-md hover:bg-[#218838] w-full sm:w-auto flex-shrink-0">
+                            Notify Me
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-3">We respect your privacy. No spam.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
     <section class="py-20 bg-[#a8bba2]">
         <div class="container mx-auto px-6 text-center text-white">
             <h3 class="section-title text-white mb-4">From Alpha to Global Impact</h3>
@@ -120,8 +133,6 @@
         </div>
     </section>
     
-
-    <!-- Final CTA Section -->
     <section class="py-24">
         <div class="container mx-auto px-6 text-center">
             <h3 class="text-3xl md:text-4xl font-black text-[#2E4034] mb-4">Ready to Make a Difference?</h3>
@@ -132,7 +143,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="bg-[#2E4034] text-white">
         <div class="container mx-auto px-6 py-8 text-center">
             <p>&copy; 2025 Litter Bugs. All Rights Reserved.</p>
@@ -142,5 +152,3 @@
 
 </body>
 </html>
-
-
