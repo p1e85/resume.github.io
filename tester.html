@@ -50,6 +50,7 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
+            font-size: 1rem;
         }
         #inventory {
             display: flex;
@@ -112,7 +113,10 @@
 
     <!-- Collectibles Bar for Mobile -->
     <div id="collectibles-bar">
-        <span class="text-yellow-400 text-xl">Coins: <span id="coin-count">0</span></span>
+        <div>
+            <span class="text-yellow-400">Coins: <span id="coin-count">0</span></span><br>
+            <span class="text-white">High: <span id="high-score-count">0</span></span>
+        </div>
         <div id="inventory">
             <div class="inventory-slot" id="slot-0"></div>
             <div class="inventory-slot" id="slot-1"></div>
@@ -137,6 +141,7 @@
         const winMessage = document.getElementById('winMessage');
         const scoreMessage = document.getElementById('scoreMessage');
         const coinCountDisplay = document.getElementById('coin-count');
+        const highScoreCountDisplay = document.getElementById('high-score-count');
         const inventorySlots = [
             document.getElementById('slot-0'),
             document.getElementById('slot-1'),
@@ -145,12 +150,12 @@
 
         let gameRunning = true;
         const WINNING_SCORE = 50;
-        const BASE_GRAVITY = 0.9; // Increased from 0.7 for a less floaty fall
-        const BASE_JUMP = 20; // Increased from 18 for a stronger jump
-        let BASE_SPEED; // Will be set dynamically
+        const BASE_GRAVITY = 0.9;
+        const BASE_JUMP = 20;
+        let BASE_SPEED;
 
         // Game state
-        let player, platforms, coins, powerUps, keys, scrollOffset, score, inventory;
+        let player, platforms, coins, powerUps, keys, scrollOffset, score, inventory, highScore;
         let activePowerUps = { speed: false, jump: false, gravity: false };
 
         // --- IMAGES ---
@@ -182,22 +187,16 @@
         // --- CLASSES ---
         class Player {
             constructor() {
-                this.position = { x: 100, y: 100 };
-                this.velocity = { x: 0, y: 0 };
-                this.width = 50; this.height = 50;
-                this.jumpStrength = BASE_JUMP; this.speed = BASE_SPEED;
+                this.position = { x: 100, y: 100 }; this.velocity = { x: 0, y: 0 };
+                this.width = 50; this.height = 50; this.jumpStrength = BASE_JUMP; this.speed = BASE_SPEED;
                 this.gravity = BASE_GRAVITY; this.onGround = false;
             }
             draw() { ctx.drawImage(playerImage, this.position.x, this.position.y, this.width, this.height); }
             update() {
-                this.draw();
-                this.position.x += this.velocity.x;
-                this.position.y += this.velocity.y;
+                this.draw(); this.position.x += this.velocity.x; this.position.y += this.velocity.y;
                 this.velocity.y += this.gravity;
                 if (this.position.x < 0) this.position.x = 0;
-                if (this.position.y > canvas.height) {
-                    loseGame();
-                }
+                if (this.position.y > canvas.height) loseGame();
             }
         }
         class Platform { 
@@ -210,8 +209,7 @@
         }
         class PowerUp {
             constructor({ x, y, type }) {
-                this.position = { x, y };
-                this.width = 35; this.height = 35; this.type = type;
+                this.position = { x, y }; this.width = 35; this.height = 35; this.type = type;
                 this.image = powerUpTypes[type].image;
             }
             draw() { ctx.drawImage(this.image, this.position.x, this.position.y, this.width, this.height); }
@@ -225,9 +223,8 @@
             if (newY > canvas.height - 100) newY = canvas.height - 100; if (newY < 300) newY = 300;
             const newWidth = 150 + Math.random() * 200;
             platforms.push(new Platform({ x: newX, y: newY, width: newWidth, height: 25 }));
-
             if (Math.random() > 0.3) coins.push(new Coin({ x: newX + newWidth / 2 - 15, y: newY - 40 }));
-            if (Math.random() > 0.9) { // 10% chance for a power-up
+            if (Math.random() > 0.9) {
                 const type = Object.keys(powerUpTypes)[Math.floor(Math.random() * 3)];
                 powerUps.push(new PowerUp({ x: newX + newWidth / 2 - 17, y: newY - 45, type }));
             }
@@ -235,6 +232,8 @@
 
         function init() {
             gameRunning = true; scrollOffset = 0; score = 0;
+            highScore = parseInt(localStorage.getItem('platformerHighScore')) || 0;
+            highScoreCountDisplay.textContent = highScore;
             inventory = []; updateScore(0); updateInventoryDisplay();
             messageBox.classList.add('hidden');
             player = new Player();
@@ -248,16 +247,16 @@
         function animate() {
             if (!gameRunning) return; requestAnimationFrame(animate);
             ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-            if (window.innerWidth >= 1024) { /* Draw desktop UI */
+            if (window.innerWidth >= 1024) {
                 ctx.fillStyle = 'white'; ctx.font = '24px "Press Start 2P"';
                 ctx.fillText(`Coins: ${score}`, 20, 40);
+                ctx.fillText(`High: ${highScore}`, 20, 80);
                 inventory.forEach((p, i) => {
-                    ctx.drawImage(powerUpTypes[p].image, 20 + i * 50, 60, 40, 40);
+                    ctx.drawImage(powerUpTypes[p].image, 20 + i * 50, 100, 40, 40);
                 });
             }
             [platforms, coins, powerUps].forEach(arr => arr.forEach(item => item.draw()));
             player.update();
-
             const currentSpeed = player.speed;
             if (keys.right.pressed && player.position.x < canvas.width * 0.4) player.velocity.x = currentSpeed;
             else if (keys.left.pressed && player.position.x > 100) player.velocity.x = -currentSpeed;
@@ -271,7 +270,6 @@
                     [platforms, coins, powerUps].forEach(arr => arr.forEach(item => item.position.x += currentSpeed));
                 }
             }
-
             player.onGround = false;
             platforms.forEach(p => { 
                 if (player.velocity.y >= 0 && player.position.y + player.height <= p.position.y && player.position.y + player.height + player.velocity.y >= p.position.y && player.position.x + player.width >= p.position.x && player.position.x <= p.position.x + p.width) {
@@ -290,7 +288,6 @@
                     }
                 }
             });
-
             if (platforms[platforms.length - 1].position.x < canvas.width) generateContent();
             [platforms, coins, powerUps] = [platforms, coins, powerUps].map(arr => arr.filter(item => item.position.x + (item.width || 0) > 0));
             if(score >= WINNING_SCORE) winGame();
@@ -310,15 +307,12 @@
             if (!inventory[index] || activePowerUps[inventory[index]]) return;
             const type = inventory.splice(index, 1)[0];
             updateInventoryDisplay();
-            
             activePowerUps[type] = true;
-
             switch (type) {
                 case 'speed': player.speed = BASE_SPEED * 1.8; break;
                 case 'jump': player.jumpStrength = BASE_JUMP * 1.5; break;
                 case 'gravity': player.gravity = BASE_GRAVITY * 0.5; break;
             }
-
             setTimeout(() => {
                 switch (type) {
                     case 'speed': player.speed = BASE_SPEED; break;
@@ -329,11 +323,22 @@
             }, powerUpTypes[type].duration);
         }
 
+        function checkHighScore() {
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('platformerHighScore', highScore.toString());
+                return true;
+            }
+            return false;
+        }
+
         function winGame() { showEndScreen('You Win!', score); }
-        function loseGame() { init(); }
+        function loseGame() { showEndScreen('Game Over', score); }
         function showEndScreen(title, finalScore) {
-            gameRunning = false; winMessage.textContent = title;
-            scoreMessage.textContent = `Coins: ${finalScore}`;
+            gameRunning = false;
+            const isNewHighScore = checkHighScore();
+            winMessage.textContent = isNewHighScore ? 'New High Score!' : title;
+            scoreMessage.textContent = `Score: ${finalScore} | High: ${highScore}`;
             messageBox.classList.remove('hidden'); setTimeout(init, 3000);
         }
 
@@ -371,14 +376,9 @@
         
         function setCanvasResolution() {
             if (window.innerWidth < 1024) { // Mobile
-                canvas.width = 720; 
-                canvas.height = 1120; 
-                BASE_SPEED = 7; // Faster speed for mobile
-            }
-            else { // Desktop
-                canvas.width = 1280; 
-                canvas.height = 720; 
-                BASE_SPEED = 4; // Slower speed for desktop
+                canvas.width = 720; canvas.height = 1120; BASE_SPEED = 7;
+            } else { // Desktop
+                canvas.width = 1280; canvas.height = 720; BASE_SPEED = 4;
             }
             if (player) init();
         }
