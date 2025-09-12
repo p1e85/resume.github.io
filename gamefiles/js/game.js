@@ -61,6 +61,9 @@ const gameState = {
         
         - To use an item, type 'use [item] on [object]'.
           Example: use a small brass key on small chest
+        
+        - Some actions are simple commands.
+          Example: pull thread, press switch
 
         - To see your character's status, type 'card'.
 
@@ -99,12 +102,29 @@ const gameState = {
     foyer: {
         text: "You are in the Grand Foyer. Dust motes dance in a single beam of moonlight. A grand staircase sweeps upwards to the west, a wide archway leads north, and a smaller door stands to the east.\n\nType 'look around' to see more detail.",
         objects: {
-            'grand staircase': { description: "The staircase is impressive, carved from dark wood. Thick cobwebs cling to the banister." },
+            'grand staircase': { 
+                description: "The staircase is impressive, carved from dark wood. Thick cobwebs cling to the banister.",
+                // --- NEW: HUMAN FLAVOR TEXT (PHASE 3) ---
+                race_specific: {
+                    human: "The staircase is impressive, carved from dark wood. As someone with an eye for architecture, you notice the woodwork is unusually complex for a family mansion, almost like a fortress."
+                }
+            },
             'small door': {
                 description: "This is a simple, plain door. A small brass key is sticking out of the keyhole.",
                 items: ['a small brass key']
             },
-            'wide archway': { description: "The archway is framed with ornate carvings. It leads into what appears to be a grand hall." }
+            'wide archway': { 
+                description: "The archway is framed with ornate carvings. It leads into what appears to be a grand hall.",
+                 // --- NEW: ELF-ONLY OBJECT (PHASE 3) ---
+                race_specific: {
+                    elf: "The archway is framed with ornate carvings. Your keen eyes notice faint Elven runes etched into the stone, almost invisible to others. They seem to tell a story."
+                }
+            },
+             // --- NEW: ELF-ONLY OBJECT (PHASE 3) ---
+            'elven runes': {
+                description: "You focus on the runes. They speak of a noble family, a cursed bloodline, and a 'gem of life' hidden away to break the curse. It seems the mansion itself is a puzzle to protect it.",
+                visible_to: 'elf' // Only elves can "see" or interact with this
+            }
         },
         options: { 'go north': 'grand_hall', 'go west': 'staircase', 'go east': 'parlor' }
     },
@@ -121,16 +141,25 @@ const gameState = {
                 race_specific: {
                     human: "You open the box. It plays a sad, tinkling melody. You notice a tiny, almost invisible switch inside.",
                     elf: "You feel a wave of profound sadness from the box. You easily spot a magical glyph on the bottom.",
-                    orc: "The box feels fragile. You try to open it, but your large fingers fumble with the tiny latch. It remains closed."
+                    orc: "The box feels fragile in your large hands. The tiny latch won't budge."
                 },
                 action: {
-                    command: ['press switch', 'press glyph'],
+                    command: ['press switch', 'touch glyph', 'press glyph'],
                     text: "A hidden compartment opens, revealing a **silver locket**.",
                     item: 'a silver locket'
                 }
             }
         },
-        options: { 'go west': 'foyer' }
+        options: { 
+            'go west': 'foyer',
+            // --- NEW: ORC ALTERNATE SOLUTION (PHASE 3) ---
+            'smash music box': {
+                race: 'orc',
+                text: "Your large fingers can't work the delicate latch, so you resort to a simpler method. You smash the box against the mantelpiece. It shatters into splinters, but the **silver locket** clatters to the floor.",
+                item: 'a silver locket',
+                removes: 'music box' // The music box object is destroyed
+            }
+        }
     },
     grand_hall: {
         text: "This is the Grand Hall. The sheer size of the room is breathtaking. A massive tapestry dominates the northern wall. A door is set in the east wall.",
@@ -152,12 +181,16 @@ const gameState = {
         objects: {
             'long dining table': { description: "The table is set with tarnished silverware. The food has long since rotted into black lumps." },
             'heavy sideboard': {
-                description: "A massive piece of oak furniture.",
+                description: "A massive piece of oak furniture. You try to push it, but it won't budge an inch.",
                 race_specific: {
-                    orc: "This is nothing. You put your shoulder into it and shove. With a deep groan, the sideboard slides aside, revealing a loose floorboard. Beneath it, you find a **ceremonial dagger**.",
-                    default: "You try to push the sideboard, but it won't budge an inch."
+                    orc: "A massive piece of oak furniture. For you, this is nothing."
                 },
-                item: 'a ceremonial dagger'
+                action: {
+                    command: ['push sideboard', 'move sideboard', 'shove sideboard'],
+                    race: 'orc',
+                    text: "You put your shoulder into it and shove. With a deep groan, the sideboard slides aside, revealing a loose floorboard. Beneath it, you find a **ceremonial dagger**.",
+                    item: 'a ceremonial dagger'
+                }
             }
         },
         options: { 'go west': 'grand_hall', 'go south': 'kitchen' }
@@ -196,12 +229,16 @@ const gameState = {
         objects: {
             'iron boiler': { description: "It's still warm, radiating a deep heat. A pressure valve hisses softly." },
             'copper pipes': {
-                description: "A network of hot copper pipes crisscrosses the ceiling. You notice something glinting on top of the largest pipe, just out of reach.",
+                description: "A network of hot copper pipes crisscrosses the ceiling. You notice something glinting on top of the largest pipe, just out of reach. It's too high and too hot to touch.",
                 race_specific: {
-                    human: "You look around for a tool. You find a long iron poker and use it to deftly knock the object down. It's a **set of lockpicks**.",
-                    default: "It's too high and too hot to touch."
+                    human: "A network of hot copper pipes crisscrosses the ceiling. You notice something glinting on top of the largest pipe. It's out of reach, but a resourceful person might find a tool to knock it down."
                 },
-                item: 'a set of lockpicks'
+                action: {
+                    command: ['get object with poker', 'use poker on object'],
+                    race: 'human',
+                    text: "You find a long iron poker nearby. You use it to deftly knock the object down. It's a **set of lockpicks**.",
+                    item: 'a set of lockpicks'
+                }
             }
         },
         options: { 'go west': 'wine_cellar' }
@@ -274,27 +311,33 @@ const gameState = {
         objects: {
             'crown brazier': {
                 description: "A brazier marked with a Crown.",
-                race_specific: {
-                    human: "You light the Brazier of the Crown... A brilliant light erupts, and when it fades, the **Gem of Life** materializes in the flames.",
-                    default: "You try to light it, but the flame sputters and dies. A voice whispers in your mind... '*That is not your path.*'"
-                },
-                item: 'the Gem of Life'
+                action: {
+                    command: ['light crown brazier', 'light crown'],
+                    race: 'human',
+                    text: "You light the Brazier of the Crown... A brilliant light erupts, and when it fades, the **Gem of Life** materializes in the flames.",
+                    default_text: "You try to light it, but the flame sputters and dies. A voice whispers in your mind... '*That is not your path.*'",
+                    item: 'the Gem of Life'
+                }
             },
             'sword brazier': {
                 description: "A brazier marked with a Sword.",
-                race_specific: {
-                    elf: "You light the Brazier of the Sword... A brilliant light erupts, and when it fades, the **Gem of Life** materializes in the flames.",
-                    default: "You try to light it, but the flame sputters and dies. A voice whispers in your mind... '*That is not your path.*'"
-                },
-                item: 'the Gem of Life'
+                action: {
+                    command: ['light sword brazier', 'light sword'],
+                    race: 'elf',
+                    text: "You light the Brazier of the Sword... A brilliant light erupts, and when it fades, the **Gem of Life** materializes in the flames.",
+                    default_text: "You try to light it, but the flame sputters and dies. A voice whispers in your mind... '*That is not your path.*'",
+                    item: 'the Gem of Life'
+                }
             },
             'mountain brazier': {
                 description: "A brazier marked with a Mountain.",
-                race_specific: {
-                    orc: "You light the Brazier of the Mountain... A brilliant light erupts, and when it fades, the **Gem of Life** materializes in the flames.",
-                    default: "You try to light it, but the flame sputters and dies. A voice whispers in your mind... '*That is not your path.*'"
-                },
-                item: 'the Gem of Life'
+                 action: {
+                    command: ['light mountain brazier', 'light mountain'],
+                    race: 'orc',
+                    text: "You light the Brazier of the Mountain... A brilliant light erupts, and when it fades, the **Gem of Life** materializes in the flames.",
+                    default_text: "You try to light it, but the flame sputters and dies. A voice whispers in your mind... '*That is not your path.*'",
+                    item: 'the Gem of Life'
+                }
             }
         },
         options: { 'leave room': 'attic_landing' }
@@ -349,7 +392,8 @@ async function parseCommand(command) {
         gamePhase = 'title';
         player = {};
         playerName = "";
-        await displayText(gameState.title.text, true);
+        // A full page reload is the simplest way to reset the game state completely.
+        window.location.reload(); 
         return;
     }
 
@@ -407,7 +451,6 @@ async function parseCommand(command) {
             const room = gameState[currentPlayerLocation];
             let actionTaken = false;
 
-            // --- Inventory Command (Phase 1) ---
             if (command === 'inventory' || command === 'inv' || command === 'i') {
                 actionTaken = true;
                 await displayText(`\n> ${command}`);
@@ -420,72 +463,111 @@ async function parseCommand(command) {
                     });
                 }
                 await displayText(inventoryText);
-                // Return early as this command is complete.
-                return; 
+                return;
             }
 
-            // --- Simplified Navigation Logic ---
             const directions = ['north', 'east', 'south', 'west', 'up', 'down', 'back', 'through door'];
             if (directions.includes(command)) {
                 command = 'go ' + command;
             }
-
-            // --- Priority 1: Navigation and Simple Actions ---
+            
+            // --- Priority 1: Simple actions & Navigation ---
             const availableOptions = room.options || {};
-            const matchedCommand = Object.keys(availableOptions).find(c => command.startsWith(c));
+            let matchedCommand = Object.keys(availableOptions).find(c => command.startsWith(c));
 
             if (matchedCommand) {
                 const option = availableOptions[matchedCommand];
-                
-                // Handle locked doors or pathways
-                const targetObjectForNav = Object.values(room.objects || {}).find(obj => obj.destination === option && obj.locked);
-                if (targetObjectForNav) {
-                    await displayText(`\n> ${command}\n\nThe way is locked.`);
-                    return;
-                }
-                
-                actionTaken = true;
-                await displayText(`\n> ${command}`);
-                
-                if (typeof option === 'string') { // Simple navigation
-                    currentPlayerLocation = option;
-                    await displayText(gameState[currentPlayerLocation].text);
-                } else { // Complex actions like 'try the door'
-                    if (option.descriptions) {
-                        await displayText(option.descriptions[player.race] || "You can't do that.");
+                if (option.race && option.race !== player.race) {
+                    // This action is not for the current player's race
+                } else {
+                    const targetObjectForNav = Object.values(room.objects || {}).find(obj => obj.destination === option && obj.locked);
+                    if (targetObjectForNav) {
+                        await displayText(`\n> ${command}\n\nThe way is locked.`);
+                        return;
                     }
+                    
+                    actionTaken = true;
+                    await displayText(`\n> ${command}`);
+                    
                     if (option.destination) {
                         currentPlayerLocation = option.destination;
-                        await sleep(500);
-                        await displayText(gameState[currentPlayerLocation].text, true);
+                        await displayText(gameState[currentPlayerLocation].text);
+                    } else if (option.descriptions) {
+                        await displayText(option.descriptions[player.race]);
+                    } else if (option.text) {
+                        await displayText(option.text);
+                    }
+                    
+                    if (option.item) {
+                        player.inventory.push(option.item);
+                        await displayText(`You obtained: ${option.item}.`);
+                        delete option.item;
+                    }
+
+                    if(option.removes) {
+                        delete room.objects[option.removes];
                     }
                 }
             }
 
-            // --- Priority 2: Verb-based commands (if no option was matched) ---
+            // --- NEW: Priority 2: Custom Actions on Objects (Phase 3) ---
+            if (!actionTaken) {
+                const objectKeys = Object.keys(room.objects || {});
+                for (const key of objectKeys) {
+                    const obj = room.objects[key];
+                    if (obj.action && obj.action.command.some(c => command.startsWith(c))) {
+                         actionTaken = true;
+                         await displayText(`\n> ${command}`);
+
+                        if (obj.action.race && obj.action.race !== player.race) {
+                            await displayText(obj.action.default_text || "You can't do that.");
+                        } else {
+                            await displayText(obj.action.text);
+                            if (obj.action.item) {
+                                player.inventory.push(obj.action.item);
+                                await displayText(`You obtained: ${obj.action.item}.`);
+                                delete obj.action.item;
+                            }
+                        }
+                        break; 
+                    }
+                }
+            }
+
+            // --- Priority 3: Verb-based commands ---
             if (!actionTaken) {
                 const commandParts = command.split(' ');
                 const verb = commandParts[0];
-                const noun = commandParts.slice(1).join(' ');
+                let noun = commandParts.slice(1).join(' ');
+
+                // Allow for flexible nouns, e.g., "search door" for "small door"
+                const allObjects = Object.keys(room.objects || {});
+                const matchedNounKey = allObjects.find(key => key.includes(noun));
+                if(matchedNounKey) noun = matchedNounKey;
+
 
                 if (verb === 'look' && noun === 'around') {
                     actionTaken = true;
                     await displayText(`\n> ${command}`);
                     let lookText = "You scan the room and notice a few things of interest:\n";
-                    const objectKeys = Object.keys(room.objects || {});
-                    if (objectKeys.length > 0) {
-                        objectKeys.forEach(obj => { lookText += `- ${obj}\n`; });
+                    const visibleObjects = allObjects.filter(key => !room.objects[key].visible_to || room.objects[key].visible_to === player.race);
+                    if (visibleObjects.length > 0) {
+                        visibleObjects.forEach(obj => { lookText += `- ${obj}\n`; });
                     } else { lookText = "You look around, but see nothing of particular interest."; }
                     await displayText(lookText);
-
-                } else if (verb === 'search') {
+                
+                } else if (verb === 'search' || verb === 'look' || verb === 'read') {
                     actionTaken = true;
                     await displayText(`\n> ${command}`);
-                    const objectKeys = Object.keys(room.objects || {});
-                    const matchedObjectKey = objectKeys.find(key => key.startsWith(noun));
-                    if (matchedObjectKey) {
-                        const objData = room.objects[matchedObjectKey];
-                        let searchText = objData.description;
+                    
+                    if (room.objects && room.objects[noun]) {
+                        const objData = room.objects[noun];
+
+                        // --- NEW: RACE-SPECIFIC SEARCH TEXT (PHASE 3) ---
+                        let searchText = (objData.race_specific && objData.race_specific[player.race])
+                            ? objData.race_specific[player.race]
+                            : objData.description;
+
                         if (objData.items && objData.items.length > 0) {
                             const foundItem = objData.items[0];
                             player.inventory.push(objData.items.pop()); 
@@ -494,75 +576,55 @@ async function parseCommand(command) {
                         }
                         await displayText(searchText);
                     } else {
-                        await displayText(`You can't find a '${noun}' to search.`);
+                        await displayText(`You can't find a '${noun}' to ${verb}.`);
                     }
                 
-                // --- NEW: USE COMMAND LOGIC (PHASE 2) ---
                 } else if (verb === 'use') {
                     actionTaken = true;
                     await displayText(`\n> ${command}`);
-
                     const useParts = command.split(' on ');
-                    const itemToUse = useParts[0].substring(4).trim(); // "use a key" -> "a key"
+                    const itemToUse = useParts[0].substring(4).trim();
                     const targetObject = useParts[1]?.trim();
 
                     if (!itemToUse || !targetObject) {
-                        await displayText("What do you want to use, and on what? (e.g., 'use a key on the door')");
+                        await displayText("What do you want to use, and on what? (e.g., 'use key on door')");
                         return;
                     }
-
-                    // 1. Check if player has the item
+                    
                     const itemInInventory = player.inventory.find(i => i.includes(itemToUse));
                     if (!itemInInventory) {
-                        await displayText(`You don't have '${itemToUse}'.`);
-                        return;
+                        await displayText(`You don't have '${itemToUse}'.`); return;
                     }
-
-                    // 2. Check if the target object is in the room
-                    const objectKeys = Object.keys(room.objects || {});
-                    const matchedObjectKey = objectKeys.find(key => key.startsWith(targetObject));
+                    
+                    const matchedObjectKey = Object.keys(room.objects || {}).find(key => key.includes(targetObject));
                     if (!matchedObjectKey) {
-                        await displayText(`There is no '${targetObject}' here to use that on.`);
-                        return;
+                        await displayText(`There is no '${targetObject}' here.`); return;
                     }
 
                     const objData = room.objects[matchedObjectKey];
-
-                    // 3. Check if the item is correct for the object
                     if (objData.requires === itemInInventory) {
-                        // Success!
                         await displayText(objData.action_text);
-                        
-                        // Give player a new item if one is revealed
                         if (objData.item) {
                             player.inventory.push(objData.item);
                             await displayText(`You obtained: ${objData.item}.`);
-                            delete objData.item; // Prevent getting it again
+                            delete objData.item;
                         }
-
-                        // Unlock a new navigation option (e.g., hidden stairs)
                         if (objData.unlocks) {
                             Object.assign(room.options, objData.unlocks);
                             delete objData.unlocks;
                         }
-                        
-                        // Unlock a previously locked path
                         if (objData.locked) {
                            objData.locked = false;
                         }
-
-                        // Remove the used item from inventory if it's a key/consumable
                         if (itemInInventory.includes('key')) {
                              player.inventory = player.inventory.filter(i => i !== itemInInventory);
                         }
-
                     } else {
                         await displayText(`That doesn't seem to work.`);
                     }
                 }
             }
 
-            // If no action was taken, command is invalid
             if (!actionTaken) {
                 await displayText(`\n> ${command}\n\nThat's not a valid command here.`);
             }
@@ -582,5 +644,4 @@ commandForm.addEventListener('submit', async function(event) {
     commandInput.focus();
 });
 
-// Initial game start
 displayText(gameState.title.text, true);
