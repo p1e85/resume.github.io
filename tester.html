@@ -551,14 +551,12 @@
         }
         
         // --- Main Game Initialization ---
-        function startGame() {
+        document.addEventListener('DOMContentLoaded', () => {
             setCanvasResolution();
             init();
             setupEventListeners();
             animate();
-        }
-
-        document.addEventListener('DOMContentLoaded', startGame);
+        });
 
     </script>
 </body>
