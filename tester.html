@@ -330,7 +330,6 @@
             coins = []; powerUps = [];
             while(platforms[platforms.length - 1].position.x < canvas.width) generateContent();
             keys = { right: { pressed: false }, left: { pressed: false } };
-            if (!gameRunning) animate();
         }
 
         function animate() {
@@ -460,7 +459,11 @@
             });
         }
         function openCharacterMenu() { gameRunning = false; characterMenu.classList.remove('hidden'); populateCharacterMenu(); }
-        function closeCharacterMenu() { characterMenu.classList.add('hidden'); init(); }
+        function closeCharacterMenu() { 
+            characterMenu.classList.add('hidden'); 
+            init();
+            animate();
+        }
 
         // --- Game State Functions ---
         function checkHighScore() {
@@ -478,7 +481,10 @@
             winMessage.textContent = isNewHighScore ? 'New High Score!' : 'Game Over';
             scoreMessage.textContent = `Score: ${score} | High: ${highScore}`;
             messageBox.classList.remove('hidden'); 
-            setTimeout(init, 3000);
+            setTimeout(() => {
+                init();
+                animate();
+            }, 3000);
         }
 
         // --- EVENT LISTENERS ---
