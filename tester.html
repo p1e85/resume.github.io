@@ -93,6 +93,84 @@
             transform: translateY(2px);
         }
         
+        .menu-btn {
+            position: absolute;
+            top: 2rem;
+            z-index: 20;
+            background-color: #4a5568;
+            border: 2px solid #718096;
+            border-radius: 0.5rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .menu-btn:hover {
+            background-color: #718096;
+        }
+        .menu-btn svg {
+            width: 30px;
+            height: 30px;
+            fill: white;
+        }
+        #info-menu-btn {
+             left: 2rem;
+        }
+
+        /* Generic Modal Styling */
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #2d3748;
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 3px solid #4a5568;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+        
+        .powerup-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
+            text-align: left;
+        }
+        .powerup-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .powerup-icon {
+            width: 50px;
+            height: 50px;
+            background-color: #4a5568;
+            border-radius: 8px;
+            padding: 5px;
+            flex-shrink: 0;
+        }
+        .powerup-desc h3 {
+            font-size: 1rem;
+            margin: 0 0 0.25rem 0;
+        }
+         .powerup-desc p {
+            font-size: 0.75rem;
+            color: #a0aec0;
+            margin: 0;
+        }
+        
         /* Hide mobile controls on large screens */
         @media (min-width: 1024px) {
             #mobile-controls, #collectibles-bar { display: none; }
@@ -106,6 +184,9 @@
     <!-- Game Canvas Wrapper -->
     <div class="game-wrapper">
         <canvas id="gameCanvas"></canvas>
+        <button id="info-menu-btn" class="menu-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 17h2v-6h-2v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 9h2V7h-2v2z"/></svg>
+        </button>
         <div id="messageBox" class="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-70 text-white text-2xl md:text-4xl hidden rounded-lg text-center p-4">
             <span id="winMessage"></span>
             <span id="scoreMessage" class="text-xl md:text-2xl mt-4"></span>
@@ -133,6 +214,56 @@
         </div>
         <button id="jumpBtn" class="control-button flex items-center justify-center text-white font-bold">&#x2191;</button>
     </div>
+    
+    <!-- Info Menu -->
+    <div id="info-menu" class="modal hidden">
+        <div class="modal-content">
+            <h2 class="text-3xl">Power-Ups Guide</h2>
+            <div class="powerup-grid">
+                <!-- Speed Boost -->
+                <div class="powerup-item">
+                    <img id="info-speed" class="powerup-icon" src="" alt="Speed Boost">
+                    <div class="powerup-desc">
+                        <h3 class="text-blue-400">Speed Boost</h3>
+                        <p>Greatly increases run speed for 5 seconds.</p>
+                    </div>
+                </div>
+                <!-- Jump Boost -->
+                <div class="powerup-item">
+                    <img id="info-jump" class="powerup-icon" src="" alt="Jump Boost">
+                    <div class="powerup-desc">
+                        <h3 class="text-green-400">Jump Boost</h3>
+                        <p>Increases jump height for 10 seconds.</p>
+                    </div>
+                </div>
+                 <!-- Low Gravity -->
+                <div class="powerup-item">
+                    <img id="info-gravity" class="powerup-icon" src="" alt="Low Gravity">
+                    <div class="powerup-desc">
+                        <h3 class="text-purple-400">Low Gravity</h3>
+                        <p>Reduces gravity's pull for 10 seconds.</p>
+                    </div>
+                </div>
+                 <!-- Magnet -->
+                <div class="powerup-item">
+                    <img id="info-magnet" class="powerup-icon" src="" alt="Magnet">
+                    <div class="powerup-desc">
+                        <h3 class="text-pink-400">Coin Magnet</h3>
+                        <p>Pulls nearby coins towards you for 8 seconds.</p>
+                    </div>
+                </div>
+                 <!-- Shield -->
+                <div class="powerup-item">
+                    <img id="info-shield" class="powerup-icon" src="" alt="Shield">
+                    <div class="powerup-desc">
+                        <h3 class="text-gray-400">Safety Shield</h3>
+                        <p>A single-use item that saves you from one fall.</p>
+                    </div>
+                </div>
+            </div>
+            <button id="close-info-menu" class="px-4 py-2 bg-red-600 rounded">Close</button>
+        </div>
+    </div>
 
 
     <script>
@@ -148,6 +279,10 @@
             document.getElementById('slot-1'),
             document.getElementById('slot-2'),
         ];
+        const infoMenu = document.getElementById('info-menu');
+        const openInfoMenuBtn = document.getElementById('info-menu-btn');
+        const closeInfoMenuBtn = document.getElementById('close-info-menu');
+
 
         let gameRunning = true;
         const BASE_GRAVITY = 0.8;
@@ -348,6 +483,10 @@
                 }, powerUpTypes[type].duration);
             }
         }
+        
+        // --- Info Menu ---
+        function openInfoMenu() { gameRunning = false; infoMenu.classList.remove('hidden'); }
+        function closeInfoMenu() { infoMenu.classList.add('hidden'); gameRunning = true; }
 
         // --- Game State Functions ---
         function checkHighScore() {
@@ -410,10 +549,19 @@
             rightBtn.addEventListener('mouseleave', handleRightRelease);
             jumpBtn.addEventListener('mousedown', handleJump); jumpBtn.addEventListener('touchstart', handleJump);
             inventorySlots.forEach((slot, i) => slot.addEventListener('click', () => usePowerUp(i)));
+            openInfoMenuBtn.addEventListener('click', openInfoMenu);
+            closeInfoMenuBtn.addEventListener('click', closeInfoMenu);
         }
         
         // --- Main Game Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Set image sources for the info menu
+            document.getElementById('info-speed').src = speedBoostImage.src;
+            document.getElementById('info-jump').src = jumpBoostImage.src;
+            document.getElementById('info-gravity').src = lowGravityImage.src;
+            document.getElementById('info-magnet').src = magnetImage.src;
+            document.getElementById('info-shield').src = shieldImage.src;
+            
             setCanvasResolution();
             setupEventListeners();
             init();
