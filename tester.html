@@ -218,8 +218,8 @@
         // --- GAME LOGIC ---
         function generateContent() {
             const lastPlatform = platforms[platforms.length - 1];
-            const newX = lastPlatform.position.x + lastPlatform.width + (100 + Math.random() * 150);
-            let newY = lastPlatform.position.y + (Math.random() - 0.5) * 400;
+            const newX = lastPlatform.position.x + lastPlatform.width + (80 + Math.random() * 120);
+            let newY = lastPlatform.position.y + (Math.random() - 0.5) * 300;
             if (newY > canvas.height - 100) newY = canvas.height - 100; if (newY < 300) newY = 300;
             const newWidth = 150 + Math.random() * 200;
             platforms.push(new Platform({ x: newX, y: newY, width: newWidth, height: 25 }));
