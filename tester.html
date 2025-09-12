@@ -346,6 +346,7 @@
             highScoreCountDisplay.textContent = highScore;
             inventory = []; updateScore(0); updateInventoryDisplay();
             messageBox.classList.add('hidden');
+            characterMenu.classList.add('hidden'); // Ensure menu is hidden on init
             player = new Player();
             platforms = [ new Platform({ x: 0, y: canvas.height - 60, width: 600, height: 60 }) ];
             coins = []; powerUps = [];
