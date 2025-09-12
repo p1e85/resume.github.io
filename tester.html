@@ -300,9 +300,18 @@
 
 
         let gameRunning = true;
+        let animationFrameId;
         const BASE_GRAVITY = 0.8;
         const BASE_JUMP = 19;
         let BASE_SPEED;
+
+        // --- CHARACTER DATA ---
+        const characters = [
+            { id: 'blue', name: 'Default', unlockScore: 0, svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#4299e1" rx="15"/><circle cx="30" cy="35" r="10" fill="white"/><circle cx="70" cy="35" r="10" fill="white"/><rect x="25" y="65" width="50" height="10" rx="5" fill="white"/></svg>` },
+            { id: 'green', name: 'Greenie', unlockScore: 25, svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#48bb78" rx="15"/><circle cx="30" cy="35" r="10" fill="white"/><circle cx="70" cy="35" r="10" fill="white"/><rect x="25" y="65" width="50" height="10" rx="5" fill="white"/></svg>` },
+            { id: 'red', name: 'Red', unlockScore: 50, svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#f56565" rx="15"/><circle cx="30" cy="35" r="10" fill="white"/><circle cx="70" cy="35" r="10" fill="white"/><rect x="25" y="65" width="50" height="10" rx="5" fill="white"/></svg>` },
+            { id: 'gold', name: 'Goldie', unlockScore: 100, svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#f6e05e" rx="15"/><circle cx="30" cy="35" r="10" fill="#2d3748"/><circle cx="70" cy="35" r="10" fill="#2d3748"/><rect x="25" y="65" width="50" height="10" rx="5" fill="#2d3748"/></svg>` },
+        ];
 
         // Game state
         let player, platforms, coins, powerUps, keys, scrollOffset, score, inventory, highScore;
@@ -313,7 +322,6 @@
         const playerImage = new Image(), platformImage = new Image(), coinImage = new Image(), backgroundImage = new Image();
         const speedBoostImage = new Image(), jumpBoostImage = new Image(), lowGravityImage = new Image(), magnetImage = new Image(), shieldImage = new Image();
 
-        const playerSVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#4299e1" rx="15"/><circle cx="30" cy="35" r="10" fill="white"/><circle cx="70" cy="35" r="10" fill="white"/><rect x="25" y="65" width="50" height="10" rx="5" fill="white"/></svg>`;
         const platformSVG = `<svg viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="50" fill="#a0aec0" rx="10"/></svg>`;
         const coinSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><radialGradient id="grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%"><stop offset="0%" style="stop-color:rgb(255,255,224);stop-opacity:1" /><stop offset="100%" style="stop-color:rgb(251,211,141);stop-opacity:1" /></radialGradient></defs><circle cx="50" cy="50" r="45" fill="#fbb040"/><circle cx="50" cy="50" r="38" fill="url(#grad1)"/><path d="M50,15 C69.33,15 85,30.67 85,50 C85,69.33 69.33,85 50,85 C30.67,85 15,69.33 15,50 C15,30.67 30.67,15 50,15 M50,5 A45,45 0 0,0 5,50 A45,45 0 0,0 50,95 A45,45 0 0,0 95,50 A45,45 0 0,0 50,5 Z" fill="#f7931e"/><text x="50" y="62" font-family="'Press Start 2P', cursive" font-size="30" fill="#f7931e" text-anchor="middle">C</text></svg>`;
         const backgroundSVG = `<svg viewBox="0 0 800 1200" xmlns="http://www.w3.org/2000/svg"><rect width="800" height="1200" fill="#2d3748"/><circle cx="700" cy="150" r="50" fill="#f6e05e"/></svg>`;
@@ -322,8 +330,7 @@
         const gravitySVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#d6bcfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM2 12h20M12 2a15 15 0 010 20"/></svg>`;
         const magnetSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f687b3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 00-10 10v10a4 4 0 004 4h12a4 4 0 004-4V12A10 10 0 0012 2zM12 10v12"/></svg>`;
         const shieldSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#a0aec0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
-
-        playerImage.src = 'data:image/svg+xml;base64,' + btoa(playerSVG);
+        
         platformImage.src = 'data:image/svg+xml;base64,' + btoa(platformSVG);
         coinImage.src = 'data:image/svg+xml;base64,' + btoa(coinSVG);
         backgroundImage.src = 'data:image/svg+xml;base64,' + btoa(backgroundSVG);
@@ -390,6 +397,9 @@
         }
 
         function init() {
+            let selectedCharacterId = localStorage.getItem('platformerSelectedChar') || 'blue';
+            playerImage.src = 'data:image/svg+xml;base64,' + btoa(characters.find(c => c.id === selectedCharacterId).svg);
+
             gameRunning = true; scrollOffset = 0; score = 0; lastPlatformY = canvas.height - 60;
             highScore = parseInt(localStorage.getItem('platformerHighScore')) || 0;
             highScoreCountDisplay.textContent = highScore;
@@ -403,7 +413,7 @@
         }
 
         function animate() {
-            requestAnimationFrame(animate);
+            animationFrameId = requestAnimationFrame(animate);
             if (!gameRunning) return;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -502,6 +512,44 @@
         // --- Info Menu ---
         function openInfoMenu() { gameRunning = false; infoMenu.classList.remove('hidden'); }
         function closeInfoMenu() { infoMenu.classList.add('hidden'); gameRunning = true; }
+        
+        // --- Character Menu ---
+        function populateCharacterMenu() {
+            characterGrid.innerHTML = '';
+            const currentHighScore = parseInt(localStorage.getItem('platformerHighScore')) || 0;
+            const currentSelectedId = localStorage.getItem('platformerSelectedChar') || 'blue';
+
+            characters.forEach(char => {
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                const isUnlocked = currentHighScore >= char.unlockScore;
+                
+                card.innerHTML = `
+                    ${char.svg}
+                    <p class="mt-2 text-sm">${char.name}</p>
+                    ${!isUnlocked ? `<p class="text-xs text-yellow-400">Score ${char.unlockScore}</p>` : ''}
+                `;
+
+                if (isUnlocked) {
+                    if (char.id === currentSelectedId) {
+                        card.classList.add('selected');
+                    }
+                    card.addEventListener('click', () => {
+                        localStorage.setItem('platformerSelectedChar', char.id);
+                        populateCharacterMenu(); // Re-populate to show selection
+                    });
+                } else {
+                    card.classList.add('locked');
+                }
+                characterGrid.appendChild(card);
+            });
+        }
+        function openCharacterMenu() { gameRunning = false; characterMenu.classList.remove('hidden'); populateCharacterMenu(); }
+        function closeCharacterMenu() { 
+            characterMenu.classList.add('hidden'); 
+            init();
+            gameRunning = true;
+        }
 
         // --- Game State Functions ---
         function checkHighScore() {
@@ -566,6 +614,8 @@
             inventorySlots.forEach((slot, i) => slot.addEventListener('click', () => usePowerUp(i)));
             openInfoMenuBtn.addEventListener('click', openInfoMenu);
             closeInfoMenuBtn.addEventListener('click', closeInfoMenu);
+            openCharMenuBtn.addEventListener('click', openCharacterMenu);
+            closeCharMenuBtn.addEventListener('click', closeCharacterMenu);
         }
         
         // --- Main Game Initialization ---
