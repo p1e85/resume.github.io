@@ -58,6 +58,9 @@ const gameState = {
 
         - To interact with objects, type 'search' and the object's name.
           Example: search small door
+        
+        - To use an item, type 'use [item] on [object]'.
+          Example: use a small brass key on small chest
 
         - To see your character's status, type 'card'.
 
@@ -104,11 +107,6 @@ const gameState = {
             'wide archway': { description: "The archway is framed with ornate carvings. It leads into what appears to be a grand hall." }
         },
         options: { 'go north': 'grand_hall', 'go west': 'staircase', 'go east': 'parlor' }
-    },
-    // ... (All other room data is the same)
-    closet: { 
-        text: "You slip into a small, cramped closet. It smells of mothballs and decay. The door clicks shut behind you!", 
-        options: { 'go back': 'foyer' }
     },
     parlor: {
         text: "You are in the Parlor. Furniture lies draped in white sheets, like a congregation of ghosts. A soot-stained fireplace stands on the far wall.",
@@ -186,7 +184,9 @@ const gameState = {
             'iron gate': {
                 description: "A heavy iron gate, locked with a large, sturdy lock.",
                 requires: 'a heavy iron key',
-                destination: 'boiler_room'
+                action_text: "The heavy iron key turns in the lock with a satisfying CLUNK. The gate swings open.",
+                destination: 'boiler_room',
+                locked: true
             }
         },
         options: { 'go up': 'kitchen', 'go east': 'boiler_room' }
@@ -212,8 +212,8 @@ const gameState = {
             'large portrait': {
                 description: "It's a portrait of the sad-looking princess, Lady Elara. Her eyes seem to plead with you.",
                 requires: 'a silver locket',
-                action_text: "You hold the silver locket up to the portrait... A hidden door to the attic stairs is revealed.",
-                unlocks: 'attic_landing'
+                action_text: "You hold the silver locket up to the portrait. It resonates with a soft hum. The portrait swings inward, revealing a hidden, narrow staircase leading up into the darkness.",
+                unlocks: { 'go up': 'attic_landing' }
             }
         },
         options: { 'go down': 'foyer', 'go north': 'master_bedroom', 'go south': 'nursery' }
@@ -222,16 +222,17 @@ const gameState = {
         text: "This must be the Master Bedroom. A large four-poster bed sits against the far wall, flanked by a wardrobe and a writing desk.",
         objects: {
             'four-poster bed': {
-                description: "A grand but faded bed... you find a small, ornate **boudoir key**.",
+                description: "A grand but faded bed. Tucked under a pillow, you find a small, ornate **boudoir key**.",
                 items: ['a boudoir key']
             },
             'large wardrobe': { description: "Filled with dusty, fine clothes." },
             'writing desk': {
                 description: "An elegant wooden desk. The main drawer is locked.",
                 requires: 'a set of lockpicks',
+                action_text: "You slide the lockpicks into the keyhole. After a few tense moments and a series of quiet clicks, the drawer slides open.",
                 race_specific: {
                     human: "Your deft fingers make short work of the simple lock... Inside is the **Architect's Journal**.",
-                    default: "You fumble with the intricate tools..."
+                    default: "You fumble with the intricate tools, but eventually manage to open it. Inside is the **Architect's Journal**."
                 },
                 item: 'the Architect\'s Journal'
             }
@@ -241,57 +242,57 @@ const gameState = {
     nursery: {
         text: "This small room was clearly a nursery. Faded drawings line one wall, and a lonely rocking horse sits in the center.",
         objects: {
-            'rocking horse': { description: "A beautifully carved wooden horse." },
-            'chalk drawings': { description: "Stick-figure drawings of a family..." },
+            'rocking horse': { description: "A beautifully carved wooden horse. It rocks with an eerie creak when you touch it." },
+            'chalk drawings': { description: "Stick-figure drawings of a family. One shows a little girl pointing at a toy chest." },
             'small chest': {
                 description: "A small chest for toys, locked with a tiny, ornate lock.",
                 requires: 'a boudoir key',
-                action_text: "The small key fits perfectly... inside is a **flawless crystal prism**.",
+                action_text: "The small key fits perfectly. You turn it and the lid pops open.",
                 item: 'a flawless crystal prism'
             }
         },
         options: { 'go north': 'staircase' }
     },
     attic_landing: {
-        text: "You've climbed a narrow set of stairs to the Attic...",
+        text: "You've climbed the narrow stairs to the Attic landing. The air is still and heavy with the scent of old paper and dust. A single sturdy door stands before you, and a stone pedestal is set beside it.",
         objects: {
-            'dusty furniture': { description: "Old chairs and tables lie under thick sheets." },
+            'dusty furniture': { description: "Old chairs and tables lie under thick sheets, like sleeping giants." },
             'stone pedestal': {
-                description: "A stone pedestal with a round depression in the top.",
+                description: "A stone pedestal with a round depression in the top. It seems to be waiting for something.",
                 requires: 'a flawless crystal prism',
-                action_text: "You place the crystal prism in the depression... three glowing symbols appear on the door: a **Crown**, a **Sword**, and a **Mountain**."
+                action_text: "You place the crystal prism in the depression. It snaps into place, and a beam of moonlight from a grimy window hits it, projecting three glowing symbols onto the door: a **Crown**, a **Sword**, and a **Mountain**."
             },
             'sturdy door': { 
-                description: "This door has no handle or lock... Three symbols glow faintly.",
+                description: "This door has no handle or lock. It's sealed tight.",
                 destination: 'ritual_chamber'
             }
         },
         options: { 'go down': 'staircase', 'go through door': 'ritual_chamber' }
     },
     ritual_chamber: {
-        text: "You are in the heart of the mansion. Three large, unlit braziers stand in the center of the room...",
+        text: "You are in the heart of the mansion. The air crackles with latent energy. Three large, unlit braziers stand in the center of the room, each marked with a symbol you saw on the door.",
         objects: {
             'crown brazier': {
                 description: "A brazier marked with a Crown.",
                 race_specific: {
-                    human: "You light the Brazier of the Crown... The **Gem of Life** materializes.",
-                    default: "The flame sputters... '*That is not your path.*'"
+                    human: "You light the Brazier of the Crown... A brilliant light erupts, and when it fades, the **Gem of Life** materializes in the flames.",
+                    default: "You try to light it, but the flame sputters and dies. A voice whispers in your mind... '*That is not your path.*'"
                 },
                 item: 'the Gem of Life'
             },
             'sword brazier': {
                 description: "A brazier marked with a Sword.",
                 race_specific: {
-                    elf: "You light the Brazier of the Sword... The **Gem of Life** materializes.",
-                    default: "The flame sputters... '*That is not your path.*'"
+                    elf: "You light the Brazier of the Sword... A brilliant light erupts, and when it fades, the **Gem of Life** materializes in the flames.",
+                    default: "You try to light it, but the flame sputters and dies. A voice whispers in your mind... '*That is not your path.*'"
                 },
                 item: 'the Gem of Life'
             },
             'mountain brazier': {
                 description: "A brazier marked with a Mountain.",
                 race_specific: {
-                    orc: "You light the Brazier of the Mountain... The **Gem of Life** materializes.",
-                    default: "The flame sputters... '*That is not your path.*'"
+                    orc: "You light the Brazier of the Mountain... A brilliant light erupts, and when it fades, the **Gem of Life** materializes in the flames.",
+                    default: "You try to light it, but the flame sputters and dies. A voice whispers in your mind... '*That is not your path.*'"
                 },
                 item: 'the Gem of Life'
             }
@@ -406,7 +407,7 @@ async function parseCommand(command) {
             const room = gameState[currentPlayerLocation];
             let actionTaken = false;
 
-            // --- NEW: INVENTORY COMMAND (PHASE 1) ---
+            // --- Inventory Command (Phase 1) ---
             if (command === 'inventory' || command === 'inv' || command === 'i') {
                 actionTaken = true;
                 await displayText(`\n> ${command}`);
@@ -419,24 +420,32 @@ async function parseCommand(command) {
                     });
                 }
                 await displayText(inventoryText);
-                return; // Stop further processing for this command
+                // Return early as this command is complete.
+                return; 
             }
 
-
-            // **Simplified Navigation Logic**
-            const directions = ['north', 'east', 'south', 'west', 'up', 'down', 'back'];
+            // --- Simplified Navigation Logic ---
+            const directions = ['north', 'east', 'south', 'west', 'up', 'down', 'back', 'through door'];
             if (directions.includes(command)) {
-                command = 'go ' + command; // Standardize the command
+                command = 'go ' + command;
             }
 
-            // Priority 1: Full command strings from room options
+            // --- Priority 1: Navigation and Simple Actions ---
             const availableOptions = room.options || {};
-            const matchedCommand = Object.keys(availableOptions).find(c => c.startsWith(command));
+            const matchedCommand = Object.keys(availableOptions).find(c => command.startsWith(c));
 
             if (matchedCommand) {
-                actionTaken = true;
                 const option = availableOptions[matchedCommand];
-                await displayText(`\n> ${matchedCommand}`);
+                
+                // Handle locked doors or pathways
+                const targetObjectForNav = Object.values(room.objects || {}).find(obj => obj.destination === option && obj.locked);
+                if (targetObjectForNav) {
+                    await displayText(`\n> ${command}\n\nThe way is locked.`);
+                    return;
+                }
+                
+                actionTaken = true;
+                await displayText(`\n> ${command}`);
                 
                 if (typeof option === 'string') { // Simple navigation
                     currentPlayerLocation = option;
@@ -453,7 +462,7 @@ async function parseCommand(command) {
                 }
             }
 
-            // Priority 2: Verb-based commands (if no option was matched)
+            // --- Priority 2: Verb-based commands (if no option was matched) ---
             if (!actionTaken) {
                 const commandParts = command.split(' ');
                 const verb = commandParts[0];
@@ -468,6 +477,7 @@ async function parseCommand(command) {
                         objectKeys.forEach(obj => { lookText += `- ${obj}\n`; });
                     } else { lookText = "You look around, but see nothing of particular interest."; }
                     await displayText(lookText);
+
                 } else if (verb === 'search') {
                     actionTaken = true;
                     await displayText(`\n> ${command}`);
@@ -478,15 +488,76 @@ async function parseCommand(command) {
                         let searchText = objData.description;
                         if (objData.items && objData.items.length > 0) {
                             const foundItem = objData.items[0];
-                            // Use pop to remove the item from the room and add to inventory
                             player.inventory.push(objData.items.pop()); 
                             searchText += `\nYou find: ${foundItem}.`;
-                            // Clear the items array in the room so it can't be found again
                             objData.items = [];
                         }
                         await displayText(searchText);
                     } else {
                         await displayText(`You can't find a '${noun}' to search.`);
+                    }
+                
+                // --- NEW: USE COMMAND LOGIC (PHASE 2) ---
+                } else if (verb === 'use') {
+                    actionTaken = true;
+                    await displayText(`\n> ${command}`);
+
+                    const useParts = command.split(' on ');
+                    const itemToUse = useParts[0].substring(4).trim(); // "use a key" -> "a key"
+                    const targetObject = useParts[1]?.trim();
+
+                    if (!itemToUse || !targetObject) {
+                        await displayText("What do you want to use, and on what? (e.g., 'use a key on the door')");
+                        return;
+                    }
+
+                    // 1. Check if player has the item
+                    const itemInInventory = player.inventory.find(i => i.includes(itemToUse));
+                    if (!itemInInventory) {
+                        await displayText(`You don't have '${itemToUse}'.`);
+                        return;
+                    }
+
+                    // 2. Check if the target object is in the room
+                    const objectKeys = Object.keys(room.objects || {});
+                    const matchedObjectKey = objectKeys.find(key => key.startsWith(targetObject));
+                    if (!matchedObjectKey) {
+                        await displayText(`There is no '${targetObject}' here to use that on.`);
+                        return;
+                    }
+
+                    const objData = room.objects[matchedObjectKey];
+
+                    // 3. Check if the item is correct for the object
+                    if (objData.requires === itemInInventory) {
+                        // Success!
+                        await displayText(objData.action_text);
+                        
+                        // Give player a new item if one is revealed
+                        if (objData.item) {
+                            player.inventory.push(objData.item);
+                            await displayText(`You obtained: ${objData.item}.`);
+                            delete objData.item; // Prevent getting it again
+                        }
+
+                        // Unlock a new navigation option (e.g., hidden stairs)
+                        if (objData.unlocks) {
+                            Object.assign(room.options, objData.unlocks);
+                            delete objData.unlocks;
+                        }
+                        
+                        // Unlock a previously locked path
+                        if (objData.locked) {
+                           objData.locked = false;
+                        }
+
+                        // Remove the used item from inventory if it's a key/consumable
+                        if (itemInInventory.includes('key')) {
+                             player.inventory = player.inventory.filter(i => i !== itemInInventory);
+                        }
+
+                    } else {
+                        await displayText(`That doesn't seem to work.`);
                     }
                 }
             }
