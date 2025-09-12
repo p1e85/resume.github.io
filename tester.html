@@ -119,6 +119,9 @@
         #info-menu-btn {
              left: 2rem;
         }
+        #character-menu-btn {
+             right: 2rem;
+        }
 
         /* Generic Modal Styling */
         .modal {
@@ -171,6 +174,34 @@
             margin: 0;
         }
         
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .character-card {
+            background-color: #4a5568;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .character-card.selected {
+            border-color: #f6e05e;
+            box-shadow: 0 0 15px #f6e05e;
+        }
+        .character-card.locked {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .character-card svg {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+        
         /* Hide mobile controls on large screens */
         @media (min-width: 1024px) {
             #mobile-controls, #collectibles-bar { display: none; }
@@ -186,6 +217,9 @@
         <canvas id="gameCanvas"></canvas>
         <button id="info-menu-btn" class="menu-btn">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 17h2v-6h-2v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 9h2V7h-2v2z"/></svg>
+        </button>
+        <button id="character-menu-btn" class="menu-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </button>
         <div id="messageBox" class="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-70 text-white text-2xl md:text-4xl hidden rounded-lg text-center p-4">
             <span id="winMessage"></span>
@@ -220,48 +254,25 @@
         <div class="modal-content">
             <h2 class="text-3xl">Power-Ups Guide</h2>
             <div class="powerup-grid">
-                <!-- Speed Boost -->
-                <div class="powerup-item">
-                    <img id="info-speed" class="powerup-icon" src="" alt="Speed Boost">
-                    <div class="powerup-desc">
-                        <h3 class="text-blue-400">Speed Boost</h3>
-                        <p>Greatly increases run speed for 5 seconds.</p>
-                    </div>
-                </div>
-                <!-- Jump Boost -->
-                <div class="powerup-item">
-                    <img id="info-jump" class="powerup-icon" src="" alt="Jump Boost">
-                    <div class="powerup-desc">
-                        <h3 class="text-green-400">Jump Boost</h3>
-                        <p>Increases jump height for 10 seconds.</p>
-                    </div>
-                </div>
-                 <!-- Low Gravity -->
-                <div class="powerup-item">
-                    <img id="info-gravity" class="powerup-icon" src="" alt="Low Gravity">
-                    <div class="powerup-desc">
-                        <h3 class="text-purple-400">Low Gravity</h3>
-                        <p>Reduces gravity's pull for 10 seconds.</p>
-                    </div>
-                </div>
-                 <!-- Magnet -->
-                <div class="powerup-item">
-                    <img id="info-magnet" class="powerup-icon" src="" alt="Magnet">
-                    <div class="powerup-desc">
-                        <h3 class="text-pink-400">Coin Magnet</h3>
-                        <p>Pulls nearby coins towards you for 8 seconds.</p>
-                    </div>
-                </div>
-                 <!-- Shield -->
-                <div class="powerup-item">
-                    <img id="info-shield" class="powerup-icon" src="" alt="Shield">
-                    <div class="powerup-desc">
-                        <h3 class="text-gray-400">Safety Shield</h3>
-                        <p>A single-use item that saves you from one fall.</p>
-                    </div>
-                </div>
+                <!-- Power-up items here -->
+                <div class="powerup-item"><img id="info-speed" class="powerup-icon" src=""><div class="powerup-desc"><h3 class="text-blue-400">Speed Boost</h3><p>Greatly increases run speed for 5 seconds.</p></div></div>
+                <div class="powerup-item"><img id="info-jump" class="powerup-icon" src=""><div class="powerup-desc"><h3 class="text-green-400">Jump Boost</h3><p>Increases jump height for 10 seconds.</p></div></div>
+                <div class="powerup-item"><img id="info-gravity" class="powerup-icon" src=""><div class="powerup-desc"><h3 class="text-purple-400">Low Gravity</h3><p>Reduces gravity's pull for 10 seconds.</p></div></div>
+                <div class="powerup-item"><img id="info-magnet" class="powerup-icon" src=""><div class="powerup-desc"><h3 class="text-pink-400">Coin Magnet</h3><p>Pulls nearby coins towards you for 8 seconds.</p></div></div>
+                <div class="powerup-item"><img id="info-shield" class="powerup-icon" src=""><div class="powerup-desc"><h3 class="text-gray-400">Safety Shield</h3><p>A single-use item that saves you from one fall.</p></div></div>
             </div>
             <button id="close-info-menu" class="px-4 py-2 bg-red-600 rounded">Close</button>
+        </div>
+    </div>
+
+    <!-- Character Menu -->
+    <div id="character-menu" class="modal hidden">
+        <div class="modal-content">
+            <h2 class="text-3xl">Select Character</h2>
+            <div id="character-grid" class="character-grid">
+                <!-- Character cards will be populated by JS -->
+            </div>
+            <button id="close-char-menu" class="px-4 py-2 bg-red-600 rounded">Close</button>
         </div>
     </div>
 
@@ -282,6 +293,10 @@
         const infoMenu = document.getElementById('info-menu');
         const openInfoMenuBtn = document.getElementById('info-menu-btn');
         const closeInfoMenuBtn = document.getElementById('close-info-menu');
+        const characterMenu = document.getElementById('character-menu');
+        const characterGrid = document.getElementById('character-grid');
+        const closeCharMenuBtn = document.getElementById('close-char-menu');
+        const openCharMenuBtn = document.getElementById('character-menu-btn');
 
 
         let gameRunning = true;
