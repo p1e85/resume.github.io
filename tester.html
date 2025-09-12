@@ -147,7 +147,7 @@
         const WINNING_SCORE = 50;
         const BASE_GRAVITY = 0.7;
         const BASE_JUMP = 18;
-        const BASE_SPEED = 6;
+        let BASE_SPEED; // Will be set dynamically
 
         // Game state
         let player, platforms, coins, powerUps, keys, scrollOffset, score, inventory;
@@ -370,8 +370,16 @@
         inventorySlots.forEach((slot, i) => slot.addEventListener('click', () => usePowerUp(i)));
         
         function setCanvasResolution() {
-            if (window.innerWidth < 1024) { canvas.width = 720; canvas.height = 1120; }
-            else { canvas.width = 1280; canvas.height = 720; }
+            if (window.innerWidth < 1024) { // Mobile
+                canvas.width = 720; 
+                canvas.height = 1120; 
+                BASE_SPEED = 7; // Faster speed for mobile
+            }
+            else { // Desktop
+                canvas.width = 1280; 
+                canvas.height = 720; 
+                BASE_SPEED = 5; // Slower speed for desktop
+            }
             if (player) init();
         }
         
@@ -380,3 +388,4 @@
     </script>
 </body>
 </html>
+
