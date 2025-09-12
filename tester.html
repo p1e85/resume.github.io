@@ -346,7 +346,6 @@
             highScoreCountDisplay.textContent = highScore;
             inventory = []; updateScore(0); updateInventoryDisplay();
             messageBox.classList.add('hidden');
-            characterMenu.classList.add('hidden');
             player = new Player();
             platforms = [ new Platform({ x: 0, y: canvas.height - 60, width: 600, height: 60 }) ];
             coins = []; powerUps = [];
@@ -497,15 +496,8 @@
         }
 
         function loseGame() {
-            gameRunning = false;
-            const isNewHighScore = checkHighScore();
-            winMessage.textContent = isNewHighScore ? 'New High Score!' : 'Game Over';
-            scoreMessage.textContent = `Score: ${score} | High: ${highScore}`;
-            messageBox.classList.remove('hidden'); 
-            setTimeout(() => {
-                init();
-                animate();
-            }, 3000);
+            checkHighScore();
+            init(); // Instant restart
         }
 
         function setCanvasResolution() {
@@ -522,6 +514,7 @@
                 init();
              });
              window.addEventListener('keydown', ({ key }) => {
+                if (!gameRunning) return;
                 switch (key) {
                     case 'ArrowLeft': keys.left.pressed = true; break;
                     case 'ArrowRight': keys.right.pressed = true; break;
@@ -532,6 +525,7 @@
                 }
             });
             window.addEventListener('keyup', ({ key }) => {
+                if (!gameRunning) return;
                 switch (key) {
                     case 'ArrowLeft': keys.left.pressed = false; break;
                     case 'ArrowRight': keys.right.pressed = false; break;
@@ -539,11 +533,11 @@
             });
 
             const leftBtn = document.getElementById('leftBtn'), rightBtn = document.getElementById('rightBtn'), jumpBtn = document.getElementById('jumpBtn');
-            function handleJump(e) { e.preventDefault(); if (player.onGround) player.velocity.y = -player.jumpStrength; }
-            function handleLeftPress(e) { e.preventDefault(); keys.left.pressed = true; }
-            function handleLeftRelease(e) { e.preventDefault(); keys.left.pressed = false; }
-            function handleRightPress(e) { e.preventDefault(); keys.right.pressed = true; }
-            function handleRightRelease(e) { e.preventDefault(); keys.right.pressed = false; }
+            function handleJump(e) { e.preventDefault(); if (player.onGround && gameRunning) player.velocity.y = -player.jumpStrength; }
+            function handleLeftPress(e) { e.preventDefault(); if(gameRunning) keys.left.pressed = true; }
+            function handleLeftRelease(e) { e.preventDefault(); if(gameRunning) keys.left.pressed = false; }
+            function handleRightPress(e) { e.preventDefault(); if(gameRunning) keys.right.pressed = true; }
+            function handleRightRelease(e) { e.preventDefault(); if(gameRunning) keys.right.pressed = false; }
             leftBtn.addEventListener('mousedown', handleLeftPress); leftBtn.addEventListener('touchstart', handleLeftPress);
             leftBtn.addEventListener('mouseup', handleLeftRelease); leftBtn.addEventListener('touchend', handleLeftRelease);
             leftBtn.addEventListener('mouseleave', handleLeftRelease);
@@ -557,14 +551,14 @@
         }
         
         // --- Main Game Initialization ---
-        function main() {
+        function startGame() {
             setCanvasResolution();
             init();
             setupEventListeners();
             animate();
         }
 
-        main();
+        startGame();
 
     </script>
 </body>
