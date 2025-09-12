@@ -333,7 +333,10 @@
         }
 
         function winGame() { showEndScreen('You Win!', score); }
-        function loseGame() { showEndScreen('Game Over', score); }
+        function loseGame() {
+            checkHighScore();
+            init();
+        }
         function showEndScreen(title, finalScore) {
             gameRunning = false;
             const isNewHighScore = checkHighScore();
