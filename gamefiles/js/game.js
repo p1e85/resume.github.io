@@ -9,7 +9,7 @@ const commandInput = document.getElementById('command-input');
 // ======================================================
 // SECTION 2: GAME STATE VARIABLES
 // ======================================================
-let gamePhase = 'title'; // Can be 'title', 'race_selection', 'name_selection', 'instructions', 'playing'
+let gamePhase = 'title'; // Can be 'title', 'race_selection', 'name_selection', 'instructions', 'playing', 'end'
 let currentPlayerLocation = 'start';
 let player = {}; // A single object to hold all player data
 let playerName = ""; // To store the character's name
@@ -48,26 +48,19 @@ const gameState = {
         text: `
         --- How to Play ---
 
-        - To move, type the direction you want to go.
-          Example: north, south, east, west
+        Your choice of Human, Elf, or Orc matters. Each race has unique
+        abilities and will see the world differently. Some puzzles have
+        multiple solutions, and some secrets can only be uncovered by a
+        specific race. To see everything, you'll have to play more than once!
 
-        - To see what's in a room, type 'look around'.
-          Example: look around
-        
-        - To see what you are carrying, type 'inventory' (or 'inv' or 'i').
-
-        - To interact with objects, type 'search' and the object's name.
-          Example: search small door
-        
-        - To use an item, type 'use [item] on [object]'.
-          Example: use a small brass key on small chest
-        
-        - Some actions are simple commands.
-          Example: pull thread, press switch
-
-        - To see your character's status, type 'card'.
-
-        - To restart the game at any time, type 'restart'.
+        - To move: north, south, east, west
+        - To look around: look around
+        - To inspect: search [object] or look at [object]
+        - To see inventory: inventory (or inv, or i)
+        - To use an item: use [item] on [object]
+        - Other actions: press switch, pull thread, etc.
+        - To see character status: card
+        - To restart anytime: restart
 
         Type 'begin' to start your adventure.
         `
@@ -104,7 +97,6 @@ const gameState = {
         objects: {
             'grand staircase': { 
                 description: "The staircase is impressive, carved from dark wood. Thick cobwebs cling to the banister.",
-                // --- NEW: HUMAN FLAVOR TEXT (PHASE 3) ---
                 race_specific: {
                     human: "The staircase is impressive, carved from dark wood. As someone with an eye for architecture, you notice the woodwork is unusually complex for a family mansion, almost like a fortress."
                 }
@@ -115,15 +107,13 @@ const gameState = {
             },
             'wide archway': { 
                 description: "The archway is framed with ornate carvings. It leads into what appears to be a grand hall.",
-                 // --- NEW: ELF-ONLY OBJECT (PHASE 3) ---
                 race_specific: {
                     elf: "The archway is framed with ornate carvings. Your keen eyes notice faint Elven runes etched into the stone, almost invisible to others. They seem to tell a story."
                 }
             },
-             // --- NEW: ELF-ONLY OBJECT (PHASE 3) ---
             'elven runes': {
                 description: "You focus on the runes. They speak of a noble family, a cursed bloodline, and a 'gem of life' hidden away to break the curse. It seems the mansion itself is a puzzle to protect it.",
-                visible_to: 'elf' // Only elves can "see" or interact with this
+                visible_to: 'elf'
             }
         },
         options: { 'go north': 'grand_hall', 'go west': 'staircase', 'go east': 'parlor' }
@@ -152,12 +142,11 @@ const gameState = {
         },
         options: { 
             'go west': 'foyer',
-            // --- NEW: ORC ALTERNATE SOLUTION (PHASE 3) ---
             'smash music box': {
                 race: 'orc',
                 text: "Your large fingers can't work the delicate latch, so you resort to a simpler method. You smash the box against the mantelpiece. It shatters into splinters, but the **silver locket** clatters to the floor.",
                 item: 'a silver locket',
-                removes: 'music box' // The music box object is destroyed
+                removes: 'music box'
             }
         }
     },
@@ -341,6 +330,22 @@ const gameState = {
             }
         },
         options: { 'leave room': 'attic_landing' }
+    },
+    // --- NEW: WIN STATE (PHASE 4) ---
+    end: {
+        text: `
+        As you grasp the Gem of Life, it pulses with a warm, gentle light.
+        The oppressive chill of the mansion recedes, replaced by a profound
+        sense of peace. The curse is broken.
+
+        You have conquered the Supra Mansion.
+
+        Congratulations, ${playerName}!
+
+        --- THE END ---
+
+        Type 'restart' to play again with a different character.
+        `
     }
 };
 
@@ -357,11 +362,15 @@ async function displayText(text, clear = false) {
     const p = document.createElement('p');
     gameTextElement.appendChild(p);
     
-    const isInstant = gamePhase === 'title' || gamePhase === 'instructions';
+    // --- NEW: PLAYER NAME INTERPOLATION (PHASE 4) ---
+    // This will replace any instance of ${playerName} with the actual name.
+    const processedText = text.replace('${playerName}', playerName);
+
+    const isInstant = gamePhase === 'title' || gamePhase === 'instructions' || gamePhase === 'end';
     if (isInstant) {
-        p.textContent = text;
+        p.textContent = processedText;
     } else {
-        for (const char of text) {
+        for (const char of processedText) {
             p.textContent += char;
             await sleep(TYPEWRITER_SPEED);
         }
@@ -384,16 +393,29 @@ function createPlayer(race) {
     }
 }
 
+// --- NEW: WIN CONDITION CHECK (PHASE 4) ---
+async function checkWinCondition() {
+    if (player.inventory && player.inventory.includes('the Gem of Life')) {
+        gamePhase = 'end';
+        await sleep(1000); // Dramatic pause
+        await displayText(gameState.end.text, true);
+        return true; // Game has been won
+    }
+    return false; // Game continues
+}
+
+
 async function parseCommand(command) {
     if (!command) return;
 
     // --- Universal Commands ---
     if (command === 'restart') {
-        gamePhase = 'title';
-        player = {};
-        playerName = "";
-        // A full page reload is the simplest way to reset the game state completely.
         window.location.reload(); 
+        return;
+    }
+    
+    // Prevent commands after game has ended, except for 'restart'
+    if (gamePhase === 'end') {
         return;
     }
 
@@ -471,7 +493,7 @@ async function parseCommand(command) {
                 command = 'go ' + command;
             }
             
-            // --- Priority 1: Simple actions & Navigation ---
+            // Priority 1: Simple actions & Navigation
             const availableOptions = room.options || {};
             let matchedCommand = Object.keys(availableOptions).find(c => command.startsWith(c));
 
@@ -501,7 +523,7 @@ async function parseCommand(command) {
                     if (option.item) {
                         player.inventory.push(option.item);
                         await displayText(`You obtained: ${option.item}.`);
-                        delete option.item;
+                        if(await checkWinCondition()) return;
                     }
 
                     if(option.removes) {
@@ -510,7 +532,7 @@ async function parseCommand(command) {
                 }
             }
 
-            // --- NEW: Priority 2: Custom Actions on Objects (Phase 3) ---
+            // Priority 2: Custom Actions on Objects
             if (!actionTaken) {
                 const objectKeys = Object.keys(room.objects || {});
                 for (const key of objectKeys) {
@@ -526,6 +548,7 @@ async function parseCommand(command) {
                             if (obj.action.item) {
                                 player.inventory.push(obj.action.item);
                                 await displayText(`You obtained: ${obj.action.item}.`);
+                                if(await checkWinCondition()) return;
                                 delete obj.action.item;
                             }
                         }
@@ -534,17 +557,15 @@ async function parseCommand(command) {
                 }
             }
 
-            // --- Priority 3: Verb-based commands ---
+            // Priority 3: Verb-based commands
             if (!actionTaken) {
                 const commandParts = command.split(' ');
                 const verb = commandParts[0];
                 let noun = commandParts.slice(1).join(' ');
 
-                // Allow for flexible nouns, e.g., "search door" for "small door"
                 const allObjects = Object.keys(room.objects || {});
                 const matchedNounKey = allObjects.find(key => key.includes(noun));
                 if(matchedNounKey) noun = matchedNounKey;
-
 
                 if (verb === 'look' && noun === 'around') {
                     actionTaken = true;
@@ -562,8 +583,6 @@ async function parseCommand(command) {
                     
                     if (room.objects && room.objects[noun]) {
                         const objData = room.objects[noun];
-
-                        // --- NEW: RACE-SPECIFIC SEARCH TEXT (PHASE 3) ---
                         let searchText = (objData.race_specific && objData.race_specific[player.race])
                             ? objData.race_specific[player.race]
                             : objData.description;
@@ -572,6 +591,7 @@ async function parseCommand(command) {
                             const foundItem = objData.items[0];
                             player.inventory.push(objData.items.pop()); 
                             searchText += `\nYou find: ${foundItem}.`;
+                            if(await checkWinCondition()) return;
                             objData.items = [];
                         }
                         await displayText(searchText);
@@ -607,6 +627,7 @@ async function parseCommand(command) {
                         if (objData.item) {
                             player.inventory.push(objData.item);
                             await displayText(`You obtained: ${objData.item}.`);
+                            if(await checkWinCondition()) return;
                             delete objData.item;
                         }
                         if (objData.unlocks) {
