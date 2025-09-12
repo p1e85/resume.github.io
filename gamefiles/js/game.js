@@ -564,23 +564,33 @@ async function parseCommand(command) {
                     actionTaken = true;
                     await displayText(`\n> ${command}`);
                     
-                    if (option.destination) {
-                        currentPlayerLocation = option.destination;
+                    if (typeof option === 'string') {
+                        // This handles simple navigation like 'go north': 'grand_hall'
+                        currentPlayerLocation = option;
                         await displayText(gameState[currentPlayerLocation].text);
-                    } else if (option.descriptions) {
-                        await displayText(option.descriptions[player.race]);
-                    } else if (option.text) {
-                        await displayText(option.text);
-                    }
-                    
-                    if (option.item) {
-                        player.inventory.push(option.item);
-                        await displayText(`You obtained: ${option.item}.`);
-                        if(await checkWinCondition()) return;
-                    }
+                    } else {
+                        // This handles complex action objects
+                        if (option.descriptions) {
+                            await displayText(option.descriptions[player.race]);
+                        }
+                        if (option.text) {
+                            await displayText(option.text);
+                        }
+                        if (option.destination) {
+                            currentPlayerLocation = option.destination;
+                            await sleep(500);
+                            // The 'true' clears the screen for the new room description
+                            await displayText(gameState[currentPlayerLocation].text, true);
+                        }
+                        if (option.item) {
+                            player.inventory.push(option.item);
+                            await displayText(`You obtained: ${option.item}.`);
+                            if(await checkWinCondition()) return;
+                        }
 
-                    if(option.removes) {
-                        delete room.objects[option.removes];
+                        if(option.removes) {
+                            delete room.objects[option.removes];
+                        }
                     }
                 }
             }
@@ -721,4 +731,5 @@ commandForm.addEventListener('submit', async function(event) {
 });
 
 displayText(gameState.title.text, true);
+
 
