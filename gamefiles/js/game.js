@@ -60,6 +60,7 @@ const gameState = {
         - To use an item: use [item] on [object]
         - Other actions: press switch, pull thread, etc.
         - To see character status: card
+        - If you get stuck: help
         - To restart anytime: restart
 
         Type 'begin' to start your adventure.
@@ -188,7 +189,7 @@ const gameState = {
         text: "The Kitchen is a stark contrast to the rest of the floor, with iron stoves and butcher blocks. A simple door leads down into darkness.",
         objects: {
             'cooking stove': { description: "A huge, cast-iron beast. Inside, you find only ashes." },
-            'butcher\'s block': { description: "The wood is stained and scarred from years of use." }
+            'butcher's block': { description: "The wood is stained and scarred from years of use." }
         },
         options: { 'go north': 'dining_hall', 'go down': 'wine_cellar' }
     },
@@ -331,7 +332,6 @@ const gameState = {
         },
         options: { 'leave room': 'attic_landing' }
     },
-    // --- NEW: WIN STATE (PHASE 4) ---
     end: {
         text: `
         As you grasp the Gem of Life, it pulses with a warm, gentle light.
@@ -362,8 +362,6 @@ async function displayText(text, clear = false) {
     const p = document.createElement('p');
     gameTextElement.appendChild(p);
     
-    // --- NEW: PLAYER NAME INTERPOLATION (PHASE 4) ---
-    // This will replace any instance of ${playerName} with the actual name.
     const processedText = text.replace('${playerName}', playerName);
 
     const isInstant = gamePhase === 'title' || gamePhase === 'instructions' || gamePhase === 'end';
@@ -393,15 +391,64 @@ function createPlayer(race) {
     }
 }
 
-// --- NEW: WIN CONDITION CHECK (PHASE 4) ---
 async function checkWinCondition() {
     if (player.inventory && player.inventory.includes('the Gem of Life')) {
         gamePhase = 'end';
-        await sleep(1000); // Dramatic pause
+        await sleep(1000);
         await displayText(gameState.end.text, true);
-        return true; // Game has been won
+        return true;
     }
-    return false; // Game continues
+    return false;
+}
+
+// --- NEW: CONTEXTUAL HELP FUNCTION ---
+async function provideHelp() {
+    await displayText(`\n> help`);
+    const room = gameState[currentPlayerLocation];
+    let hints = [];
+
+    // 1. Hint for available directions
+    const exits = Object.keys(room.options || {});
+    if (exits.length > 0) {
+        hints.push(`From here, you can try to go: ${exits.map(e => e.replace('go ','')).join(', ')}.`);
+    }
+
+    // 2. Hint for interactable objects
+    const objects = Object.keys(room.objects || {}).filter(key => !room.objects[key].visible_to || room.objects[key].visible_to === player.race);
+    if (objects.length > 0) {
+        hints.push(`You see several things of interest: ${objects.join(', ')}.`);
+    }
+
+    // 3. Contextual puzzle hints from objects
+    for (const objectKey of objects) {
+        const objData = room.objects[objectKey];
+        if (objData.requires && player.inventory.includes(objData.requires) && (objData.locked === true || objData.unlocks)) {
+             hints.push(`That '${objData.requires}' you're carrying might be useful on the ${objectKey}.`);
+        }
+        if (objData.items && objData.items.length > 0) {
+            hints.push(`You get the feeling you haven't fully searched the ${objectKey}.`);
+        }
+        if (objData.action && objData.action.race === player.race && objData.action.item) {
+             hints.push(`Being a ${player.race}, you might be able to do something special with the ${objectKey}. Try a command like '${objData.action.command[0]}'.`);
+        }
+    }
+    
+    // 4. Contextual puzzle hints from room options
+    for (const optionKey of exits) {
+        const optionData = room.options[optionKey];
+        if (optionData.race && optionData.race === player.race && optionData.item) {
+            hints.push(`As an ${player.race}, you might be able to '${optionKey}'.`);
+        }
+    }
+
+    let helpText;
+    if (hints.length > 0) {
+        helpText = "--- Help ---\n" + hints.join('\n');
+    } else {
+        helpText = "You look around, but no obvious course of action comes to mind. Try inspecting things more closely or moving to a different room.";
+    }
+
+    await displayText(helpText);
 }
 
 
@@ -414,8 +461,17 @@ async function parseCommand(command) {
         return;
     }
     
-    // Prevent commands after game has ended, except for 'restart'
-    if (gamePhase === 'end') {
+    if (gamePhase === 'end' && command !== 'restart') {
+        return;
+    }
+    
+    // --- NEW: HELP COMMAND ---
+    if (command === 'help') {
+        if (gamePhase === 'playing') {
+            await provideHelp();
+        } else {
+            await displayText(gameState.instructions.text);
+        }
         return;
     }
 
@@ -493,7 +549,6 @@ async function parseCommand(command) {
                 command = 'go ' + command;
             }
             
-            // Priority 1: Simple actions & Navigation
             const availableOptions = room.options || {};
             let matchedCommand = Object.keys(availableOptions).find(c => command.startsWith(c));
 
@@ -532,7 +587,6 @@ async function parseCommand(command) {
                 }
             }
 
-            // Priority 2: Custom Actions on Objects
             if (!actionTaken) {
                 const objectKeys = Object.keys(room.objects || {});
                 for (const key of objectKeys) {
@@ -557,7 +611,6 @@ async function parseCommand(command) {
                 }
             }
 
-            // Priority 3: Verb-based commands
             if (!actionTaken) {
                 const commandParts = command.split(' ');
                 const verb = commandParts[0];
@@ -666,3 +719,4 @@ commandForm.addEventListener('submit', async function(event) {
 });
 
 displayText(gameState.title.text, true);
+
