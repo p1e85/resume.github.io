@@ -156,19 +156,23 @@
 
         // Game state
         let player, platforms, coins, powerUps, keys, scrollOffset, score, inventory, highScore;
-        let activePowerUps = { speed: false, jump: false, gravity: false };
+        let activePowerUps = { speed: false, jump: false, gravity: false, magnet: false, shield: false };
+        let lastPlatformY;
+
 
         // --- IMAGES ---
         const playerImage = new Image(), platformImage = new Image(), coinImage = new Image(), backgroundImage = new Image();
-        const speedBoostImage = new Image(), jumpBoostImage = new Image(), lowGravityImage = new Image();
+        const speedBoostImage = new Image(), jumpBoostImage = new Image(), lowGravityImage = new Image(), magnetImage = new Image(), shieldImage = new Image();
 
         const playerSVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#4299e1" rx="15"/><circle cx="30" cy="35" r="10" fill="white"/><circle cx="70" cy="35" r="10" fill="white"/><rect x="25" y="65" width="50" height="10" rx="5" fill="white"/></svg>`;
         const platformSVG = `<svg viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="50" fill="#a0aec0" rx="10"/></svg>`;
-        const coinSVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45" fill="#f6e05e" stroke="#f6b93b" stroke-width="8"/></svg>`;
+        const coinSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><radialGradient id="grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%"><stop offset="0%" style="stop-color:rgb(255,255,224);stop-opacity:1" /><stop offset="100%" style="stop-color:rgb(251,211,141);stop-opacity:1" /></radialGradient></defs><circle cx="50" cy="50" r="45" fill="#fbb040"/><circle cx="50" cy="50" r="38" fill="url(#grad1)"/><path d="M50,15 C69.33,15 85,30.67 85,50 C85,69.33 69.33,85 50,85 C30.67,85 15,69.33 15,50 C15,30.67 30.67,15 50,15 M50,5 A45,45 0 0,0 5,50 A45,45 0 0,0 50,95 A45,45 0 0,0 95,50 A45,45 0 0,0 50,5 Z" fill="#f7931e"/><text x="50" y="62" font-family="'Press Start 2P', cursive" font-size="30" fill="#f7931e" text-anchor="middle">C</text></svg>`;
         const backgroundSVG = `<svg viewBox="0 0 800 1200" xmlns="http://www.w3.org/2000/svg"><rect width="800" height="1200" fill="#2d3748"/><circle cx="700" cy="150" r="50" fill="#f6e05e"/></svg>`;
         const speedSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#63b3ed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 17l5-5-5-5M6 17l5-5-5-5"/></svg>`;
         const jumpSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#48bb78" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10V7a4 4 0 118 0v3M5 10h14M6 14h12M8 18h8"/></svg>`;
         const gravitySVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#d6bcfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM2 12h20M12 2a15 15 0 010 20"/></svg>`;
+        const magnetSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f687b3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 00-10 10v10a4 4 0 004 4h12a4 4 0 004-4V12A10 10 0 0012 2zM12 10v12"/></svg>`;
+        const shieldSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#a0aec0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
 
         playerImage.src = 'data:image/svg+xml;base64,' + btoa(playerSVG);
         platformImage.src = 'data:image/svg+xml;base64,' + btoa(platformSVG);
@@ -177,11 +181,15 @@
         speedBoostImage.src = 'data:image/svg+xml;base64,' + btoa(speedSVG);
         jumpBoostImage.src = 'data:image/svg+xml;base64,' + btoa(jumpSVG);
         lowGravityImage.src = 'data:image/svg+xml;base64,' + btoa(gravitySVG);
+        magnetImage.src = 'data:image/svg+xml;base64,' + btoa(magnetSVG);
+        shieldImage.src = 'data:image/svg+xml;base64,' + btoa(shieldSVG);
 
         const powerUpTypes = {
             speed: { image: speedBoostImage, duration: 5000 },
             jump: { image: jumpBoostImage, duration: 10000 },
             gravity: { image: lowGravityImage, duration: 10000 },
+            magnet: { image: magnetImage, duration: 8000 },
+            shield: { image: shieldImage, duration: -1 }, // -1 for single use
         };
         
         // --- CLASSES ---
@@ -196,7 +204,18 @@
                 this.draw(); this.position.x += this.velocity.x; this.position.y += this.velocity.y;
                 this.velocity.y += this.gravity;
                 if (this.position.x < 0) this.position.x = 0;
-                if (this.position.y > canvas.height) loseGame();
+                if (this.position.y > canvas.height) {
+                    if (activePowerUps.shield) {
+                        activePowerUps.shield = false;
+                        const inventoryIndex = inventory.indexOf('shield');
+                        if (inventoryIndex > -1) inventory.splice(inventoryIndex, 1);
+                        updateInventoryDisplay();
+                        this.position.y = lastPlatformY - this.height;
+                        this.velocity.y = 0;
+                    } else {
+                        loseGame();
+                    }
+                }
             }
         }
         class Platform { 
@@ -224,14 +243,14 @@
             const newWidth = 150 + Math.random() * 200;
             platforms.push(new Platform({ x: newX, y: newY, width: newWidth, height: 25 }));
             if (Math.random() > 0.3) coins.push(new Coin({ x: newX + newWidth / 2 - 15, y: newY - 40 }));
-            if (Math.random() > 0.9) {
-                const type = Object.keys(powerUpTypes)[Math.floor(Math.random() * 3)];
+            if (Math.random() > 0.85) {
+                const type = Object.keys(powerUpTypes)[Math.floor(Math.random() * Object.keys(powerUpTypes).length)];
                 powerUps.push(new PowerUp({ x: newX + newWidth / 2 - 17, y: newY - 45, type }));
             }
         }
 
         function init() {
-            gameRunning = true; scrollOffset = 0; score = 0;
+            gameRunning = true; scrollOffset = 0; score = 0; lastPlatformY = canvas.height - 60;
             highScore = parseInt(localStorage.getItem('platformerHighScore')) || 0;
             highScoreCountDisplay.textContent = highScore;
             inventory = []; updateScore(0); updateInventoryDisplay();
@@ -274,8 +293,23 @@
             platforms.forEach(p => { 
                 if (player.velocity.y >= 0 && player.position.y + player.height <= p.position.y && player.position.y + player.height + player.velocity.y >= p.position.y && player.position.x + player.width >= p.position.x && player.position.x <= p.position.x + p.width) {
                     player.velocity.y = 0; player.position.y = p.position.y - player.height; player.onGround = true;
+                    lastPlatformY = p.position.y;
                 }
             });
+
+            // Coin Magnet Logic
+            if (activePowerUps.magnet) {
+                coins.forEach(coin => {
+                    const dx = (player.position.x + player.width / 2) - (coin.position.x + coin.width / 2);
+                    const dy = (player.position.y + player.height / 2) - (coin.position.y + coin.height / 2);
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 200) {
+                        coin.position.x += dx / 20;
+                        coin.position.y += dy / 20;
+                    }
+                });
+            }
+
             coins.forEach((c, i) => { 
                 if (player.position.x < c.position.x + c.width && player.position.x + player.width > c.position.x && player.position.y < c.position.y + c.height && player.position.y + player.height > c.position.y) {
                     coins.splice(i, 1); updateScore(score + 1);
@@ -305,22 +339,36 @@
         }
         function usePowerUp(index) {
             if (!inventory[index] || activePowerUps[inventory[index]]) return;
-            const type = inventory.splice(index, 1)[0];
+            const type = inventory[index]; // Peek, don't remove shield yet
+
+            if (type === 'shield') {
+                activePowerUps.shield = true;
+                inventory.splice(index, 1)[0];
+                updateInventoryDisplay();
+                return;
+            }
+
+            inventory.splice(index, 1)[0];
             updateInventoryDisplay();
             activePowerUps[type] = true;
+
             switch (type) {
                 case 'speed': player.speed = BASE_SPEED * 1.8; break;
                 case 'jump': player.jumpStrength = BASE_JUMP * 1.5; break;
                 case 'gravity': player.gravity = BASE_GRAVITY * 0.5; break;
+                case 'magnet': /* handled in animate loop */ break;
             }
-            setTimeout(() => {
-                switch (type) {
-                    case 'speed': player.speed = BASE_SPEED; break;
-                    case 'jump': player.jumpStrength = BASE_JUMP; break;
-                    case 'gravity': player.gravity = BASE_GRAVITY; break;
-                }
-                activePowerUps[type] = false;
-            }, powerUpTypes[type].duration);
+
+            if (powerUpTypes[type].duration > 0) {
+                setTimeout(() => {
+                    switch (type) {
+                        case 'speed': player.speed = BASE_SPEED; break;
+                        case 'jump': player.jumpStrength = BASE_JUMP; break;
+                        case 'gravity': player.gravity = BASE_GRAVITY; break;
+                    }
+                    activePowerUps[type] = false;
+                }, powerUpTypes[type].duration);
+            }
         }
 
         function checkHighScore() {
