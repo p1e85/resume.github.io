@@ -17,13 +17,18 @@ const grayscaleBtn = document.getElementById('grayscale-btn');
 const sepiaBtn = document.getElementById('sepia-btn');
 const resetFiltersBtn = document.getElementById('reset-filters-btn');
 
-// --- Premium Feature Elements ---
-const premiumSectionContent = document.getElementById('premium-section-content');
+// --- Premium Modal Elements ---
+const premiumStatusHeader = document.getElementById('premium-status-header');
+const premiumModalOverlay = document.getElementById('premium-modal-overlay');
+const closeModalBtn = document.getElementById('close-modal-btn');
+const codeInput = document.getElementById('code-input');
+const submitCodeBtn = document.getElementById('submit-code-btn');
+const codeErrorMessage = document.getElementById('code-error-message');
 
 // --- State Variables ---
 let originalImage = null;
 let saveCount = 1;
-let isPremium = false; // This will be set to true if the user has donated
+let isPremium = false;
 let filters = {
     brightness: 100,
     contrast: 100,
@@ -48,12 +53,17 @@ resetFiltersBtn.addEventListener('click', resetFilters);
 downloadBtn.addEventListener('click', downloadMeme);
 window.addEventListener('resize', () => { resizeCanvasToImage(); drawMeme(); });
 
+// Modal Listeners
+closeModalBtn.addEventListener('click', closeModal);
+premiumModalOverlay.addEventListener('click', (e) => {
+    if (e.target === premiumModalOverlay) closeModal();
+});
+submitCodeBtn.addEventListener('click', validateAndApplyCode);
+
 // --- Functions ---
 
 /**
- * Handles the image upload event. Reads the file, creates an Image object,
- * and triggers the canvas to be resized and drawn.
- * @param {Event} event - The file input change event.
+ * Handles the image upload event.
  */
 function handleImageUpload(event) {
     const file = event.target.files[0];
@@ -72,13 +82,12 @@ function handleImageUpload(event) {
 }
 
 /**
- * Resizes the canvas to match the uploaded image's aspect ratio,
- * ensuring it fits within the available container space.
+ * Resizes the canvas to match the uploaded image's aspect ratio.
  */
 function resizeCanvasToImage() {
     if (!originalImage) return;
     const container = document.getElementById('canvas-container');
-    const maxWidth = container.clientWidth - 32; // Account for padding
+    const maxWidth = container.clientWidth - 32;
     const maxHeight = window.innerHeight * 0.7;
     
     let newWidth = originalImage.width;
@@ -99,8 +108,7 @@ function resizeCanvasToImage() {
 }
 
 /**
- * The main drawing function. It clears the canvas, applies filters,
- * draws the image, text, and watermark.
+ * The main drawing function.
  */
 function drawMeme() {
     if (!originalImage) return;
@@ -133,7 +141,7 @@ function drawMeme() {
 }
 
 /**
- * Applies the selected filters to the canvas context based on the 'filters' object.
+ * Applies the selected filters to the canvas context.
  */
 function applyCanvasFilters() {
      const filterString = `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%) grayscale(${filters.grayscale}) sepia(${filters.sepia})`;
@@ -141,12 +149,10 @@ function applyCanvasFilters() {
 }
 
 /**
- * Draws the 'p1' watermark only if the user is not a premium user.
+ * Draws the watermark only if the user is not a premium user.
  */
 function drawWatermark() {
-    if (isPremium) {
-        return; // Don't draw if the user has donated.
-    }
+    if (isPremium) return;
     const watermarkText = 'p1';
     const fontSize = canvas.width * 0.025;
     ctx.font = `${fontSize}px "Press Start 2P"`;
@@ -160,7 +166,7 @@ function drawWatermark() {
 }
 
 /**
- * Resets all filter values to their defaults and redraws the meme.
+ * Resets all filter values to their defaults.
  */
 function resetFilters() {
     filters = { brightness: 100, contrast: 100, saturate: 100, grayscale: 0, sepia: 0 };
@@ -173,7 +179,7 @@ function resetFilters() {
 /**
  * Triggers the download of the canvas content.
  */
-function downloadMeme() {
+function downloadMame() {
     if (!originalImage) {
         const originalText = downloadBtn.textContent;
         downloadBtn.textContent = 'No Image!';
@@ -206,23 +212,92 @@ function drawInitialPlaceholder() {
     ctx.fillText('Load an Image to Start...', canvas.width/2, canvas.height/2);
 }
 
-// --- Premium Feature Functions ---
+// --- Premium Feature & Modal Functions ---
+
+function openModal() { premiumModalOverlay.classList.remove('hidden'); }
+function closeModal() { premiumModalOverlay.classList.add('hidden'); codeErrorMessage.classList.add('hidden'); }
 
 /**
- * Checks localStorage to see if the user has previously donated.
- * If so, it updates the UI and sets the premium flag.
+ * Checks the unlock code's format and checksum.
+ */
+function isCodeValid(code) {
+    code = code.toUpperCase().trim();
+    const parts = code.split('-');
+    if (parts.length !== 3 || parts[0] !== 'P1' || parts[1].length !== 4 || parts[2].length !== 4) {
+        return false;
+    }
+    
+    const randomPart = parts[1];
+    const checksumPart = parts[2];
+
+    // Re-create the checksum and see if it matches
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const secretKey = 'AMIGA';
+    let expectedChecksum = '';
+    for (let i = 0; i < 4; i++) {
+        const randCharIndex = chars.indexOf(randomPart[i]);
+        const keyCharIndex = chars.indexOf(secretKey[i % secretKey.length]);
+        if (randCharIndex === -1) return false; // Character not in our allowed set
+        const newIndex = (randCharIndex + keyCharIndex) % chars.length;
+        expectedChecksum += chars[newIndex];
+    }
+
+    return checksumPart === expectedChecksum;
+}
+
+/**
+ * Handles the code submission event.
+ */
+function validateAndApplyCode() {
+    const code = codeInput.value;
+    if (isCodeValid(code)) {
+        unlockPremiumFeatures(code);
+    } else {
+        codeErrorMessage.classList.remove('hidden');
+    }
+}
+
+/**
+ * Unlocks the premium features, saves status, and updates UI.
+ */
+function unlockPremiumFeatures(code) {
+    isPremium = true;
+    localStorage.setItem('p1MemeMakerPremium', 'true');
+    localStorage.setItem('p1MemeMakerCode', code.toUpperCase().trim());
+    updatePremiumUI();
+    closeModal();
+    drawMeme();
+}
+
+/**
+ * Updates the UI based on premium status.
+ */
+function updatePremiumUI() {
+    if (isPremium) {
+        premiumStatusHeader.innerHTML = '<p class="premium-unlocked-text">PREMIUM UNLOCKED</p>';
+    } else {
+        premiumStatusHeader.innerHTML = '<button id="unlock-btn">Remove Watermark</button>';
+        // This event listener has to be re-added every time the button is created
+        document.getElementById('unlock-btn').addEventListener('click', openModal);
+    }
+}
+
+/**
+ * Checks localStorage on load to determine premium status.
  */
 function checkPremiumStatus() {
-    if (localStorage.getItem('p1MemeMakerPremium') === 'true') {
+    const storedPremium = localStorage.getItem('p1MemeMakerPremium') === 'true';
+    const storedCode = localStorage.getItem('p1MemeMakerCode');
+
+    if (storedPremium) {
         isPremium = true;
-        // Update the UI to show a thank you message instead of the donate button
-        premiumSectionContent.innerHTML = `
-            <div class="thank-you-message">
-                <p>Premium Unlocked!</p>
-                <p class="text-xs mt-2" style="font-size: 8px;">Thank you for your support.</p>
-            </div>
-        `;
+    } else if (storedCode && isCodeValid(storedCode)) {
+        // Recover status using a valid stored code
+        unlockPremiumFeatures(storedCode);
+        return; // Exit because unlockPremiumFeatures already updates UI
     }
+    
+    updatePremiumUI();
 }
 
 // --- Initial Setup ---
@@ -230,4 +305,3 @@ window.onload = () => {
     drawInitialPlaceholder();
     checkPremiumStatus();
 };
-
