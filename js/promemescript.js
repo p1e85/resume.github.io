@@ -17,8 +17,8 @@ const grayscaleBtn = document.getElementById('grayscale-btn');
 const sepiaBtn = document.getElementById('sepia-btn');
 const resetFiltersBtn = document.getElementById('reset-filters-btn');
 
-// --- Premium Modal Elements ---
-const premiumStatusHeader = document.getElementById('premium-status-header');
+// --- Premium Elements ---
+const premiumSectionContent = document.getElementById('premium-section-content');
 const premiumModalOverlay = document.getElementById('premium-modal-overlay');
 const closeModalBtn = document.getElementById('close-modal-btn');
 const codeInput = document.getElementById('code-input');
@@ -179,7 +179,7 @@ function resetFilters() {
 /**
  * Triggers the download of the canvas content.
  */
-function downloadMame() {
+function downloadMeme() {
     if (!originalImage) {
         const originalText = downloadBtn.textContent;
         downloadBtn.textContent = 'No Image!';
@@ -274,9 +274,14 @@ function unlockPremiumFeatures(code) {
  */
 function updatePremiumUI() {
     if (isPremium) {
-        premiumStatusHeader.innerHTML = '<p class="premium-unlocked-text">PREMIUM UNLOCKED</p>';
+        premiumSectionContent.innerHTML = `
+            <div class="thank-you-message">
+                <p>Premium Unlocked!</p>
+                <p class="text-xs mt-2" style="font-size: 8px;">Thank you for your support.</p>
+            </div>
+        `;
     } else {
-        premiumStatusHeader.innerHTML = '<button id="unlock-btn">Remove Watermark</button>';
+        premiumSectionContent.innerHTML = '<button id="unlock-btn" class="donation-button">Remove Watermark</button>';
         // This event listener has to be re-added every time the button is created
         document.getElementById('unlock-btn').addEventListener('click', openModal);
     }
@@ -305,3 +310,4 @@ window.onload = () => {
     drawInitialPlaceholder();
     checkPremiumStatus();
 };
+
