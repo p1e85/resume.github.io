@@ -19,7 +19,7 @@ const resetFiltersBtn = document.getElementById('reset-filters-btn');
 
 // --- State Variables ---
 let originalImage = null;
-let saveCount = 1; // New variable to track save count
+let saveCount = 1;
 let filters = {
     brightness: 100,
     contrast: 100,
@@ -148,17 +148,27 @@ function applyCanvasFilters() {
 }
 
 /**
- * Draws the 'p1' watermark in the bottom-right corner of the canvas.
+ * Draws the 'p1' watermark in the bottom-right corner of the canvas with a high-contrast outline.
  */
 function drawWatermark() {
     const watermarkText = 'p1';
     const fontSize = canvas.width * 0.025;
-    ctx.font = `${fontSize}px "Press Start 2P"`; // Using the retro UI font
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.font = `${fontSize}px "Press Start 2P"`;
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
+    
+    // Style for the outline
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.lineWidth = 2;
+    
+    // Style for the text fill
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+
+    // Draw the outline first, then the fill
+    ctx.strokeText(watermarkText, canvas.width - 10, canvas.height - 10);
     ctx.fillText(watermarkText, canvas.width - 10, canvas.height - 10);
 }
+
 
 /**
  * Resets all filter values to their defaults and redraws the meme.
@@ -185,25 +195,18 @@ function downloadMeme() {
         return;
     }
 
-    // 1. Set up the default name with the current save count
     const defaultName = `p1-meme-${saveCount}`;
-    
-    // 2. Prompt the user for a filename
     let fileName = prompt("Enter a filename for your meme:", defaultName);
 
-    // 3. If the user cancels or enters an empty name, use the default
     if (!fileName || fileName.trim() === '') {
         fileName = defaultName;
     }
     
-    // 4. Create a link and trigger the download
     const link = document.createElement('a');
-    // Ensure the filename ends with .png
     link.download = `${fileName.replace(/\.png$/i, '')}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
     
-    // 5. Increment the counter for the next save
     saveCount++;
 }
 
@@ -223,3 +226,4 @@ function drawInitialPlaceholder() {
 
 // --- Initial Setup ---
 window.onload = drawInitialPlaceholder;
+
