@@ -17,7 +17,7 @@
 
     <header>
         <div class="header-content">
-            <h1>P1 MEME WORKBENCH v1.3</h1>
+            <h1>P1 MEME WORKBENCH v1.5</h1>
         </div>
     </header>
 
@@ -83,14 +83,14 @@
 
                 <!-- Premium Section -->
                 <div class="amiga-section">
-                    <label>5. Premium Feature</label>
-                    <div class="flex items-center">
-                        <input type="checkbox" id="remove-watermark-checkbox" disabled>
-                        <label for="remove-watermark-checkbox" class="ml-2 mb-0 cursor-pointer">Remove Watermark</label>
+                    <label>5. Support the App</label>
+                    <div id="premium-section-content">
+                        <!-- This content will be replaced by JavaScript if the user has donated -->
+                        <a href="https://www.paypal.com/donate/?hosted_button_id=Q3CADPFF274RL" class="donation-button">
+                            Donate to Remove Watermark
+                        </a>
+                         <p class="text-xs mt-4" style="font-size: 8px;">Your support helps keep this app running. Thank you!</p>
                     </div>
-                    <p id="premium-text" class="text-xs mt-2" style="font-size: 8px;">A small donation unlocks this feature!</p>
-                    <div id="paypal-button-container" class="mt-4"></div>
-                    <div id="thank-you-message" class="hidden mt-2">Thank you for your support!</div>
                 </div>
 
                 <!-- Download Button -->
@@ -106,9 +106,6 @@
         </div>
     </main>
     
-    <!-- PayPal SDK - Using 'test' for client-id in development -->
-    <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD"></script>
-    <!-- Link to your JavaScript file -->
     <script src="js/promemescript.js"></script>
 </body>
 </html>
