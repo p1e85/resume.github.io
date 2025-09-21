@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P1 Meme Maker</title>
+    <!-- Tailwind CSS for layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for retro pixelated look and classic meme font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- Link to your new custom stylesheet -->
+    <link rel="stylesheet" href="memestyle.css">
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <h1>P1 MEME WORKBENCH v1.3</h1>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Controls Panel -->
+            <div class="amiga-window w-full lg:w-1/3 self-start">
+                
+                <!-- Upload Section -->
+                <div class="amiga-section">
+                    <label for="image-upload">1. Load Image_</label>
+                    <input type="file" id="image-upload" accept="image/*">
+                </div>
+
+                <!-- Text Section -->
+                <div class="amiga-section">
+                    <label>2. Add Text</label>
+                    <input type="text" id="top-text-input" placeholder="Top Text" class="w-full">
+                    <input type="text" id="bottom-text-input" placeholder="Bottom Text" class="w-full mt-2">
+                </div>
+
+                <!-- Styling Section -->
+                <div class="amiga-section">
+                    <label>3. Customize Gadgets</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="text-color-input">Text Color</label>
+                            <input type="color" id="text-color-input" value="#FFFFFF">
+                        </div>
+                        <div>
+                            <label for="outline-color-input">Outline</label>
+                            <input type="color" id="outline-color-input" value="#000000">
+                        </div>
+                    </div>
+                    <!-- Text Size Slider -->
+                    <div class="mt-4">
+                        <label for="text-size-slider">Text Size</label>
+                        <input type="range" id="text-size-slider" min="2" max="15" value="8" class="w-full">
+                    </div>
+                </div>
+                
+                <!-- Filters Section -->
+                <div class="amiga-section">
+                    <label>4. Image FX</label>
+                    <div class="flex items-center gap-3">
+                        <label for="brightness-slider" class="w-28">Brightness</label>
+                        <input type="range" id="brightness-slider" min="0" max="200" value="100" class="w-full">
+                    </div>
+                    <div class="flex items-center gap-3 mt-2">
+                        <label for="contrast-slider" class="w-28">Contrast</label>
+                        <input type="range" id="contrast-slider" min="0" max="200" value="100" class="w-full">
+                    </div>
+                    <div class="flex items-center gap-3 mt-2">
+                        <label for="saturate-slider" class="w-28">Saturation</label>
+                        <input type="range" id="saturate-slider" min="0" max="200" value="100" class="w-full">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-4">
+                         <button id="grayscale-btn">Grayscale</button>
+                         <button id="sepia-btn">Sepia</button>
+                    </div>
+                    <button id="reset-filters-btn" class="w-full mt-2">Reset FX</button>
+                </div>
+
+                <!-- Premium Section -->
+                <div class="amiga-section">
+                    <label>5. Premium Feature</label>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="remove-watermark-checkbox" disabled>
+                        <label for="remove-watermark-checkbox" class="ml-2 mb-0 cursor-pointer">Remove Watermark</label>
+                    </div>
+                    <p id="premium-text" class="text-xs mt-2" style="font-size: 8px;">A small donation unlocks this feature!</p>
+                    <div id="paypal-button-container" class="mt-4"></div>
+                    <div id="thank-you-message" class="hidden mt-2">Thank you for your support!</div>
+                </div>
+
+                <!-- Download Button -->
+                <div class="pt-4">
+                    <button id="download-btn" class="w-full">[ SAVE MEME ]</button>
+                </div>
+            </div>
+
+            <!-- Canvas Area -->
+            <div class="amiga-window w-full lg:w-2/3 flex items-center justify-center" id="canvas-container">
+                <canvas id="meme-canvas" class="max-w-full max-h-full"></canvas>
+            </div>
+        </div>
+    </main>
+    
+    <!-- PayPal SDK - Using 'test' for client-id in development -->
+    <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD"></script>
+    <!-- Link to your JavaScript file -->
+    <script src="promemescript.js"></script>
+</body>
+</html>
+
