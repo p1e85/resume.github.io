@@ -68,11 +68,13 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 2rem;
+    flex-wrap: wrap; /* Allow wrapping on very small screens */
+    gap: 1rem;
 }
-/* NEW: Wrapper for header buttons */
 .header-buttons {
     display: flex;
     gap: 0.5rem;
+    flex-wrap: wrap; /* Allow buttons to wrap */
 }
 
 h1 {
@@ -120,10 +122,13 @@ h2 {
     overflow-y: auto;
     max-height: 40vh;
 }
-/* Style for paragraphs inside the modal */
 .modal-content p {
     margin-bottom: 1rem;
     line-height: 1.5;
+}
+/* NEW: Spacing for the PayPal form */
+.modal-content form {
+    margin: 2rem 0;
 }
 
 .message-item {
@@ -183,12 +188,11 @@ h2 {
     width: 100%;
     text-align: left;
 }
-/* Small button for theme toggle */
 .btn-small {
     width: auto;
     padding: 5px 15px;
     font-size: 16px;
-    white-space: nowrap; /* Prevent text from wrapping */
+    white-space: nowrap;
 }
 
 .btn:hover:not(:disabled) {
@@ -274,7 +278,7 @@ input[type="text"]:focus, textarea:focus {
 }
 
 .modal-actions {
-    margin-top: 2rem;
+    margin-top: 1rem; /* Reduced margin for better fit with form */
     display: flex;
     gap: 1rem;
 }
@@ -298,7 +302,7 @@ input[type="text"]:focus, textarea:focus {
     }
     
     .header-buttons {
-        flex-direction: column; /* Stack header buttons on mobile */
+        flex-direction: column;
         gap: 0.5rem;
     }
 
@@ -308,6 +312,7 @@ input[type="text"]:focus, textarea:focus {
 
     .btn-small {
         width: 100%;
+        text-align: center;
     }
 
     .list-actions {
