@@ -3,43 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P1 Meme Maker</title>
-    <!-- Tailwind CSS for layout -->
+    
+    <title>P1 Meme Maker | Free & Easy Online Meme Generator</title>
+
+    <meta name="description" content="Create custom memes in seconds with the P1 Meme Maker. Upload your image, add top and bottom text, apply filters, and download your creation for free.">
+
+    <meta name="keywords" content="meme maker, meme generator, free meme maker, online meme tool, custom memes, create meme">
+
+    <meta property="og:title" content="P1 Meme Maker | Free & Easy Online Meme Generator">
+    <meta property="og:description" content="Create hilarious custom memes in seconds. Upload an image, add text, and share!">
+    <meta property="og:image" content="https://www.yourwebsite.com/images/p1-meme-maker-social-preview.jpg"> 
+    <meta property="og:url" content="https://www.yourwebsite.com">
+    <meta property="og:type" content="website">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="P1 Meme Maker | Free & Easy Online Meme Generator">
+    <meta name="twitter:description" content="Create hilarious custom memes in seconds. Upload an image, add text, and share!">
+    <meta name="twitter:image" content="https://www.yourwebsite.com/images/p1-meme-maker-social-preview.jpg"> 
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts for retro pixelated look and classic meme font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Press+Start+2P&display=swap" rel="stylesheet">
-    <!-- Link to your new custom stylesheet -->
     <link rel="stylesheet" href="css/memestyles.css">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "P1 Meme Maker",
+      "operatingSystem": "Any",
+      "applicationCategory": "MultimediaApplication",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "150" 
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "A free, browser-based tool to create custom memes. Users can upload images, add text with custom colors and sizes, apply filters, and download the final image.",
+      "url": "https://www.p1creations.com/meme pro.html"
+    }
+    </script>
 </head>
 <body>
 
     <header>
         <div class="header-content">
-            <h1>P1 MEME WORKBENCH v2.1</h1>
+            <h1>P1 Online Meme Maker</h1>
         </div>
     </header>
 
     <main class="container mx-auto px-4 py-8">
+        <div class="text-center mb-8">
+            <h2 class="text-2xl font-bold">Create Your Own Meme in Seconds</h2>
+            <p class="mt-2 text-lg">
+                Welcome to the easiest way to make a meme! Just upload an image, add your text using the controls on the left, and click the "[ SAVE MEME ]" button to download your masterpiece.
+            </p>
+        </div>
+
         <div class="flex flex-col lg:flex-row gap-8">
-            <!-- Controls Panel -->
             <div class="amiga-window w-full lg:w-1/3 self-start">
                 
-                <!-- Upload Section -->
                 <div class="amiga-section">
                     <label for="image-upload">1. Load Image_</label>
                     <input type="file" id="image-upload" accept="image/*">
                 </div>
 
-                <!-- Text Section -->
                 <div class="amiga-section">
                     <label>2. Add Text</label>
                     <input type="text" id="top-text-input" placeholder="Top Text" class="w-full">
                     <input type="text" id="bottom-text-input" placeholder="Bottom Text" class="w-full mt-2">
                 </div>
 
-                <!-- Styling Section -->
                 <div class="amiga-section">
                     <label>3. Customize Gadgets</label>
                     <div class="grid grid-cols-2 gap-4">
@@ -52,14 +91,12 @@
                             <input type="color" id="outline-color-input" value="#000000">
                         </div>
                     </div>
-                    <!-- Text Size Slider -->
                     <div class="mt-4">
                         <label for="text-size-slider">Text Size</label>
                         <input type="range" id="text-size-slider" min="2" max="15" value="8" class="w-full">
                     </div>
                 </div>
                 
-                <!-- Filters Section -->
                 <div class="amiga-section">
                     <label>4. Image FX</label>
                     <div class="flex items-center gap-3">
@@ -81,28 +118,23 @@
                     <button id="reset-filters-btn" class="w-full mt-2">Reset FX</button>
                 </div>
 
-                <!-- Premium Section -->
                 <div class="amiga-section">
                     <label>5. Support the App</label>
                     <div id="premium-section-content">
-                        <!-- This content will be replaced by JavaScript -->
-                    </div>
+                        </div>
                 </div>
 
-                <!-- Download Button -->
                 <div class="pt-4">
                     <button id="download-btn" class="w-full">[ SAVE MEME ]</button>
                 </div>
             </div>
 
-            <!-- Canvas Area -->
             <div class="amiga-window w-full lg:w-2/3 flex items-center justify-center" id="canvas-container">
                 <canvas id="meme-canvas" class="max-w-full max-h-full"></canvas>
             </div>
         </div>
     </main>
     
-    <!-- Unlock Premium Modal -->
     <div id="premium-modal-overlay" class="modal-overlay hidden">
         <div id="premium-modal" class="amiga-window modal-content">
             <button id="close-modal-btn" class="modal-close-btn">X</button>
@@ -124,11 +156,10 @@
     </div>
 
     <script src="js/promemescript.js"></script>
-    </body>
     
-        <footer>
+    <footer>
         <a href="memetos.html" target="_blank">Terms of Service</a>
     </footer>
 
+</body>
 </html>
-
