@@ -142,6 +142,44 @@ input[type=range]:active::-webkit-slider-thumb {
     border-style: inset;
 }
 
+/* --- Premium Feature Styles --- */
+input[type="checkbox"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background-color: #FFFFFF;
+    border: 3px inset #888888;
+    position: relative;
+    cursor: pointer;
+}
+input[type="checkbox"]:checked::after {
+    content: 'X';
+    font-size: 14px;
+    color: #000;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+input[type="checkbox"]:disabled {
+    background-color: #888888;
+    cursor: not-allowed;
+}
+
+#thank-you-message {
+    background-color: #55aa55;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    border: 3px outset #FFFFFF;
+}
+.hidden {
+    display: none;
+}
+
+
 /* --- Canvas --- */
 #meme-canvas {
     border: 3px inset #888888;
