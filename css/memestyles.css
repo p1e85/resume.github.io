@@ -4,7 +4,6 @@ body {
     background-color: #0055AA; /* Classic Amiga blue */
     color: #000000;
     font-size: 10px;
-    /* Disable anti-aliasing for the pixel font */
     -webkit-font-smoothing: none;
     -moz-osx-font-smoothing: grayscale;
     image-rendering: pixelated;
@@ -21,12 +20,27 @@ header {
 .header-content {
     background-color: #0055AA;
     padding: 4px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 header h1 {
     font-size: 14px;
     color: #FFFFFF;
     text-shadow: 2px 2px 0 #000000;
 }
+#premium-status-header button {
+    font-size: 10px;
+    padding: 6px 12px;
+}
+.premium-unlocked-text {
+    font-size: 10px;
+    color: #55aa55;
+    background: #000;
+    padding: 6px 12px;
+    text-shadow: 1px 1px 0px #000;
+}
+
 
 /* --- Amiga Window Style --- */
 .amiga-window {
@@ -52,7 +66,6 @@ label {
     margin-bottom: 0.75rem;
     text-transform: uppercase;
 }
-
 input[type="text"] {
     background-color: #FFFFFF;
     border: 3px inset #888888;
@@ -64,7 +77,6 @@ input[type="text"]:focus {
     outline: none;
     border-color: #0055AA;
 }
-
 button, .donation-button {
     background-color: #BDBDBD;
     border: 3px outset #FFFFFF;
@@ -82,17 +94,9 @@ button, .donation-button {
 button:active, .donation-button:active {
     border-style: inset;
 }
-#reset-filters-btn {
-    background-color: #aa5555;
-}
-#download-btn {
-    background-color: #55aa55;
-    font-weight: bold;
-}
-.donation-button {
-    background-color: #f0b913; /* PayPal Gold */
-}
-
+#reset-filters-btn { background-color: #aa5555; }
+#download-btn { background-color: #55aa55; font-weight: bold; }
+.donation-button { background-color: #f0b913; }
 
 /* --- Specific Input Styles --- */
 input[type="color"] {
@@ -106,16 +110,9 @@ input[type="color"] {
     border: 3px outset #FFFFFF;
     cursor: pointer;
 }
-input[type="color"]::-webkit-color-swatch {
-    border: none;
-}
-input[type="color"]::-webkit-color-swatch-wrapper {
-    padding: 2px;
-}
-
-input[type="file"] {
-    font-size: 8px;
-}
+input[type="color"]::-webkit-color-swatch { border: none; }
+input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+input[type="file"] { font-size: 8px; }
 input[type="file"]::file-selector-button {
     background-color: #BDBDBD;
     border: 3px outset #FFFFFF;
@@ -123,9 +120,7 @@ input[type="file"]::file-selector-button {
     font-family: 'Press Start 2P', cursive;
     font-size: 10px;
 }
-input[type="file"]::file-selector-button:active {
-    border-style: inset;
-}
+input[type="file"]::file-selector-button:active { border-style: inset; }
 
 /* --- Slider Styles --- */
 input[type=range] {
@@ -145,23 +140,59 @@ input[type=range]::-webkit-slider-thumb {
     width: 12px;
     background: #BDBDBD;
     border: 3px outset #FFFFFF;
-    margin-top: -11px; /* Centers thumb on the track */
+    margin-top: -11px;
 }
-input[type=range]:active::-webkit-slider-thumb {
-    border-style: inset;
+input[type=range]:active::-webkit-slider-thumb { border-style: inset; }
+
+/* --- Modal Styles --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.modal-content {
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    padding-top: 2.5rem; /* Space for close button */
+}
+.modal-content h2 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+.modal-content p {
+    font-size: 0.7rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+.modal-close-btn {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    width: 30px;
+    height: 25px;
+    padding: 0;
+    font-size: 12px;
+}
+#submit-code-btn { width: auto; }
+
+.error-message {
+    font-size: 0.7rem;
+    color: #aa0000;
+    text-align: center;
+    margin-top: 0.5rem;
 }
 
-/* --- Premium Feature Styles --- */
-.thank-you-message {
-    background-color: #55aa55;
-    color: white;
-    padding: 10px;
-    text-align: center;
-    border: 3px outset #FFFFFF;
-}
+.hidden { display: none; }
 
 /* --- Canvas --- */
-#meme-canvas {
-    border: 3px inset #888888;
-}
-
+#meme-canvas { border: 3px inset #888888; }
