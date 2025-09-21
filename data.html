@@ -7,18 +7,26 @@
     <title>Retro-DB: Your Private, Local-First Notes App</title>
     <meta name="title" content="Retro-DB: Your Private, Local-First Notes App">
     <meta name="description" content="Retro-DB is a private, secure, and offline-first notes application with a classic 80s terminal aesthetic. Save notes directly to your device—no cloud, no sign-ups, no tracking.">
-    <meta name="keywords" content="local notes, private database, retro text editor, offline notes, secure notes, 80s aesthetic, no-cloud app">
-    <link rel="canonical" href="https://your-website-url.com/"> <meta property="og:type" content="website">
-    <meta property="og:url" content="https://your-website-url.com/"> <meta property="og:title" content="Retro-DB: Your Private 80s-Style Notes Terminal">
+    <meta name="keywords" content="local notes, private database, retro text editor, offline notes, secure notes, 8s aesthetic, no-cloud app">
+    <link rel="canonical" href="https://your-website-url.com/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://your-website-url.com/">
+    <meta property="og:title" content="Retro-DB: Your Private 80s-Style Notes Terminal">
     <meta property="og:description" content="Save notes directly to your device with a classic terminal aesthetic. No cloud, no sign-ups, no tracking.">
-    <meta property="og:image" content="https://your-website-url.com/preview-image.png"> <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://your-website-url.com/"> <meta property="twitter:title" content="Retro-DB: Your Private 80s-Style Notes Terminal">
+    <meta property="og:image" content="https://your-website-url.com/preview-image.png">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://your-website-url.com/">
+    <meta property="twitter:title" content="Retro-DB: Your Private 80s-Style Notes Terminal">
     <meta property="twitter:description" content="Save notes directly to your device with a classic terminal aesthetic. No cloud, no sign-ups, no tracking.">
-    <meta property="twitter:image" content="https://your-website-url.com/preview-image.png"> <link rel="icon" href="/favicon.ico" sizes="any">
+    <meta property="twitter:image" content="https://your-website-url.com/preview-image.png">
+
+    <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     
-    <link rel="stylesheet" href="css/datastyle.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
@@ -49,10 +57,41 @@
     </div>
 
     <div id="dataModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 id="modalTitle">NEW DATA ENTRY</h2>
+            <form id="dataForm">
+                <div class="form-group">
+                    <label for="fileName">FILENAME:</label>
+                    <input type="text" id="fileName" name="fileName" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="subject">SUBJECT:</label>
+                    <input type="text" id="subject" name="subject" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="message">MESSAGE:</label>
+                    <textarea id="message" name="message" rows="6" required></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" id="saveBtn" class="btn">> SAVE ENTRY</button> 
+                    <button type="button" id="cancelBtn" class="btn btn-secondary">> CANCEL</button>
+                </div>
+            </form>
         </div>
+    </div>
 
     <div id="infoModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>HOW YOUR DATA IS SAVED</h2>
+            <p>This website is designed with your privacy as the top priority.</p>
+            <p><strong>1. Purely Local Storage:</strong> Everything you type is saved directly in your web browser's local storage. No data is ever sent to or stored on an external server.</p>
+            <p><strong>2. Developer Invisibility:</strong> Because your data never leaves your machine, we (the developers) cannot see, access, or share your notes. Your entries are completely private to you.</p>
+            <p><strong>3. Browser Dependent:</strong> Your saved list is tied to the browser you are currently using. If you clear your browser's data or switch to a different device, your list will not be available there. The downloaded `.txt` files are your permanent backup.</p>
+            <div class="modal-actions">
+                <button type="button" id="closeInfoBtn" class="btn">> GOT IT</button>
+            </div>
         </div>
+    </div>
 
     <div id="supportModal" class="modal-overlay hidden">
         <div class="modal-content">
@@ -71,6 +110,6 @@
         </div>
     </div>
 
-    <script src="js/datascript.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
