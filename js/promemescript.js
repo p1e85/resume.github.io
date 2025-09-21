@@ -222,6 +222,13 @@ function closeModal() { premiumModalOverlay.classList.add('hidden'); codeErrorMe
  */
 function isCodeValid(code) {
     code = code.toUpperCase().trim();
+
+    // --- Developer Test Code ---
+    if (code === 'P1-DEVL-CODE') {
+        return true;
+    }
+    // --- End Developer Code ---
+    
     const parts = code.split('-');
     if (parts.length !== 3 || parts[0] !== 'P1' || parts[1].length !== 4 || parts[2].length !== 4) {
         return false;
