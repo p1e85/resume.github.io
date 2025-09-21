@@ -18,15 +18,12 @@ const sepiaBtn = document.getElementById('sepia-btn');
 const resetFiltersBtn = document.getElementById('reset-filters-btn');
 
 // --- Premium Feature Elements ---
-const removeWatermarkCheckbox = document.getElementById('remove-watermark-checkbox');
-const paypalContainer = document.getElementById('paypal-button-container');
-const premiumText = document.getElementById('premium-text');
-const thankYouMessage = document.getElementById('thank-you-message');
+const premiumSectionContent = document.getElementById('premium-section-content');
 
 // --- State Variables ---
 let originalImage = null;
 let saveCount = 1;
-let isPremium = false;
+let isPremium = false; // This will be set to true if the user has donated
 let filters = {
     brightness: 100,
     contrast: 100,
@@ -49,7 +46,6 @@ grayscaleBtn.addEventListener('click', () => { filters.grayscale = filters.grays
 sepiaBtn.addEventListener('click', () => { filters.sepia = filters.sepia === 1 ? 0 : 1; filters.grayscale = 0; drawMeme(); });
 resetFiltersBtn.addEventListener('click', resetFilters);
 downloadBtn.addEventListener('click', downloadMeme);
-removeWatermarkCheckbox.addEventListener('change', drawMeme);
 window.addEventListener('resize', () => { resizeCanvasToImage(); drawMeme(); });
 
 // --- Functions ---
@@ -145,11 +141,11 @@ function applyCanvasFilters() {
 }
 
 /**
- * Draws the 'p1' watermark if the 'remove watermark' checkbox is not checked.
+ * Draws the 'p1' watermark only if the user is not a premium user.
  */
 function drawWatermark() {
-    if (removeWatermarkCheckbox.checked) {
-        return; // Don't draw if the feature is unlocked and activated
+    if (isPremium) {
+        return; // Don't draw if the user has donated.
     }
     const watermarkText = 'p1';
     const fontSize = canvas.width * 0.025;
@@ -210,53 +206,23 @@ function drawInitialPlaceholder() {
     ctx.fillText('Load an Image to Start...', canvas.width/2, canvas.height/2);
 }
 
-// --- Premium Feature & PayPal Functions ---
+// --- Premium Feature Functions ---
 
 /**
- * Checks localStorage for premium status on page load.
+ * Checks localStorage to see if the user has previously donated.
+ * If so, it updates the UI and sets the premium flag.
  */
 function checkPremiumStatus() {
     if (localStorage.getItem('p1MemeMakerPremium') === 'true') {
-        unlockPremiumFeatures(false); // Unlock without redrawing immediately
-    } else {
-        renderPayPalButton();
+        isPremium = true;
+        // Update the UI to show a thank you message instead of the donate button
+        premiumSectionContent.innerHTML = `
+            <div class="thank-you-message">
+                <p>Premium Unlocked!</p>
+                <p class="text-xs mt-2" style="font-size: 8px;">Thank you for your support.</p>
+            </div>
+        `;
     }
-}
-
-/**
- * Unlocks the watermark removal feature and updates the UI.
- * @param {boolean} shouldRedraw - Whether to redraw the canvas after unlocking.
- */
-function unlockPremiumFeatures(shouldRedraw = true) {
-    isPremium = true;
-    localStorage.setItem('p1MemeMakerPremium', 'true');
-    removeWatermarkCheckbox.disabled = false;
-    removeWatermarkCheckbox.checked = true;
-    premiumText.classList.add('hidden');
-    paypalContainer.classList.add('hidden');
-    thankYouMessage.classList.remove('hidden');
-    if (shouldRedraw) {
-        drawMeme();
-    }
-}
-
-/**
- * Renders the PayPal button in its container.
- */
-function renderPayPalButton() {
-    paypal.Buttons({
-        createOrder: (data, actions) => {
-            return actions.order.create({
-                purchase_units: [{ amount: { value: '1.00' } }] // Donation amount, e.g., $1.00
-            });
-        },
-        onApprove: (data, actions) => {
-            return actions.order.capture().then(details => {
-                // On successful donation, unlock the feature
-                unlockPremiumFeatures();
-            });
-        }
-    }).render('#paypal-button-container');
 }
 
 // --- Initial Setup ---
