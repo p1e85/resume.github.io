@@ -1,0 +1,66 @@
+/* --- Global Styles for Portfolio --- */
+
+/* General Body & Font Styling */
+body {
+    font-family: 'Muli', sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Navigation Bar */
+.navbar-brand, .nav-link {
+    font-family: 'Saira Extra Condensed', sans-serif;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+/* --- Project Page (index.html) Specific Styles --- */
+.project-card {
+    transition: all 0.2s ease-in-out;
+}
+
+.project-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.tag {
+    display: inline-block;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    padding: .2em .6em;
+    font-size: 0.8em;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+/* --- About Page (about.html) Specific Styles --- */
+h1, h2, h3, .subheading {
+    font-family: 'Saira Extra Condensed', sans-serif;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.text-primary {
+    color: #bd5d38 !important;
+}
+
+.social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 3.5rem;
+    width: 3.5rem;
+    background-color: #495057;
+    color: #fff;
+    border-radius: 100%;
+    font-size: 1.5rem;
+    margin-right: 1.5rem;
+}
+
+.social-icon:hover {
+    background-color: #bd5d38;
+}
+
+.dev-icons {
+    font-size: 3rem;
+}
