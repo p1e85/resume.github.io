@@ -1,5 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('relationship-map');
+    if (lorekeeperData.entries.length === 0) {
+        container.innerHTML = '<p>No entries yet. Add some in the Wiki to see relationships!</p>';
+        return;
+    }
     const nodes = new vis.DataSet(lorekeeperData.entries.map(entry => ({
         id: entry.id,
         label: entry.title
