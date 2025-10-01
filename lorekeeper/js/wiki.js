@@ -4,22 +4,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkForm = document.getElementById('link-form');
     const fromEntry = document.getElementById('from-entry');
     const toEntry = document.getElementById('to-entry');
+    const exportBtn = document.getElementById('export-btn');
+    const importFile = document.getElementById('import-file');
+    const importMessage = document.getElementById('import-message');
 
     // Render entries
     function renderEntries() {
         entryList.innerHTML = '';
-        entries.forEach(entry => {
+        lorekeeperData.entries.forEach(entry => {
             const li = document.createElement('li');
             li.innerHTML = `
                 ${entry.title} (${entry.type}): ${entry.content.description}
-                <br>Links: ${entry.links.map(link => `${link.label} to ${entries.find(e => e.id === link.toId)?.title}`).join(', ') || 'None'}
-                <br>Backlinks: ${entry.backlinks.map(link => `${link.label} from ${entries.find(e => e.id === link.fromId)?.title}`).join(', ') || 'None'}
+                <br>Links: ${entry.links.map(link => `${link.label} to ${lorekeeperData.entries.find(e => e.id === link.toId)?.title}`).join(', ') || 'None'}
+                <br>Backlinks: ${entry.backlinks.map(link => `${link.label} from ${lorekeeperData.entries.find(e => e.id === link.fromId)?.title}`).join(', ') || 'None'}
             `;
             entryList.appendChild(li);
         });
 
         // Populate link form dropdowns
-        fromEntry.innerHTML = toEntry.innerHTML = entries.map(entry => 
+        fromEntry.innerHTML = toEntry.innerHTML = lorekeeperData.entries.map(entry => 
             `<option value="${entry.id}">${entry.title}</option>`
         ).join('');
     }
@@ -44,6 +47,31 @@ document.addEventListener('DOMContentLoaded', () => {
         createLink(fromId, toId, label);
         renderEntries();
         linkForm.reset();
+    });
+
+    // Handle export
+    exportBtn.addEventListener('click', () => {
+        exportData();
+    });
+
+    // Handle import
+    importFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            importData(file, (success, error) => {
+                importMessage.style.display = 'block';
+                if (success) {
+                    importMessage.style.color = '#f4e4a7';
+                    importMessage.textContent = 'Data imported successfully!';
+                    renderEntries();
+                } else {
+                    importMessage.style.color = 'red';
+                    importMessage.textContent = error || 'Failed to import data.';
+                }
+                setTimeout(() => { importMessage.style.display = 'none'; }, 3000);
+                importFile.value = ''; // Reset file input
+            });
+        }
     });
 
     renderEntries();
