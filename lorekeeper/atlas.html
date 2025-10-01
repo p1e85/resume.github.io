@@ -9,15 +9,17 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
-    <header>
-        <h1>LoreKeeper Atlas</h1>
-    </header>
-    <nav>
+    <button id="sidebar-toggle">☰ Menu</button>
+    <div id="sidebar">
         <a href="index.html">Home</a>
         <a href="wiki.html">Wiki</a>
         <a href="timeline.html">Timeline</a>
         <a href="relationships.html">Relationships</a>
-    </nav>
+        <a href="atlas.html">Atlas</a>
+    </div>
+    <header>
+        <h1>LoreKeeper Atlas</h1>
+    </header>
     <main>
         <section>
             <h2>Add Pin</h2>
@@ -39,5 +41,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/data.js"></script>
     <script src="js/atlas.js"></script>
+    <script src="js/sidebar.js"></script>
 </body>
 </html>
