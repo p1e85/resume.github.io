@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LoreKeeper - Atlas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
@@ -18,6 +19,18 @@
         <a href="relationships.html">Relationships</a>
     </nav>
     <main>
+        <section>
+            <h2>Add Pin</h2>
+            <form id="pin-form">
+                <select id="pin-entry" required>
+                    <!-- Populated dynamically -->
+                </select>
+                <input type="number" id="pin-lat" placeholder="Latitude (e.g., 51.51)" step="0.01" required>
+                <input type="number" id="pin-lng" placeholder="Longitude (e.g., -0.08)" step="0.01" required>
+                <textarea id="pin-description" placeholder="Pin Description" required></textarea>
+                <button type="submit">Add Pin</button>
+            </form>
+        </section>
         <section>
             <h2>World Atlas</h2>
             <div id="atlas" style="height: 500px;"></div>
