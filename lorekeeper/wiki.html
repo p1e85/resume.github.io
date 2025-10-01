@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoreKeeper - Wiki</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>LoreKeeper Wiki</h1>
+    </header>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="timeline.html">Timeline</a>
+        <a href="relationships.html">Relationships</a>
+        <a href="atlas.html">Atlas</a>
+    </nav>
+    <main>
+        <section>
+            <h2>Add Entry</h2>
+            <form id="entry-form">
+                <select id="entry-type" required>
+                    <option value="CHARACTER">Character</option>
+                    <option value="LOCATION">Location</option>
+                    <option value="FACTION">Faction</option>
+                    <option value="ITEM">Item</option>
+                </select>
+                <input type="text" id="entry-title" placeholder="Title" required>
+                <textarea id="entry-description" placeholder="Description" required></textarea>
+                <button type="submit">Add Entry</button>
+            </form>
+        </section>
+        <section>
+            <h2>Entries</h2>
+            <ul id="entry-list"></ul>
+        </section>
+        <section>
+            <h2>Create Link</h2>
+            <form id="link-form">
+                <select id="from-entry" required>
+                    <!-- Populated dynamically -->
+                </select>
+                <select id="to-entry" required>
+                    <!-- Populated dynamically -->
+                </select>
+                <input type="text" id="link-label" placeholder="Label (e.g., birthplace)">
+                <button type="submit">Create Link</button>
+            </form>
+        </section>
+    </main>
+    <script src="js/data.js"></script>
+    <script src="js/wiki.js"></script>
+</body>
+</html>
