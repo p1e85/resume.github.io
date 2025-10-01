@@ -9,15 +9,17 @@
     <link rel="stylesheet" href="https://unpkg.com/vis-timeline@7.7.2/dist/vis-timeline-graph2d.min.css">
 </head>
 <body>
+    <button id="sidebar-toggle">☰ Menu</button>
+    <div id="sidebar">
+        <a href="index.html">Home</a>
+        <a href="wiki.html">Wiki</a>
+        <a href="timeline.html">Timeline</a>
+        <a href="relationships.html">Relationships</a>
+        <a href="atlas.html">Atlas</a>
+    </div>
     <header>
         <h1>LoreKeeper Timeline</h1>
     </header>
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="wiki.html">Wiki</a>
-        <a href="relationships.html">Relationships</a>
-        <a href="atlas.html">Atlas</a>
-    </nav>
     <main>
         <section>
             <h2>Add Event</h2>
@@ -35,5 +37,6 @@
     <script src="https://unpkg.com/vis-timeline@7.7.2/standalone/umd/vis-timeline-graph2d.min.js"></script>
     <script src="js/data.js"></script>
     <script src="js/timeline.js"></script>
+    <script src="js/sidebar.js"></script>
 </body>
 </html>
