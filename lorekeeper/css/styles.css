@@ -1,29 +1,41 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Cinzel', serif; /* Fantasy-style font */
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
-    color: #333;
+    background: url('https://www.transparenttextures.com/patterns/parchment.png') repeat, #1a0f2b; /* Parchment texture with dark purple background */
+    color: #e6d7a8; /* Light parchment text */
     line-height: 1.6;
 }
 header {
-    background-color: #2c3e50;
-    color: #fff;
+    background: linear-gradient(to bottom, #2a1a4a, #1a0f2b); /* Deep purple gradient */
+    color: #f4e4a7; /* Golden text */
     text-align: center;
     padding: 2rem;
+    border-bottom: 3px solid #b89b3c; /* Gold border */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+header h1 {
+    font-family: 'Cinzel Decorative', serif; /* More ornate for headings */
+    font-size: 2.5rem;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
 nav {
-    background-color: #34495e;
+    background: #2f4f2f; /* Forest green */
     padding: 1rem;
     text-align: center;
+    border-bottom: 2px solid #b89b3c; /* Gold accent */
 }
 nav a {
-    color: #fff;
+    color: #f4e4a7; /* Golden links */
     margin: 0 1rem;
     text-decoration: none;
     font-weight: bold;
+    font-size: 1.1rem;
+    transition: color 0.3s;
 }
 nav a:hover {
+    color: #e6d7a8; /* Lighter parchment on hover */
     text-decoration: underline;
 }
 main {
@@ -32,10 +44,19 @@ main {
     padding: 1rem;
 }
 section {
-    background-color: #fff;
-    padding: 1rem;
+    background: rgba(30, 20, 50, 0.9); /* Semi-transparent dark purple */
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 2px solid #b89b3c; /* Gold border */
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+}
+section h2 {
+    font-family: 'Cinzel Decorative', serif;
+    color: #f4e4a7;
+    border-bottom: 1px solid #b89b3c;
+    padding-bottom: 0.5rem;
     margin-bottom: 1rem;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 form {
     display: flex;
@@ -43,25 +64,52 @@ form {
     gap: 1rem;
     max-width: 500px;
 }
-input, select, textarea, button {
+input, select, textarea {
     padding: 0.5rem;
+    font-family: 'Cinzel', serif;
     font-size: 1rem;
+    background: #3c2f5c; /* Darker purple input background */
+    color: #e6d7a8;
+    border: 1px solid #b89b3c;
+    border-radius: 4px;
 }
 button {
-    background-color: #2c3e50;
-    color: #fff;
+    background: #b89b3c; /* Gold button */
+    color: #1a0f2b; /* Dark purple text */
     border: none;
+    padding: 0.75rem;
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
     cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.3s;
 }
 button:hover {
-    background-color: #34495e;
+    background: #d4b94c; /* Lighter gold on hover */
 }
 footer {
-    background-color: #2c3e50;
-    color: #fff;
+    background: #2a1a4a; /* Dark purple */
+    color: #f4e4a7;
     text-align: center;
     padding: 1rem;
     margin-top: 2rem;
+    border-top: 2px solid #b89b3c;
+}
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+ul li {
+    background: rgba(30, 20, 50, 0.7);
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border: 1px solid #b89b3c;
+    border-radius: 4px;
+}
+#timeline, #relationship-map, #atlas {
+    background: #3c2f5c; /* Darker background for visualizations */
+    border: 1px solid #b89b3c;
+    border-radius: 4px;
 }
 @media (max-width: 600px) {
     nav a {
@@ -70,5 +118,11 @@ footer {
     }
     main {
         padding: 0.5rem;
+    }
+    section {
+        padding: 1rem;
+    }
+    header h1 {
+        font-size: 2rem;
     }
 }
