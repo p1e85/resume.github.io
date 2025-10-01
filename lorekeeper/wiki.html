@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LoreKeeper - Wiki</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -17,6 +18,13 @@
         <a href="atlas.html">Atlas</a>
     </nav>
     <main>
+        <section>
+            <h2>Data Management</h2>
+            <button id="export-btn">Export Data as JSON</button>
+            <label for="import-file">Import Data: </label>
+            <input type="file" id="import-file" accept=".json">
+            <p id="import-message" style="color: red; display: none;"></p>
+        </section>
         <section>
             <h2>Add Entry</h2>
             <form id="entry-form">
