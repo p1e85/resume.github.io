@@ -11,20 +11,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // Render entries
     function renderEntries() {
         entryList.innerHTML = '';
-        lorekeeperData.entries.forEach(entry => {
+        if (lorekeeperData.entries.length === 0) {
             const li = document.createElement('li');
-            li.innerHTML = `
-                ${entry.title} (${entry.type}): ${entry.content.description}
-                <br>Links: ${entry.links.map(link => `${link.label} to ${lorekeeperData.entries.find(e => e.id === link.toId)?.title}`).join(', ') || 'None'}
-                <br>Backlinks: ${entry.backlinks.map(link => `${link.label} from ${lorekeeperData.entries.find(e => e.id === link.fromId)?.title}`).join(', ') || 'None'}
-            `;
+            li.textContent = 'No entries yet. Add one above!';
             entryList.appendChild(li);
-        });
+        } else {
+            lorekeeperData.entries.forEach(entry => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    ${entry.title} (${entry.type}): ${entry.content.description}
+                    <br>Links: ${entry.links.map(link => `${link.label} to ${lorekeeperData.entries.find(e => e.id === link.toId)?.title || 'Unknown'}`).join(', ') || 'None'}
+                    <br>Backlinks: ${entry.backlinks.map(link => `${link.label} from ${lorekeeperData.entries.find(e => e.id === link.fromId)?.title || 'Unknown'}`).join(', ') || 'None'}
+                `;
+                entryList.appendChild(li);
+            });
+        }
 
         // Populate link form dropdowns
-        fromEntry.innerHTML = toEntry.innerHTML = lorekeeperData.entries.map(entry => 
-            `<option value="${entry.id}">${entry.title}</option>`
-        ).join('');
+        fromEntry.innerHTML = toEntry.innerHTML = lorekeeperData.entries.length === 0 
+            ? '<option value="">No entries available</option>'
+            : lorekeeperData.entries.map(entry => 
+                `<option value="${entry.id}">${entry.title}</option>`
+            ).join('');
     }
 
     // Handle entry form submission
@@ -69,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     importMessage.textContent = error || 'Failed to import data.';
                 }
                 setTimeout(() => { importMessage.style.display = 'none'; }, 3000);
-                importFile.value = ''; // Reset file input
+                importFile.value = '';
             });
         }
     });
