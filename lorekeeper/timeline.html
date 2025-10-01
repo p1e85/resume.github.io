@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LoreKeeper - Timeline</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://unpkg.com/vis-timeline@7.7.2/dist/vis-timeline-graph2d.min.css">
 </head>
@@ -19,11 +20,20 @@
     </nav>
     <main>
         <section>
+            <h2>Add Event</h2>
+            <form id="event-form">
+                <input type="text" id="event-content" placeholder="Event Description" required>
+                <input type="date" id="event-start" required>
+                <button type="submit">Add Event</button>
+            </form>
+        </section>
+        <section>
             <h2>Interactive Timeline</h2>
             <div id="timeline"></div>
         </section>
     </main>
     <script src="https://unpkg.com/vis-timeline@7.7.2/standalone/umd/vis-timeline-graph2d.min.js"></script>
+    <script src="js/data.js"></script>
     <script src="js/timeline.js"></script>
 </body>
 </html>
