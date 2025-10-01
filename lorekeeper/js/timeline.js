@@ -10,7 +10,11 @@ document.addEventListener('DOMContentLoaded', () => {
             height: '400px',
             margin: { item: 20 }
         };
-        new vis.Timeline(container, items, options);
+        if (lorekeeperData.timelineEvents.length === 0) {
+            container.innerHTML = '<p>No events yet. Add one above!</p>';
+        } else {
+            new vis.Timeline(container, items, options);
+        }
     }
 
     // Handle event form submission
