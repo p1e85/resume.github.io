@@ -1,15 +1,7 @@
 const initialData = {
-    entries: [
-        { id: 1, type: 'CHARACTER', title: 'Hero', content: { description: 'The main protagonist.' }, links: [{ toId: 2, label: 'birthplace' }], backlinks: [] },
-        { id: 2, type: 'LOCATION', title: 'Village', content: { description: 'A quiet village.' }, links: [], backlinks: [{ fromId: 1, label: 'birthplace' }] },
-    ],
-    timelineEvents: [
-        { id: 1, content: 'Hero Born', start: '2020-01-01' },
-        { id: 2, content: 'Village Founded', start: '2015-06-15' },
-    ],
-    atlasPins: [
-        { id: 1, entryId: 2, lat: 51.51, lng: -0.08, description: 'Village pin' },
-    ]
+    entries: [],
+    timelineEvents: [],
+    atlasPins: []
 };
 
 // Load or initialize data from localStorage
