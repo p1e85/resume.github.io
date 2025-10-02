@@ -16,7 +16,7 @@ header {
     padding: 2rem;
     border-bottom: 3px solid #b89b3c;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    z-index: 10; /* Ensure header is above sidebar */
+    z-index: 10;
 }
 header h1 {
     font-family: 'Cinzel Decorative', serif;
@@ -35,7 +35,11 @@ header h1 {
     left: 0;
     height: 100%;
     overflow-y: auto;
-    z-index: 20; /* Above content, below toggle button */
+    z-index: 20;
+    transform: translateX(-100%); /* Start closed on all screens */
+}
+#sidebar.open {
+    transform: translateX(0);
 }
 #sidebar a {
     display: block;
@@ -52,7 +56,6 @@ header h1 {
     color: #e6d7a8;
 }
 #sidebar-toggle {
-    display: none;
     background: #b89b3c;
     color: #1a0f2b;
     border: none;
@@ -63,15 +66,18 @@ header h1 {
     position: fixed;
     top: 1rem;
     left: 1rem;
-    z-index: 30; /* Above sidebar */
+    z-index: 30;
     border-radius: 4px;
 }
 main {
-    margin-left: 250px; /* Space for sidebar on desktop */
-    flex: 1;
-    max-width: 1200px;
+    margin: 0 auto; /* Center horizontally */
+    max-width: 1000px; /* Reduced for better centering */
     padding: 1rem;
+    flex: 1;
     transition: margin-left 0.3s ease-in-out;
+}
+#sidebar.open ~ main {
+    margin-left: 250px; /* Shift right when sidebar open */
 }
 section {
     background: rgba(30, 20, 50, 0.9);
@@ -122,9 +128,12 @@ footer {
     color: #f4e4a7;
     text-align: center;
     padding: 1rem;
-    margin-top: 2rem;
+    margin: 2rem auto 0;
+    max-width: 1000px; /* Match main content */
     border-top: 2px solid #b89b3c;
-    margin-left: 250px; /* Match main content */
+}
+#sidebar.open ~ footer {
+    margin-left: 250px; /* Shift right when sidebar open */
 }
 ul {
     list-style-type: none;
@@ -143,25 +152,14 @@ ul li {
     border-radius: 4px;
 }
 @media (max-width: 600px) {
-    #sidebar {
-        transform: translateX(-100%);
-    }
-    #sidebar.open {
-        transform: translateX(0);
-    }
-    #sidebar-toggle {
-        display: block;
-    }
     main, footer {
-        margin-left: 0; /* No sidebar space when closed */
-    }
-    #sidebar.open ~ main, #sidebar.open ~ footer {
-        margin-left: 250px; /* Shift content when sidebar is open */
-    }
-    header h1 {
-        font-size: 2rem;
+        max-width: 100%; /* Full width on mobile */
+        padding: 0.5rem;
     }
     section {
         padding: 1rem;
+    }
+    header h1 {
+        font-size: 2rem;
     }
 }
