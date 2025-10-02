@@ -17,6 +17,10 @@ header {
     border-bottom: 3px solid #b89b3c;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     z-index: 10;
+    position: relative; /* Ensure toggle button is positioned relative to header */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 header h1 {
     font-family: 'Cinzel Decorative', serif;
@@ -36,7 +40,7 @@ header h1 {
     height: 100%;
     overflow-y: auto;
     z-index: 20;
-    transform: translateX(-100%); /* Start closed on all screens */
+    transform: translateX(-100%);
 }
 #sidebar.open {
     transform: translateX(0);
@@ -63,21 +67,21 @@ header h1 {
     font-family: 'Cinzel', serif;
     font-size: 1rem;
     cursor: pointer;
-    position: fixed;
+    position: absolute;
     top: 1rem;
     left: 1rem;
     z-index: 30;
     border-radius: 4px;
 }
 main {
-    margin: 0 auto; /* Center horizontally */
-    max-width: 1000px; /* Reduced for better centering */
+    margin: 0 auto;
+    max-width: 1000px;
     padding: 1rem;
     flex: 1;
     transition: margin-left 0.3s ease-in-out;
 }
 #sidebar.open ~ main {
-    margin-left: 250px; /* Shift right when sidebar open */
+    margin-left: 250px;
 }
 section {
     background: rgba(30, 20, 50, 0.9);
@@ -129,11 +133,11 @@ footer {
     text-align: center;
     padding: 1rem;
     margin: 2rem auto 0;
-    max-width: 1000px; /* Match main content */
+    max-width: 1000px;
     border-top: 2px solid #b89b3c;
 }
 #sidebar.open ~ footer {
-    margin-left: 250px; /* Shift right when sidebar open */
+    margin-left: 250px;
 }
 ul {
     list-style-type: none;
@@ -153,7 +157,7 @@ ul li {
 }
 @media (max-width: 600px) {
     main, footer {
-        max-width: 100%; /* Full width on mobile */
+        max-width: 100%;
         padding: 0.5rem;
     }
     section {
@@ -161,5 +165,10 @@ ul li {
     }
     header h1 {
         font-size: 2rem;
+    }
+    #sidebar-toggle {
+        top: 0.5rem;
+        left: 0.5rem;
+        padding: 0.4rem;
     }
 }
