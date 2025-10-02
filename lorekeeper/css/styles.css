@@ -17,7 +17,7 @@ header {
     border-bottom: 3px solid #b89b3c;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     z-index: 10;
-    position: relative; /* Ensure toggle button is positioned relative to header */
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -73,15 +73,24 @@ header h1 {
     z-index: 30;
     border-radius: 4px;
 }
+#sidebar-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 15;
+}
+#sidebar.open ~ #sidebar-backdrop {
+    display: block;
+}
 main {
     margin: 0 auto;
     max-width: 1000px;
     padding: 1rem;
     flex: 1;
-    transition: margin-left 0.3s ease-in-out;
-}
-#sidebar.open ~ main {
-    margin-left: 250px;
 }
 section {
     background: rgba(30, 20, 50, 0.9);
@@ -135,9 +144,6 @@ footer {
     margin: 2rem auto 0;
     max-width: 1000px;
     border-top: 2px solid #b89b3c;
-}
-#sidebar.open ~ footer {
-    margin-left: 250px;
 }
 ul {
     list-style-type: none;
