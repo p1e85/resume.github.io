@@ -4,5 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     toggleBtn.addEventListener('click', () => {
         sidebar.classList.toggle('open');
+        toggleBtn.textContent = sidebar.classList.contains('open') ? '✕ Close' : '☰ Menu';
     });
 });
