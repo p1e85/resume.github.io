@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia Titan</title>
+    <style>
+        /* Basic CSS for layout and readability */
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
+        .section { display: none; } /* Hide sections by default, show via JS */
+        #setup { display: block; } /* Start with setup visible */
+        form { margin-bottom: 20px; }
+        input, button { padding: 8px; margin: 5px; }
+        .team-list, .question-list { list-style: none; padding: 0; }
+        .team-item, .question-item { background: #fff; padding: 10px; margin: 5px 0; border: 1px solid #ddd; }
+        #current-question { font-size: 1.5em; margin: 20px 0; }
+        #leaderboard { margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+        /* Responsive: Stack on small screens */
+        @media (max-width: 600px) { body { margin: 10px; } input, button { width: 100%; } }
+    </style>
+</head>
+<body>
+    <!-- Setup Section -->
+    <div id="setup" class="section">
+        <h1>BuzzMaster Trivia Setup</h1>
+        
+        <!-- Add Team Form -->
+        <h2>Add Teams</h2>
+        <form id="team-form">
+            <input type="text" id="team-name" placeholder="Team Name" required>
+            <button type="submit">Add Team</button>
+        </form>
+        <ul id="team-list" class="team-list"></ul>
+        
+        <!-- Add Question Form -->
+        <h2>Add Questions</h2>
+        <form id="question-form">
+            <input type="text" id="question-text" placeholder="Question" required>
+            <input type="text" id="question-answer" placeholder="Correct Answer" required>
+            <input type="number" id="question-points" placeholder="Points" value="10" required>
+            <button type="submit">Add Question</button>
+        </form>
+        <ul id="question-list" class="question-list"></ul>
+        
+        <button id="start-game">Start Game</button>
+    </div>
+    
+    <!-- Game Section -->
+    <div id="game" class="section">
+        <h1>BuzzMaster Trivia Game</h1>
+        <div id="current-question"></div>
+        <p>Correct Answer: <span id="reveal-answer" style="display: none;"></span></p>
+        
+        <!-- Team Selection for Answer -->
+        <h3>Select Answering Team:</h3>
+        <select id="answering-team"></select>
+        <button id="reveal-btn">Reveal Answer</button>
+        <button id="correct-btn">Correct (+Points)</button>
+        <button id="wrong-btn">Wrong (Next)</button>
+        
+        <!-- Leaderboard -->
+        <h3>Leaderboard</h3>
+        <table id="leaderboard">
+            <thead><tr><th>Team</th><th>Score</th></tr></thead>
+            <tbody id="leaderboard-body"></tbody>
+        </table>
+        
+        <button id="next-question">Next Question</button>
+        <button id="end-game">End Game</button>
+    </div>
+    
+    <!-- Results Section (Simple for now) -->
+    <div id="results" class="section">
+        <h1>Game Over!</h1>
+        <h3>Final Leaderboard</h3>
+        <table id="final-leaderboard">
+            <thead><tr><th>Team</th><th>Score</th></tr></thead>
+            <tbody id="final-leaderboard-body"></tbody>
+        </table>
+        <button id="reset">Reset and Start Over</button>
+    </div>
+
+    <script>
+        // JS Core Logic
+        let teams = []; // Array of {name: string, score: 0}
+        let questions = []; // Array of {question: string, answer: string, points: number}
+        let currentQuestionIndex = 0;
+
+        // Load from localStorage on init
+        function loadData() {
+            const savedTeams = localStorage.getItem('teams');
+            const savedQuestions = localStorage.getItem('questions');
+            if (savedTeams) teams = JSON.parse(savedTeams);
+            if (savedQuestions) questions = JSON.parse(savedQuestions);
+            renderTeams();
+            renderQuestions();
+            renderLeaderboard();
+        }
+
+        // Save to localStorage
+        function saveData() {
+            localStorage.setItem('teams', JSON.stringify(teams));
+            localStorage.setItem('questions', JSON.stringify(questions));
+        }
+
+        // Render Teams in Setup
+        function renderTeams() {
+            const teamList = document.getElementById('team-list');
+            teamList.innerHTML = '';
+            teams.forEach(team => {
+                const li = document.createElement('li');
+                li.className = 'team-item';
+                li.textContent = team.name;
+                teamList.appendChild(li);
+            });
+        }
+
+        // Render Questions in Setup
+        function renderQuestions() {
+            const questionList = document.getElementById('question-list');
+            questionList.innerHTML = '';
+            questions.forEach(q => {
+                const li = document.createElement('li');
+                li.className = 'question-item';
+                li.textContent = `${q.question} (Answer: ${q.answer}, Points: ${q.points})`;
+                questionList.appendChild(li);
+            });
+        }
+
+        // Render Leaderboard (used in game and results)
+        function renderLeaderboard(targetBodyId = 'leaderboard-body') {
+            const body = document.getElementById(targetBodyId);
+            body.innerHTML = '';
+            teams.sort((a, b) => b.score - a.score); // Sort by score descending
+            teams.forEach(team => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${team.name}</td><td>${team.score}</td>`;
+                body.appendChild(tr);
+            });
+        }
+
+        // Show/Hide Sections
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        // Start Game: Check if ready, show game, display first question
+        document.getElementById('start-game').addEventListener('click', () => {
+            if (teams.length === 0 || questions.length === 0) {
+                alert('Add at least one team and one question!');
+                return;
+            }
+            // TODO: Add random mode here later with shuffle
+            currentQuestionIndex = 0;
+            showSection('game');
+            displayCurrentQuestion();
+            renderAnsweringTeams();
+            renderLeaderboard();
+        });
+
+        // Display Current Question
+        function displayCurrentQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                showSection('results');
+                renderLeaderboard('final-leaderboard-body');
+                return;
+            }
+            const q = questions[currentQuestionIndex];
+            document.getElementById('current-question').textContent = q.question;
+            document.getElementById('reveal-answer').textContent = q.answer;
+            document.getElementById('reveal-answer').style.display = 'none';
+        }
+
+        // Render Team Options for Answering
+        function renderAnsweringTeams() {
+            const select = document.getElementById('answering-team');
+            select.innerHTML = '';
+            teams.forEach((team, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = team.name;
+                select.appendChild(option);
+            });
+        }
+
+        // Reveal Answer Button
+        document.getElementById('reveal-btn').addEventListener('click', () => {
+            document.getElementById('reveal-answer').style.display = 'inline';
+        });
+
+        // Correct Answer: Add points
+        document.getElementById('correct-btn').addEventListener('click', () => {
+            const teamIndex = document.getElementById('answering-team').value;
+            const points = questions[currentQuestionIndex].points;
+            teams[teamIndex].score += points;
+            saveData();
+            renderLeaderboard();
+            currentQuestionIndex++;
+            displayCurrentQuestion();
+        });
+
+        // Wrong Answer: Move to next
+        document.getElementById('wrong-btn').addEventListener('click', () => {
+            currentQuestionIndex++;
+            displayCurrentQuestion();
+        });
+
+        // Next Question (manual skip)
+        document.getElementById('next-question').addEventListener('click', () => {
+            currentQuestionIndex++;
+            displayCurrentQuestion();
+        });
+
+        // End Game
+        document.getElementById('end-game').addEventListener('click', () => {
+            showSection('results');
+            renderLeaderboard('final-leaderboard-body');
+        });
+
+        // Reset
+        document.getElementById('reset').addEventListener('click', () => {
+            localStorage.clear();
+            teams = [];
+            questions = [];
+            showSection('setup');
+            renderTeams();
+            renderQuestions();
+        });
+
+        // Add Team Form Submit
+        document.getElementById('team-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('team-name').value.trim();
+            if (name) {
+                teams.push({ name, score: 0 });
+                saveData();
+                renderTeams();
+                document.getElementById('team-name').value = '';
+            }
+        });
+
+        // Add Question Form Submit
+        document.getElementById('question-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const question = document.getElementById('question-text').value.trim();
+            const answer = document.getElementById('question-answer').value.trim();
+            const points = parseInt(document.getElementById('question-points').value);
+            if (question && answer && points > 0) {
+                questions.push({ question, answer, points });
+                saveData();
+                renderQuestions();
+                document.getElementById('question-text').value = '';
+                document.getElementById('question-answer').value = '';
+                document.getElementById('question-points').value = 10;
+            }
+        });
+
+        // Initial Load
+        loadData();
+    </script>
+</body>
+</html>
