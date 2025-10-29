@@ -12,81 +12,138 @@
     %22start_url%22:%22.%22,
     %22display%22:%22standalone%22,
     %22background_color%22:%22%23000000%22,
-    %22theme_color%22:%22%2300d4ff%22,
+    %22theme_color%22:%22%23ff6b00%22,
     %22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3Eskateboard%3C/text%3E%3C/svg%3E%22,%22sizes%22:%2296x96%22,%22type%22:%22image/svg+xml%22}]
   }">
 
   <style>
     :root{
-      --bg:#111;--text:#fff;--accent:#00d4ff;--card:#222;
-      --success:#0f0;--warn:#ff0;--danger:#f55;
+      --grip:#222;--grip-dot:#333;--wood:#c96;--bolt:#555;
+      --accent:#ff6b00;--text:#fff;--shadow:#0004;
     }
     *{margin:0;padding:0;box-sizing:border-box;}
+    html,body{height:100%;font-family:'Arial',sans-serif;color:var(--text);}
+
+    /* ---------- GRIP TAPE BACKGROUND ---------- */
     body{
-      background:var(--bg);color:var(--text);
-      font-family:'Segoe UI',sans-serif;
-      text-align:center;padding:2rem 1rem;
-      min-height:100vh;display:flex;flex-direction:column;
-      align-items:center;
+      background:
+        radial-gradient(circle at 20% 30%, #111 2px, transparent 2px),
+        radial-gradient(circle at 80% 70%, #111 2px, transparent 2px),
+        linear-gradient(45deg, var(--grip) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--grip) 25%, transparent 25%),
+        var(--grip);
+      background-size: 20px 20px, 20px 20px, 4px 4px, 4px 4px;
+      background-position: 0 0, 10px 10px, 0 0, 2px 2px;
+      display:flex;flex-direction:column;align-items:center;
+      padding:2rem 1rem;
     }
-    h1{font-size:2.5rem;margin-bottom:1rem;color:var(--accent);}
-    .stance{margin:1.5rem 0;}
+
+    /* ---------- DECK CONTAINER ---------- */
+    .deck{
+      width:90%;max-width:420px;
+      background:var(--wood);
+      border-radius:30px 30px 20px 20px;
+      padding:1.5rem 1rem 2rem;
+      box-shadow:
+        0 8px 20px var(--shadow),
+        inset 0 -4px 8px #a55,
+        inset 0 4px 8px #da8;
+      position:relative;
+      margin-bottom:1.5rem;
+    }
+    .deck::before,.deck::after{
+      content:'';position:absolute;top:1rem;width:12px;height:12px;
+      background:var(--bolt);border-radius:50%;box-shadow:0 0 4px #0008;
+    }
+    .deck::before{left:1rem;}
+    .deck::after{right:1rem;}
+    .deck h1{
+      font-size:2.2rem;color:#222;text-shadow:0 1px #fff;
+      margin-bottom:.8rem;
+    }
+
+    /* ---------- BUTTONS (wood + bolts) ---------- */
     button{
-      background:var(--card);color:#fff;border:2px solid var(--accent);
-      padding:.8rem 1.5rem;margin:.5rem;font-size:1.2rem;
-      border-radius:12px;cursor:pointer;transition:.2s;
+      background:var(--wood);color:#222;
+      border:3px solid var(--bolt);border-radius:12px;
+      padding:.7rem 1.2rem;margin:.4rem;font-weight:bold;
+      font-size:1.1rem;cursor:pointer;transition:.2s;
+      box-shadow:0 3px 6px var(--shadow);
+      position:relative;
     }
-    button:hover{background:var(--accent);color:#000;}
-    button.active{background:var(--accent);color:#000;font-weight:bold;}
-    #startBtn{background:#000;font-size:1.5rem;padding:1rem 2rem;margin-top:2rem;}
-    #output{margin-top:2rem;font-size:1.8rem;min-height:3rem;font-weight:bold;color:var(--success);}
-    .info{margin-top:2rem;font-size:.9rem;color:#aaa;max-width:600px;}
-    .install{margin-top:1rem;padding:1rem;background:var(--warn);color:#000;border-radius:8px;font-weight:bold;display:none;}
+    button::before,button::after{
+      content:'';position:absolute;width:6px;height:6px;
+      background:var(--bolt);border-radius:50%;top:.4rem;
+    }
+    button::before{left:.4rem;}
+    button::after{right:.4rem;}
+    button:hover{background:#da8;transform:translateY(-2px);}
+    button.active{background:#ff6b00;color:#fff;border-color:#c50;}
+    #startBtn{
+      font-size:1.4rem;padding:1rem 2rem;margin-top:1.5rem;
+      background:#222;color:var(--accent);border-color:var(--accent);
+    }
+    #startBtn:hover{background:var(--accent);color:#222;}
+
+    /* ---------- OUTPUT & HISTORY ---------- */
+    #output{
+      margin-top:1rem;font-size:1.7rem;font-weight:bold;
+      min-height:2.2rem;color:#ff6b00;text-shadow:0 1px #000;
+    }
     #history{
-      margin-top:2rem;width:90%;max-width:500px;background:var(--card);
-      border-radius:12px;padding:1rem;max-height:200px;overflow-y:auto;
+      margin-top:1.5rem;width:90%;max-width:380px;
+      background:var(--wood);border-radius:20px;
+      padding:1rem;box-shadow:0 4px 12px var(--shadow);
+      max-height:180px;overflow-y:auto;
     }
     .trick{
-      padding:.5rem 0;border-bottom:1px solid #444;
-      display:flex;justify-content:space-between;font-size:1rem;
+      padding:.4rem 0;display:flex;justify-content:space-between;
+      font-size:.95rem;border-bottom:1px solid #a55;
     }
     .trick:last-child{border:none;}
+    .trick span:first-child{font-weight:bold;color:#222;}
+    .trick span:last-child{color:#555;font-size:.85rem;}
+
+    .info{
+      margin-top:1.5rem;font-size:.85rem;color:#ccc;max-width:400px;
+    }
+    .install{
+      margin-top:.8rem;padding:.8rem;background:#ff0;color:#000;
+      border-radius:8px;font-weight:bold;display:none;
+    }
   </style>
 </head>
 <body>
 
-  <h1>Skate Trick Detector</h1>
+  <div class="deck">
+    <h1>Skate Trick Detector</h1>
 
-  <div class="stance">
-    <p>Select your stance:</p>
-    <button id="regularBtn">Regular</button>
-    <button id="goofyBtn">Goofy</button>
+    <div class="stance">
+      <p style="color:#222;margin-bottom:.5rem;">Select stance:</p>
+      <button id="regularBtn">Regular</button>
+      <button id="goofyBtn">Goofy</button>
+    </div>
+
+    <button id="startBtn">Start Detecting</button>
+
+    <div id="output">Hold phone like a mini deck & flip it!</div>
   </div>
-
-  <button id="startBtn">Start Detecting Tricks</button>
-
-  <div id="output">Hold phone like a skateboard & flip it!</div>
 
   <div id="history"></div>
 
   <div class="info">
-    <p>Tip: Add to Home Screen for best results (especially iPhone)</p>
-    <div id="installPrompt" class="install">Tap Share → "Add to Home Screen"</div>
+    <p>Add to Home Screen for best sensor access (required on iPhone)</p>
+    <div id="installPrompt" class="install">Share → Add to Home Screen</div>
   </div>
 
   <script>
     // ==== State ====
     const MAX_HISTORY = 10;
-    let stance = 'regular';               // regular / goofy
+    let stance = 'regular';
     let isDetecting = false;
-    let history = [];                     // {trick, time}
+    let history = [];
     let lastEventTime = 0;
-    let current = {
-      axis: null,          // 'beta' (flip) or 'alpha' (shuv)
-      startTime: 0,
-      rotSum: 0,           // accumulated signed rotation (deg)
-      pop: false
-    };
+    let current = {axis:null, startTime:0, rotSum:0, pop:false};
 
     // DOM
     const regularBtn = document.getElementById('regularBtn');
@@ -96,17 +153,17 @@
     const historyDiv = document.getElementById('history');
     const installPrompt = document.getElementById('installPrompt');
 
-    // ==== UI Helpers ====
-    regularBtn.onclick = () => { stance = 'regular'; updateStance(); };
-    goofyBtn.onclick   = () => { stance = 'goofy';   updateStance(); };
+    // ==== UI ====
+    regularBtn.onclick = () => { stance='regular'; updateStance(); };
+    goofyBtn.onclick   = () => { stance='goofy';   updateStance(); };
     function updateStance(){
-      regularBtn.classList.toggle('active', stance==='regular');
-      goofyBtn.classList.toggle('active',   stance==='goofy');
+      regularBtn.classList.toggle('active',stance==='regular');
+      goofyBtn.classList.toggle('active',stance==='goofy');
     }
 
     function addToHistory(trick){
-      const now = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-      history.unshift({trick, time:now});
+      const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      history.unshift({trick,time:t});
       if(history.length>MAX_HISTORY) history.pop();
       renderHistory();
     }
@@ -120,127 +177,76 @@
     startBtn.onclick = async () => {
       if(isDetecting) return;
       if(typeof DeviceMotionEvent.requestPermission === 'function'){
-        const resp = await DeviceMotionEvent.requestPermission();
-        if(resp!=='granted'){
-          output.textContent = "Permission denied";
-          output.style.color = '#f55';
-          return;
-        }
+        const r = await DeviceMotionEvent.requestPermission();
+        if(r!=='granted'){ output.textContent='Permission denied'; output.style.color='#f55'; return; }
       }
-      isDetecting = true;
-      startBtn.textContent = "Detecting…";
-      startBtn.disabled = true;
-      output.textContent = "Ready! Try a trick.";
-      output.style.color = '#fff';
+      isDetecting=true;
+      startBtn.textContent='Detecting…';
+      startBtn.disabled=true;
+      output.textContent='Ready – try a trick!';
+      output.style.color='#ff6b00';
       if(/iPhone|iPad|iPod/.test(navigator.userAgent)) installPrompt.style.display='block';
-
       window.addEventListener('devicemotion', onMotion);
     };
 
-    // ==== Motion Handler ====
+    // ==== Motion ====
     function onMotion(e){
-      const rot = e.rotationRate;
-      const acc = e.accelerationIncludingGravity;
+      const rot = e.rotationRate, acc = e.accelerationIncludingGravity;
       if(!rot) return;
+      const now = Date.now(), dt = now - (lastEventTime||now); lastEventTime=now;
 
-      const now = Date.now();
-      const dt = now - (lastEventTime||now);
-      lastEventTime = now;
+      if(acc && acc.z>12) current.pop=true;
 
-      // ---- Pop detection (quick upward spike) ----
-      if(acc && acc.z > 12) current.pop = true;
-
-      // ---- Choose dominant axis ----
-      const a = rot.alpha||0, b = rot.beta||0, g = rot.gamma||0;
+      const a = rot.alpha||0, b = rot.beta||0;
       const absA = Math.abs(a), absB = Math.abs(b);
-
       let newAxis = null;
-      if(absB > 80) newAxis = 'beta';      // flip axis
-      else if(absA > 80) newAxis = 'alpha'; // shuv axis
+      if(absB>80) newAxis='beta';
+      else if(absA>80) newAxis='alpha';
 
-      // ---- Start new gesture ----
       if(newAxis && !current.axis){
-        current.axis = newAxis;
-        current.startTime = now;
-        current.rotSum = 0;
-        current.pop = false;
+        current.axis=newAxis; current.startTime=now; current.rotSum=0; current.pop=false;
       }
-
-      // ---- Accumulate signed rotation while axis matches ----
       if(newAxis===current.axis){
-        const degPerSec = current.axis==='beta' ? b : a;   // signed!
-        current.rotSum += degPerSec * (dt/1000);
+        const degSec = current.axis==='beta'?b:a;
+        current.rotSum += degSec*(dt/1000);
       }
-
-      // ---- End gesture when rotation drops for 300 ms ----
-      if(current.axis && (now - lastEventTime > 300)){
-        finalizeTrick();
-      }
+      if(current.axis && (now-lastEventTime>300)) finalizeTrick();
     }
 
-    // ==== Finalize & Classify ====
+    // ==== Classify ====
     function finalizeTrick(){
       if(!current.axis) return;
-      const totalDeg = Math.abs(current.rotSum);
-      const direction = current.rotSum > 0 ? 1 : -1;   // + = CCW, - = CW (from phone view)
-      const full = totalDeg > 300;                     // ~360°
-      const threeQuarter = totalDeg > 220;
-      const half = totalDeg > 140;                     // ~180°
-      const quarter = totalDeg > 70;
+      const total = Math.abs(current.rotSum);
+      const dir = current.rotSum>0?1:-1;   // + CCW, - CW
+      const full=total>300, threeQ=total>220, half=total>140, quarter=total>70;
+      let trick='Unknown';
 
-      let trick = "Unknown";
-
-      // ---------- FLIP AXIS (beta) ----------
       if(current.axis==='beta'){
         if(full){
-          // Kickflip vs Heelflip depends on stance + direction
-          const isKick = (stance==='regular' && direction<0) || (stance==='goofy' && direction>0);
-          trick = isKick ? "Kickflip" : "Heelflip";
-        }else if(threeQuarter){
-          const isKick = (stance==='regular' && direction<0) || (stance==='goofy' && direction>0);
-          trick = isKick ? "Varial Kickflip" : "Varial Heelflip";
-        }else if(half){
-          trick = "Half‑Flip";
-        }else if(current.pop){
-          trick = "Impossible";
-        }
+          const kick = (stance==='regular'&&dir<0)||(stance==='goofy'&&dir>0);
+          trick = kick?'Kickflip':'Heelflip';
+        }else if(threeQ){
+          const kick = (stance==='regular'&&dir<0)||(stance==='goofy'&&dir>0);
+          trick = kick?'Varial Kickflip':'Varial Heelflip';
+        }else if(half) trick='Half‑Flip';
+        else if(current.pop) trick='Impossible';
+      }else if(current.axis==='alpha'){
+        if(full) trick=current.pop?'360 Flip (Trey)':'360 Shuvit';
+        else if(half) trick='180 Shuvit';
+        else if(quarter) trick='Pop Shuvit';
       }
+      if(!trick.includes('Shuvit') && !trick.includes('Flip') && current.pop) trick='Ollie';
 
-      // ---------- SHUV AXIS (alpha) ----------
-      else if(current.axis==='alpha'){
-        if(full){
-          trick = current.pop ? "360 Flip (Trey)" : "360 Shuvit";
-        }else if(half){
-          trick = "180 Shuvit";
-        }else if(quarter){
-          trick = "Pop Shuvit";
-        }
-      }
-
-      // ---------- OLLIE ----------
-      if(!trick.includes("Shuvit") && !trick.includes("Flip") && current.pop){
-        trick = "Ollie";
-      }
-
-      // ---- Feedback ----
-      output.textContent = `${trick}!`;
-      output.style.color = '#0f0';
+      output.textContent=`${trick}!`;
+      output.style.color='#0f0';
       addToHistory(trick);
+      setTimeout(()=>{ if(isDetecting){ output.textContent='Ready for next…'; output.style.color='#ff6b00'; }},2000);
 
-      setTimeout(()=>{
-        if(isDetecting){
-          output.textContent = "Ready for next trick…";
-          output.style.color = '#fff';
-        }
-      },2000);
-
-      // reset
-      current = {axis:null, startTime:0, rotSum:0, pop:false};
+      current={axis:null,startTime:0,rotSum:0,pop:false};
     }
 
-    // ==== Init ====
-    updateStance();
-    renderHistory();
+    // Init
+    updateStance(); renderHistory();
   </script>
 </body>
 </html>
