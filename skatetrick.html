@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Skate Trick Detector</title>
 
-  <!-- PWA Manifest -->
+  <!-- PWA Manifest (inline) -->
   <link rel="manifest" href="data:application/manifest+json,{
     %22name%22:%22Skate%20Trick%20Detector%22,
     %22short_name%22:%22SkateTricks%22,
@@ -13,93 +13,49 @@
     %22display%22:%22standalone%22,
     %22background_color%22:%22%23000000%22,
     %22theme_color%22:%22%2300d4ff%22,
-    %22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🛹%3C/text%3E%3C/svg%3E%22,%22sizes%22:%2296x96%22,%22type%22:%22image/svg+xml%22}]
+    %22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3Eskateboard%3C/text%3E%3C/svg%3E%22,%22sizes%22:%2296x96%22,%22type%22:%22image/svg+xml%22}]
   }">
 
   <style>
-    :root {
-      --bg: #111;
-      --text: #fff;
-      --accent: #00d4ff;
-      --card: #222;
-      --success: #0f0;
-      --warn: #ff0;
+    :root{
+      --bg:#111;--text:#fff;--accent:#00d4ff;--card:#222;
+      --success:#0f0;--warn:#ff0;--danger:#f55;
     }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
-      padding: 2rem 1rem;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+      background:var(--bg);color:var(--text);
+      font-family:'Segoe UI',sans-serif;
+      text-align:center;padding:2rem 1rem;
+      min-height:100vh;display:flex;flex-direction:column;
+      align-items:center;
     }
-
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-      color: var(--accent);
+    h1{font-size:2.5rem;margin-bottom:1rem;color:var(--accent);}
+    .stance{margin:1.5rem 0;}
+    button{
+      background:var(--card);color:#fff;border:2px solid var(--accent);
+      padding:.8rem 1.5rem;margin:.5rem;font-size:1.2rem;
+      border-radius:12px;cursor:pointer;transition:.2s;
     }
-
-    .stance {
-      margin: 1.5rem 0;
+    button:hover{background:var(--accent);color:#000;}
+    button.active{background:var(--accent);color:#000;font-weight:bold;}
+    #startBtn{background:#000;font-size:1.5rem;padding:1rem 2rem;margin-top:2rem;}
+    #output{margin-top:2rem;font-size:1.8rem;min-height:3rem;font-weight:bold;color:var(--success);}
+    .info{margin-top:2rem;font-size:.9rem;color:#aaa;max-width:600px;}
+    .install{margin-top:1rem;padding:1rem;background:var(--warn);color:#000;border-radius:8px;font-weight:bold;display:none;}
+    #history{
+      margin-top:2rem;width:90%;max-width:500px;background:var(--card);
+      border-radius:12px;padding:1rem;max-height:200px;overflow-y:auto;
     }
-
-    button {
-      background: var(--card);
-      color: white;
-      border: 2px solid var(--accent);
-      padding: 0.8rem 1.5rem;
-      margin: 0.5rem;
-      font-size: 1.2rem;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
+    .trick{
+      padding:.5rem 0;border-bottom:1px solid #444;
+      display:flex;justify-content:space-between;font-size:1rem;
     }
-
-    button:hover { background: var(--accent); color: black; }
-    button.active { background: var(--accent); color: black; font-weight: bold; }
-
-    #startBtn {
-      background: #000;
-      font-size: 1.5rem;
-      padding: 1rem 2rem;
-      margin-top: 2rem;
-    }
-
-    #output {
-      margin-top: 2rem;
-      font-size: 1.8rem;
-      min-height: 3rem;
-      font-weight: bold;
-      color: var(--success);
-    }
-
-    .info {
-      margin-top: 2rem;
-      font-size: 0.9rem;
-      color: #aaa;
-      max-width: 600px;
-    }
-
-    .install {
-      margin-top: 1rem;
-      padding: 1rem;
-      background: var(--warn);
-      color: black;
-      border-radius: 8px;
-      font-weight: bold;
-    }
+    .trick:last-child{border:none;}
   </style>
 </head>
 <body>
 
-  <h1>🛹 Skate Trick Detector</h1>
+  <h1>Skate Trick Detector</h1>
 
   <div class="stance">
     <p>Select your stance:</p>
@@ -111,136 +67,180 @@
 
   <div id="output">Hold phone like a skateboard & flip it!</div>
 
+  <div id="history"></div>
+
   <div class="info">
-    <p>Tip: Add this to your Home Screen for best results (especially on iPhone)</p>
-    <div id="installPrompt" class="install" style="display:none;">
-      Tap Share → "Add to Home Screen"
-    </div>
+    <p>Tip: Add to Home Screen for best results (especially iPhone)</p>
+    <div id="installPrompt" class="install">Tap Share → "Add to Home Screen"</div>
   </div>
 
   <script>
-    // === State ===
-    let stance = 'regular'; // 'regular' or 'goofy'
+    // ==== State ====
+    const MAX_HISTORY = 10;
+    let stance = 'regular';               // regular / goofy
     let isDetecting = false;
-    let lastFlipTime = 0;
-    let rotationCount = 0;
-    let flipAxis = null;
+    let history = [];                     // {trick, time}
+    let lastEventTime = 0;
+    let current = {
+      axis: null,          // 'beta' (flip) or 'alpha' (shuv)
+      startTime: 0,
+      rotSum: 0,           // accumulated signed rotation (deg)
+      pop: false
+    };
 
-    // DOM Elements
+    // DOM
     const regularBtn = document.getElementById('regularBtn');
-    const goofyBtn = document.getElementById('goofyBtn');
-    const startBtn = document.getElementById('startBtn');
-    const output = document.getElementById('output');
+    const goofyBtn   = document.getElementById('goofyBtn');
+    const startBtn   = document.getElementById('startBtn');
+    const output     = document.getElementById('output');
+    const historyDiv = document.getElementById('history');
     const installPrompt = document.getElementById('installPrompt');
 
-    // === Stance Selection ===
-    regularBtn.onclick = () => { stance = 'regular'; updateStanceButtons(); };
-    goofyBtn.onclick = () => { stance = 'goofy'; updateStanceButtons(); };
-
-    function updateStanceButtons() {
-      regularBtn.classList.toggle('active', stance === 'regular');
-      goofyBtn.classList.toggle('active', stance === 'goofy');
+    // ==== UI Helpers ====
+    regularBtn.onclick = () => { stance = 'regular'; updateStance(); };
+    goofyBtn.onclick   = () => { stance = 'goofy';   updateStance(); };
+    function updateStance(){
+      regularBtn.classList.toggle('active', stance==='regular');
+      goofyBtn.classList.toggle('active',   stance==='goofy');
     }
 
-    // === Start Detection ===
-    startBtn.onclick = async () => {
-      if (isDetecting) return;
+    function addToHistory(trick){
+      const now = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      history.unshift({trick, time:now});
+      if(history.length>MAX_HISTORY) history.pop();
+      renderHistory();
+    }
+    function renderHistory(){
+      historyDiv.innerHTML = history.map(h=>`
+        <div class="trick"><span>${h.trick}</span><span>${h.time}</span></div>
+      `).join('');
+    }
 
-      // Request permission (iOS)
-      if (typeof DeviceMotionEvent.requestPermission === 'function') {
-        const response = await DeviceMotionEvent.requestPermission();
-        if (response !== 'granted') {
+    // ==== Start ====
+    startBtn.onclick = async () => {
+      if(isDetecting) return;
+      if(typeof DeviceMotionEvent.requestPermission === 'function'){
+        const resp = await DeviceMotionEvent.requestPermission();
+        if(resp!=='granted'){
           output.textContent = "Permission denied";
           output.style.color = '#f55';
           return;
         }
       }
-
       isDetecting = true;
-      startBtn.textContent = "Detecting... (Move phone!)";
+      startBtn.textContent = "Detecting…";
       startBtn.disabled = true;
-      output.textContent = "Ready! Try a kickflip!";
+      output.textContent = "Ready! Try a trick.";
       output.style.color = '#fff';
+      if(/iPhone|iPad|iPod/.test(navigator.userAgent)) installPrompt.style.display='block';
 
-      // Show install prompt on iOS
-      if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-        installPrompt.style.display = 'block';
-      }
-
-      // Start listening
-      window.addEventListener('devicemotion', handleMotion);
-      setTimeout(() => {
-        if (isDetecting) output.textContent = "No motion detected yet...";
-      }, 3000);
+      window.addEventListener('devicemotion', onMotion);
     };
 
-    // === Motion Handler ===
-    function handleMotion(event) {
-      const { rotationRate, acceleration } = event;
-      if (!rotationRate) return;
+    // ==== Motion Handler ====
+    function onMotion(e){
+      const rot = e.rotationRate;
+      const acc = e.accelerationIncludingGravity;
+      if(!rot) return;
 
       const now = Date.now();
-      const alpha = Math.abs(rotationRate.alpha || 0);
-      const beta = Math.abs(rotationRate.beta || 0);
-      const gamma = Math.abs(rotationRate.gamma || 0);
+      const dt = now - (lastEventTime||now);
+      lastEventTime = now;
 
-      // Detect pop (upward acceleration)
-      const pop = (acceleration.z || 0) > 8;
+      // ---- Pop detection (quick upward spike) ----
+      if(acc && acc.z > 12) current.pop = true;
 
-      // Detect primary spin axis
-      let axis = null;
-      if (beta > 100) axis = 'beta';   // Kickflip / Heelflip (long axis)
-      if (alpha > 100) axis = 'alpha'; // Shuvit / 360 (yaw)
+      // ---- Choose dominant axis ----
+      const a = rot.alpha||0, b = rot.beta||0, g = rot.gamma||0;
+      const absA = Math.abs(a), absB = Math.abs(b);
 
-      // === Trick Detection Logic ===
-      if (axis && (now - lastFlipTime > 800)) {
-        rotationCount = 0;
-        flipAxis = axis;
-        lastFlipTime = now;
+      let newAxis = null;
+      if(absB > 80) newAxis = 'beta';      // flip axis
+      else if(absA > 80) newAxis = 'alpha'; // shuv axis
+
+      // ---- Start new gesture ----
+      if(newAxis && !current.axis){
+        current.axis = newAxis;
+        current.startTime = now;
+        current.rotSum = 0;
+        current.pop = false;
       }
 
-      if (axis === flipAxis && axis) {
-        rotationCount += (axis === 'beta' ? beta : alpha) / 360;
+      // ---- Accumulate signed rotation while axis matches ----
+      if(newAxis===current.axis){
+        const degPerSec = current.axis==='beta' ? b : a;   // signed!
+        current.rotSum += degPerSec * (dt/1000);
       }
 
-      // End of trick (no rotation for 300ms)
-      if (axis && flipAxis && (now - lastFlipTime > 300)) {
-        detectTrick(rotationCount, flipAxis, pop, stance);
-        rotationCount = 0;
-        flipAxis = null;
+      // ---- End gesture when rotation drops for 300 ms ----
+      if(current.axis && (now - lastEventTime > 300)){
+        finalizeTrick();
       }
     }
 
-    // === Trick Classifier ===
-    function detectTrick(rotations, axis, hadPop, stance) {
-      const fullSpin = rotations > 0.8;
-      const halfSpin = rotations > 0.4;
+    // ==== Finalize & Classify ====
+    function finalizeTrick(){
+      if(!current.axis) return;
+      const totalDeg = Math.abs(current.rotSum);
+      const direction = current.rotSum > 0 ? 1 : -1;   // + = CCW, - = CW (from phone view)
+      const full = totalDeg > 300;                     // ~360°
+      const threeQuarter = totalDeg > 220;
+      const half = totalDeg > 140;                     // ~180°
+      const quarter = totalDeg > 70;
 
       let trick = "Unknown";
 
-      if (axis === 'beta' && fullSpin) {
-        trick = stance === 'regular' ? "Kickflip" : "Heelflip";
-      } else if (axis === 'beta' && halfSpin) {
-        trick = stance === 'regular' ? "Heelflip (varial?)" : "Kickflip (varial?)";
-      } else if (axis === 'alpha' && fullSpin) {
-        trick = hadPop ? "360 Flip" : "360 Shuvit";
-      } else if (axis === 'alpha' && rotations > 0.4) {
-        trick = "180 Shuvit";
-      } else if (hadPop) {
-        trick = "Ollie!";
+      // ---------- FLIP AXIS (beta) ----------
+      if(current.axis==='beta'){
+        if(full){
+          // Kickflip vs Heelflip depends on stance + direction
+          const isKick = (stance==='regular' && direction<0) || (stance==='goofy' && direction>0);
+          trick = isKick ? "Kickflip" : "Heelflip";
+        }else if(threeQuarter){
+          const isKick = (stance==='regular' && direction<0) || (stance==='goofy' && direction>0);
+          trick = isKick ? "Varial Kickflip" : "Varial Heelflip";
+        }else if(half){
+          trick = "Half‑Flip";
+        }else if(current.pop){
+          trick = "Impossible";
+        }
       }
 
-      // Visual feedback
+      // ---------- SHUV AXIS (alpha) ----------
+      else if(current.axis==='alpha'){
+        if(full){
+          trick = current.pop ? "360 Flip (Trey)" : "360 Shuvit";
+        }else if(half){
+          trick = "180 Shuvit";
+        }else if(quarter){
+          trick = "Pop Shuvit";
+        }
+      }
+
+      // ---------- OLLIE ----------
+      if(!trick.includes("Shuvit") && !trick.includes("Flip") && current.pop){
+        trick = "Ollie";
+      }
+
+      // ---- Feedback ----
       output.textContent = `${trick}!`;
       output.style.color = '#0f0';
-      setTimeout(() => {
-        if (isDetecting) output.textContent = "Ready for next trick...";
-        output.style.color = '#fff';
-      }, 2000);
+      addToHistory(trick);
+
+      setTimeout(()=>{
+        if(isDetecting){
+          output.textContent = "Ready for next trick…";
+          output.style.color = '#fff';
+        }
+      },2000);
+
+      // reset
+      current = {axis:null, startTime:0, rotSum:0, pop:false};
     }
 
-    // Init
-    updateStanceButtons();
+    // ==== Init ====
+    updateStance();
+    renderHistory();
   </script>
 </body>
 </html>
