@@ -3,286 +3,382 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vertical Skate Trick Detector</title>
+  <title>FlipSense</title>
 
-  <!-- PWA manifest (inline) -->
+  <!-- PWA -->
   <link rel="manifest" href="data:application/manifest+json,{
-    %22name%22:%22Vertical Skate Trick%22,
-    %22short_name%22:%22Skate%22,
-    %22start_url%22:%22.%22,
-    %22display%22:%22standalone%22,
-    %22background_color%22:%22%23000000%22,
-    %22theme_color%22:%22%23ff5a00%22,
-    %22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='80'%3Eskateboard%3C/text%3E%3C/svg%3E%22,%22sizes%22:%2296x96%22,%22type%22:%22image/svg+xml%22}]
+    \"name\":\"FlipSense\",\"short_name\":\"FlipSense\",
+    \"start_url\":\".\",\"display\":\"standalone\",
+    \"background_color\":\"#000\",\"theme_color\":\"#ff3b30\",
+    \"icons\":[{\"src\":\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3Eskateboard%3C/text%3E%3C/svg%3E\",\"sizes\":\"96x96\",\"type\":\"image/svg+xml\"}]
   }">
 
   <style>
-    :root{
-      --grip:#111;--grip-dot:#222;--wood:#c96;--bolt:#444;
-      --accent:#ff5a00;--text:#fff;--shadow:#0006;
-    }
-    *{margin:0;padding:0;box-sizing:border-box;}
-    html,body{height:100%;font-family:Arial,Helvetica,sans-serif;color:var(--text);}
-
-    body{
-      background:#000;
-      display:flex;justify-content:center;align-items:center;
-      padding:1rem;
+    :root {
+      --grip: #111;
+      --wood: #d4a574;
+      --truck: #555;
+      --wheel: #222;
+      --accent: #ff3b30;
+      --text: #fff;
+      --shadow: rgba(0,0,0,0.6);
     }
 
-    /* ---------- VERTICAL DECK ---------- */
-    .deck{
-      width:260px;
-      background:var(--wood);
-      border-radius:30px 30px 20px 20px;
-      box-shadow:
-        0 12px 30px var(--shadow),
-        inset 0 -6px 12px #a55,
-        inset 0 6px 12px #da8;
-      position:relative;
-      overflow:hidden;
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { height:100%; background:#000; font-family: 'Helvetica Neue', sans-serif; color:var(--text); overflow:hidden; }
+    body { display:flex; justify-content:center; align-items:center; }
+
+    /* ===== SKATEBOARD DECK ===== */
+    .deck {
+      width: 300px;
+      height: 780px;
+      background: var(--wood);
+      border-radius: 40px 40px 30px 30px;
+      position: relative;
+      box-shadow: 
+        0 20px 40px var(--shadow),
+        inset 0 -8px 16px #b8860b,
+        inset 0 8px 16px #f4d03f;
+      overflow: hidden;
     }
-    .deck::before{
-      content:'';position:absolute;top:0;left:0;right:0;height:70px;
+
+    /* Grip Tape */
+    .grip {
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 140px;
       background:
-        radial-gradient(circle at 20% 30%, var(--grip-dot) 2px, transparent 2px),
-        radial-gradient(circle at 80% 70%, var(--grip-dot) 2px, transparent 2px),
-        linear-gradient(45deg, var(--grip) 25%, transparent 25%),
-        linear-gradient(-45deg, var(--grip) 25%, transparent 25%),
+        radial-gradient(circle at 25% 40%, #222 3px, transparent 3px),
+        radial-gradient(circle at 75% 60%, #222 3px, transparent 3px),
+        linear-gradient(45deg, var(--grip) 30%, #1a1a1a 30%, #1a1a1a 50%, var(--grip) 50%, var(--grip) 70%, #1a1a1a 70%),
         var(--grip);
-      background-size:20px 20px,20px 20px,4px 4px,4px 4px;
+      background-size: 30px 30px, 30px 30px, 8px 8px;
     }
 
-    /* truck bolts */
-    .bolt{
-      position:absolute;width:12px;height:12px;
-      background:var(--bolt);border-radius:50%;
-      box-shadow:0 0 4px #0008;
+    /* Truck Bolts */
+    .bolt {
+      position: absolute;
+      width: 14px; height: 14px;
+      background: var(--truck);
+      border-radius: 50%;
+      box-shadow: 0 0 6px #000;
     }
-    .bolt:nth-child(1){top:80px;left:30px;}
-    .bolt:nth-child(2){top:80px;right:30px;}
-    .bolt:nth-child(3){bottom:80px;left:30px;}
-    .bolt:nth-child(4){bottom:80px;right:30px;}
+    .bolt:nth-child(1) { top: 160px; left: 40px; }
+    .bolt:nth-child(2) { top: 160px; right: 40px; }
+    .bolt:nth-child(3) { bottom: 160px; left: 40px; }
+    .bolt:nth-child(4) { bottom: 160px; right: 40px; }
 
-    .content{
-      padding:90px 20px 30px;
-      text-align:center;
+    /* Wheels (decorative) */
+    .wheel {
+      position: absolute;
+      width: 50px; height: 50px;
+      background: var(--wheel);
+      border-radius: 50%;
+      bottom: 100px;
     }
-    h1{
-      font-size:1.9rem;color:#222;text-shadow:0 1px #fff;
-      margin-bottom:.8rem;
-    }
+    .wheel.left { left: 30px; }
+    .wheel.right { right: 30px; }
 
-    /* buttons */
-    button{
-      background:var(--wood);color:#222;
-      border:3px solid var(--bolt);border-radius:12px;
-      padding:.6rem 1rem;margin:.3rem;font-weight:bold;
-      font-size:1rem;cursor:pointer;transition:.2s;
-      box-shadow:0 3px 6px var(--shadow);
-      position:relative;
-    }
-    button::before,button::after{
-      content:'';position:absolute;width:6px;height:6px;
-      background:var(--bolt);border-radius:50%;top:.3rem;
-    }
-    button::before{left:.3rem;}
-    button::after{right:.3rem;}
-    button:hover{background:#da8;transform:translateY(-2px);}
-    button.active{background:var(--accent);color:#fff;border-color:#c40;}
-    #startBtn{
-      font-size:1.3rem;padding:.9rem 1.8rem;margin-top:1.2rem;
-      background:#222;color:var(--accent);border-color:var(--accent);
-    }
-    #startBtn:hover{background:var(--accent);color:#222;}
-
-    #output{
-      margin-top:.8rem;font-size:1.5rem;font-weight:bold;
-      min-height:2rem;color:var(--accent);text-shadow:0 1px #000;
+    /* ===== CONTENT ===== */
+    .content {
+      position: absolute;
+      top: 180px; left: 0; right: 0;
+      padding: 0 30px;
+      text-align: center;
     }
 
-    #history{
-      margin-top:1rem;width:100%;background:var(--wood);
-      border-radius:12px;padding:.8rem;
-      max-height:140px;overflow-y:auto;
-      box-shadow:inset 0 2px 6px #a55;
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #222;
+      text-shadow: 0 1px #fff;
+      margin-bottom: 1rem;
     }
-    .trick{
-      padding:.3rem 0;display:flex;justify-content:space-between;
-      font-size:.9rem;border-bottom:1px solid #a55;
-    }
-    .trick:last-child{border:none;}
-    .trick span:first-child{font-weight:bold;color:#222;}
-    .trick span:last-child{color:#555;font-size:.8rem;}
 
-    .info{
-      margin-top:1rem;font-size:.8rem;color:#bbb;
+    .stance {
+      margin: 1.5rem 0;
     }
-    .install{
-      margin-top:.6rem;padding:.6rem;background:#ff0;color:#000;
-      border-radius:8px;font-weight:bold;display:none;
+
+    .stance-btn {
+      background: #222;
+      color: white;
+      border: 3px solid var(--truck);
+      padding: 12px 24px;
+      margin: 0 8px;
+      border-radius: 16px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 90px;
+    }
+    .stance-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: #c00;
+      transform: scale(1.05);
+    }
+
+    #startBtn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      margin: 2rem 0;
+      border-radius: 25px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(255,59,48,0.4);
+      transition: all 0.2s;
+    }
+    #startBtn:active { transform: scale(0.95); }
+
+    #output {
+      margin: 1.5rem 0;
+      font-size: 1.8rem;
+      font-weight: bold;
+      min-height: 2.5rem;
+      color: var(--accent);
+    }
+
+    #history {
+      margin-top: 1rem;
+      background: rgba(0,0,0,0.3);
+      border-radius: 16px;
+      padding: 12px;
+      max-height: 180px;
+      overflow-y: auto;
+      font-size: 0.95rem;
+    }
+    .trick {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .trick:last-child { border: none; }
+
+    .info {
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: #aaa;
+    }
+    .install {
+      margin-top: 8px;
+      padding: 8px;
+      background: #ff0;
+      color: #000;
+      border-radius: 8px;
+      font-weight: bold;
+      display: none;
     }
   </style>
 </head>
 <body>
 
   <div class="deck">
+    <div class="grip"></div>
     <div class="bolt"></div><div class="bolt"></div><div class="bolt"></div><div class="bolt"></div>
-    <div class="content">
+    <div class="wheel left"></div><div class="wheel right"></div>
 
-      <h1>Vertical Skate</h1>
+    <div class="content">
+      <h1>FlipSense</h1>
 
       <div class="stance">
-        <p style="color:#222;margin-bottom:.4rem;">Stance:</p>
-        <button id="regularBtn">Regular</button>
-        <button id="goofyBtn">Goofy</button>
+        <button class="stance-btn active" id="regularBtn">Regular</button>
+        <button class="stance-btn" id="goofyBtn">Goofy</button>
       </div>
 
-      <button id="startBtn">Start Detecting</button>
+      <button id="startBtn">START TRACKING</button>
 
-      <div id="output">Hold phone upright & flip!</div>
+      <div id="output">Hold phone like a board</div>
 
       <div id="history"></div>
 
       <div class="info">
-        <p>Add to Home Screen (iPhone required)</p>
+        <p>Add to Home Screen for full sensor access</p>
         <div id="installPrompt" class="install">Share → Add to Home Screen</div>
       </div>
-
     </div>
   </div>
 
   <script>
-    // ==== State ====
-    const MAX_HISTORY = 10;
+    // ===== STATE =====
     let stance = 'regular';
-    let isDetecting = false;
+    let isTracking = false;
     let history = [];
+    const MAX_HISTORY = 10;
 
-    // motion state
+    // Motion state
     let motion = {
-      axis: null,          // 'beta' (flip) or 'alpha' (shuv)
-      start: 0,
-      rotSum: 0,           // signed degrees
+      active: false,
+      axis: null,
+      startTime: 0,
+      rotSum: 0,
       pop: false,
-      lastRotTime: 0       // timestamp of last high rotation
+      lastHighRot: 0
     };
 
     // DOM
     const regularBtn = document.getElementById('regularBtn');
-    const goofyBtn   = document.getElementById('goofyBtn');
-    const startBtn   = document.getElementById('startBtn');
-    const output     = document.getElementById('output');
-    const historyDiv = document.getElementById('history');
-    const install    = document.getElementById('installPrompt');
+    const goofyBtn = document.getElementById('goofyBtn');
+    const startBtn = document.getElementById('startBtn');
+    const output = document.getElementById('output');
+    const historyEl = document.getElementById('history');
+    const installPrompt = document.getElementById('installPrompt');
 
-    // ==== UI ====
-    regularBtn.onclick = () => { stance='regular'; updateStance(); };
-    goofyBtn.onclick   = () => { stance='goofy';   updateStance(); };
-    function updateStance(){
-      regularBtn.classList.toggle('active',stance==='regular');
-      goofyBtn.classList.toggle('active',stance==='goofy');
+    // ===== STANCE =====
+    regularBtn.onclick = () => { stance = 'regular'; updateStance(); };
+    goofyBtn.onclick = () => { stance = 'goofy'; updateStance(); };
+    function updateStance() {
+      regularBtn.classList.toggle('active', stance === 'regular');
+      goofyBtn.classList.toggle('active', stance === 'goofy');
     }
 
-    function addHistory(trick){
-      const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-      history.unshift({trick,time:t});
-      if(history.length>MAX_HISTORY) history.pop();
-      historyDiv.innerHTML = history.map(h=>`
-        <div class="trick"><span>${h.trick}</span><span>${h.time}</span></div>
+    // ===== HISTORY =====
+    function addToHistory(trick) {
+      const time = new Date().toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      history.unshift({ trick, time });
+      if (history.length > MAX_HISTORY) history.pop();
+      renderHistory();
+    }
+    function renderHistory() {
+      historyEl.innerHTML = history.map(h => `
+        <div class="trick">
+          <span>${h.trick}</span>
+          <span>${h.time}</span>
+        </div>
       `).join('');
     }
 
-    // ==== Start ====
+    // ===== START TRACKING =====
     startBtn.onclick = async () => {
-      if(isDetecting) return;
-      if(typeof DeviceMotionEvent.requestPermission==='function'){
-        const r = await DeviceMotionEvent.requestPermission();
-        if(r!=='granted'){ output.textContent='Permission denied'; output.style.color='#f55'; return; }
+      if (isTracking) return;
+
+      // iOS permission
+      if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        const response = await DeviceMotionEvent.requestPermission();
+        if (response !== 'granted') {
+          output.textContent = 'Permission denied';
+          output.style.color = '#f55';
+          return;
+        }
       }
-      isDetecting=true;
-      startBtn.textContent='Detecting…';
-      startBtn.disabled=true;
-      output.textContent='Ready – try a trick!';
-      output.style.color=var(--accent);
-      if(/iPhone|iPad|iPod/.test(navigator.userAgent)) install.style.display='block';
-      window.addEventListener('devicemotion', onMotion);
+
+      isTracking = true;
+      startBtn.textContent = 'TRACKING...';
+      startBtn.disabled = true;
+      output.textContent = 'Ready! Try a flip';
+      output.style.color = '#fff';
+
+      if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        installPrompt.style.display = 'block';
+      }
+
+      window.addEventListener('devicemotion', handleMotion);
     };
 
-    // ==== Motion ====
-    function onMotion(e){
-      const rot = e.rotationRate, acc = e.accelerationIncludingGravity;
-      if(!rot) return;
+    // ===== MOTION HANDLER =====
+    function handleMotion(event) {
+      const { rotationRate, accelerationIncludingGravity } = event;
+      if (!rotationRate) return;
+
       const now = Date.now();
+      const alpha = rotationRate.alpha || 0;
+      const beta = rotationRate.beta || 0;
+      const gamma = rotationRate.gamma || 0;
 
-      // pop
-      if(acc && acc.z>12) motion.pop = true;
+      // Detect pop (ollie)
+      if (accelerationIncludingGravity && accelerationIncludingGravity.z > 12) {
+        motion.pop = true;
+      }
 
-      const a = rot.alpha||0, b = rot.beta||0;
-      const absA = Math.abs(a), absB = Math.abs(b);
-      let newAxis = null;
-      if(absB>80) newAxis='beta';
-      else if(absA>80) newAxis='alpha';
+      const absAlpha = Math.abs(alpha);
+      const absBeta = Math.abs(beta);
 
-      // start new gesture
-      if(newAxis && !motion.axis){
-        motion.axis = newAxis;
-        motion.start = now;
+      let dominantAxis = null;
+      if (absBeta > 90) dominantAxis = 'beta';   // flip
+      else if (absAlpha > 90) dominantAxis = 'alpha'; // shuv
+
+      // Start new motion
+      if (dominantAxis && !motion.active) {
+        motion.active = true;
+        motion.axis = dominantAxis;
+        motion.startTime = now;
         motion.rotSum = 0;
         motion.pop = false;
-        motion.lastRotTime = now;
+        motion.lastHighRot = now;
         return;
       }
 
-      // accumulate while same axis
-      if(newAxis===motion.axis){
-        const degSec = motion.axis==='beta'?b:a;
-        const dt = now - motion.lastRotTime;
-        motion.rotSum += degSec * (dt/1000);
-        motion.lastRotTime = now;
+      // Accumulate rotation (signed)
+      if (dominantAxis === motion.axis) {
+        const rate = motion.axis === 'beta' ? beta : alpha;
+        const dt = now - motion.lastHighRot;
+        motion.rotSum += rate * (dt / 1000);
+        motion.lastHighRot = now;
       }
 
-      // end detection after 300 ms of low rotation
-      if(motion.axis && (now - motion.lastRotTime > 300)){
-        finalize();
+      // End motion after 350ms of low rotation
+      if (motion.active && (now - motion.lastHighRot > 350)) {
+        classifyTrick();
       }
     }
 
-    // ==== Finalize ====
-    function finalize(){
-      if(!motion.axis) return;
+    // ===== CLASSIFY TRICK =====
+    function classifyTrick() {
+      if (!motion.active) return;
+
       const totalDeg = Math.abs(motion.rotSum);
-      const dir = motion.rotSum>0?1:-1;   // + CCW, - CW
-      const full=totalDeg>300, threeQ=totalDeg>220, half=totalDeg>140, quarter=totalDeg>70;
-      let trick = 'Unknown';
+      const direction = motion.rotSum > 0 ? 1 : -1; // + = CCW, - = CW
+      const full = totalDeg > 320;
+      const threeQ = totalDeg > 240;
+      const half = totalDeg > 150;
+      const quarter = totalDeg > 80;
 
-      if(motion.axis==='beta'){
-        if(full){
-          const kick = (stance==='regular'&&dir<0)||(stance==='goofy'&&dir>0);
-          trick = kick?'Kickflip':'Heelflip';
-        }else if(threeQ){
-          const kick = (stance==='regular'&&dir<0)||(stance==='goofy'&&dir>0);
-          trick = kick?'Varial Kickflip':'Varial Heelflip';
-        }else if(half) trick='Half‑Flip';
-        else if(motion.pop) trick='Impossible';
-      }else if(motion.axis==='alpha'){
-        if(full) trick=motion.pop?'360 Flip (Trey)':'360 Shuvit';
-        else if(half) trick='180 Shuvit';
-        else if(quarter) trick='Pop Shuvit';
+      let trick = 'Ollie';
+
+      if (motion.axis === 'beta') { // FLIP
+        if (full) {
+          const isKickflip = (stance === 'regular' && direction < 0) || (stance === 'goofy' && direction > 0);
+          trick = isKickflip ? 'Kickflip' : 'Heelflip';
+        } else if (threeQ) {
+          const isKickflip = (stance === 'regular' && direction < 0) || (stance === 'goofy' && direction > 0);
+          trick = isKickflip ? 'Varial Kickflip' : 'Varial Heelflip';
+        } else if (motion.pop) {
+          trick = 'Impossible';
+        }
+      } else if (motion.axis === 'alpha') { // SHUV
+        if (full) {
+          trick = motion.pop ? '360 Flip' : '360 Shuvit';
+        } else if (half) {
+          trick = '180 Shuvit';
+        } else if (quarter) {
+          trick = 'Shuvit';
+        }
       }
-      if(!trick.includes('Shuvit') && !trick.includes('Flip') && motion.pop) trick='Ollie';
 
-      output.textContent = `${trick}!`;
+      if (motion.pop && totalDeg < 100) trick = 'Ollie';
+
+      // Feedback
+      output.textContent = trick;
       output.style.color = '#0f0';
-      addHistory(trick);
-      setTimeout(()=>{ if(isDetecting){ output.textContent='Ready for next…'; output.style.color=var(--accent); }},2000);
+      addToHistory(trick);
 
-      // reset
-      motion = {axis:null,start:0,rotSum:0,pop:false,lastRotTime:0};
+      setTimeout(() => {
+        if (isTracking) {
+          output.textContent = 'Ready...';
+          output.style.color = '#fff';
+        }
+      }, 1800);
+
+      // Reset
+      motion = { active: false, axis: null, startTime: 0, rotSum: 0, pop: false, lastHighRot: 0 };
     }
 
     // Init
     updateStance();
+    renderHistory();
   </script>
 </body>
 </html>
