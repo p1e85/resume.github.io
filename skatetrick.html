@@ -3,112 +3,123 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Skate Trick Detector</title>
+  <title>Vertical Skate Trick Detector</title>
 
-  <!-- PWA Manifest (inline) -->
+  <!-- PWA manifest (inline) -->
   <link rel="manifest" href="data:application/manifest+json,{
-    %22name%22:%22Skate%20Trick%20Detector%22,
-    %22short_name%22:%22SkateTricks%22,
+    %22name%22:%22Vertical Skate Trick%22,
+    %22short_name%22:%22Skate%22,
     %22start_url%22:%22.%22,
     %22display%22:%22standalone%22,
     %22background_color%22:%22%23000000%22,
-    %22theme_color%22:%22%23ff6b00%22,
-    %22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3Eskateboard%3C/text%3E%3C/svg%3E%22,%22sizes%22:%2296x96%22,%22type%22:%22image/svg+xml%22}]
+    %22theme_color%22:%22%23ff5a00%22,
+    %22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='80'%3Eskateboard%3C/text%3E%3C/svg%3E%22,%22sizes%22:%2296x96%22,%22type%22:%22image/svg+xml%22}]
   }">
 
   <style>
     :root{
-      --grip:#222;--grip-dot:#333;--wood:#c96;--bolt:#555;
-      --accent:#ff6b00;--text:#fff;--shadow:#0004;
+      --grip:#111;--grip-dot:#222;--wood:#c96;--bolt:#444;
+      --accent:#ff5a00;--text:#fff;--shadow:#0006;
     }
     *{margin:0;padding:0;box-sizing:border-box;}
-    html,body{height:100%;font-family:'Arial',sans-serif;color:var(--text);}
+    html,body{height:100%;font-family:Arial,Helvetica,sans-serif;color:var(--text);}
 
-    /* ---------- GRIP TAPE BACKGROUND ---------- */
     body{
+      background:#000;
+      display:flex;justify-content:center;align-items:center;
+      padding:1rem;
+    }
+
+    /* ---------- VERTICAL DECK ---------- */
+    .deck{
+      width:260px;
+      background:var(--wood);
+      border-radius:30px 30px 20px 20px;
+      box-shadow:
+        0 12px 30px var(--shadow),
+        inset 0 -6px 12px #a55,
+        inset 0 6px 12px #da8;
+      position:relative;
+      overflow:hidden;
+    }
+    .deck::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:70px;
       background:
-        radial-gradient(circle at 20% 30%, #111 2px, transparent 2px),
-        radial-gradient(circle at 80% 70%, #111 2px, transparent 2px),
+        radial-gradient(circle at 20% 30%, var(--grip-dot) 2px, transparent 2px),
+        radial-gradient(circle at 80% 70%, var(--grip-dot) 2px, transparent 2px),
         linear-gradient(45deg, var(--grip) 25%, transparent 25%),
         linear-gradient(-45deg, var(--grip) 25%, transparent 25%),
         var(--grip);
-      background-size: 20px 20px, 20px 20px, 4px 4px, 4px 4px;
-      background-position: 0 0, 10px 10px, 0 0, 2px 2px;
-      display:flex;flex-direction:column;align-items:center;
-      padding:2rem 1rem;
+      background-size:20px 20px,20px 20px,4px 4px,4px 4px;
     }
 
-    /* ---------- DECK CONTAINER ---------- */
-    .deck{
-      width:90%;max-width:420px;
-      background:var(--wood);
-      border-radius:30px 30px 20px 20px;
-      padding:1.5rem 1rem 2rem;
-      box-shadow:
-        0 8px 20px var(--shadow),
-        inset 0 -4px 8px #a55,
-        inset 0 4px 8px #da8;
-      position:relative;
-      margin-bottom:1.5rem;
+    /* truck bolts */
+    .bolt{
+      position:absolute;width:12px;height:12px;
+      background:var(--bolt);border-radius:50%;
+      box-shadow:0 0 4px #0008;
     }
-    .deck::before,.deck::after{
-      content:'';position:absolute;top:1rem;width:12px;height:12px;
-      background:var(--bolt);border-radius:50%;box-shadow:0 0 4px #0008;
+    .bolt:nth-child(1){top:80px;left:30px;}
+    .bolt:nth-child(2){top:80px;right:30px;}
+    .bolt:nth-child(3){bottom:80px;left:30px;}
+    .bolt:nth-child(4){bottom:80px;right:30px;}
+
+    .content{
+      padding:90px 20px 30px;
+      text-align:center;
     }
-    .deck::before{left:1rem;}
-    .deck::after{right:1rem;}
-    .deck h1{
-      font-size:2.2rem;color:#222;text-shadow:0 1px #fff;
+    h1{
+      font-size:1.9rem;color:#222;text-shadow:0 1px #fff;
       margin-bottom:.8rem;
     }
 
-    /* ---------- BUTTONS (wood + bolts) ---------- */
+    /* buttons */
     button{
       background:var(--wood);color:#222;
       border:3px solid var(--bolt);border-radius:12px;
-      padding:.7rem 1.2rem;margin:.4rem;font-weight:bold;
-      font-size:1.1rem;cursor:pointer;transition:.2s;
+      padding:.6rem 1rem;margin:.3rem;font-weight:bold;
+      font-size:1rem;cursor:pointer;transition:.2s;
       box-shadow:0 3px 6px var(--shadow);
       position:relative;
     }
     button::before,button::after{
       content:'';position:absolute;width:6px;height:6px;
-      background:var(--bolt);border-radius:50%;top:.4rem;
+      background:var(--bolt);border-radius:50%;top:.3rem;
     }
-    button::before{left:.4rem;}
-    button::after{right:.4rem;}
+    button::before{left:.3rem;}
+    button::after{right:.3rem;}
     button:hover{background:#da8;transform:translateY(-2px);}
-    button.active{background:#ff6b00;color:#fff;border-color:#c50;}
+    button.active{background:var(--accent);color:#fff;border-color:#c40;}
     #startBtn{
-      font-size:1.4rem;padding:1rem 2rem;margin-top:1.5rem;
+      font-size:1.3rem;padding:.9rem 1.8rem;margin-top:1.2rem;
       background:#222;color:var(--accent);border-color:var(--accent);
     }
     #startBtn:hover{background:var(--accent);color:#222;}
 
-    /* ---------- OUTPUT & HISTORY ---------- */
     #output{
-      margin-top:1rem;font-size:1.7rem;font-weight:bold;
-      min-height:2.2rem;color:#ff6b00;text-shadow:0 1px #000;
+      margin-top:.8rem;font-size:1.5rem;font-weight:bold;
+      min-height:2rem;color:var(--accent);text-shadow:0 1px #000;
     }
+
     #history{
-      margin-top:1.5rem;width:90%;max-width:380px;
-      background:var(--wood);border-radius:20px;
-      padding:1rem;box-shadow:0 4px 12px var(--shadow);
-      max-height:180px;overflow-y:auto;
+      margin-top:1rem;width:100%;background:var(--wood);
+      border-radius:12px;padding:.8rem;
+      max-height:140px;overflow-y:auto;
+      box-shadow:inset 0 2px 6px #a55;
     }
     .trick{
-      padding:.4rem 0;display:flex;justify-content:space-between;
-      font-size:.95rem;border-bottom:1px solid #a55;
+      padding:.3rem 0;display:flex;justify-content:space-between;
+      font-size:.9rem;border-bottom:1px solid #a55;
     }
     .trick:last-child{border:none;}
     .trick span:first-child{font-weight:bold;color:#222;}
-    .trick span:last-child{color:#555;font-size:.85rem;}
+    .trick span:last-child{color:#555;font-size:.8rem;}
 
     .info{
-      margin-top:1.5rem;font-size:.85rem;color:#ccc;max-width:400px;
+      margin-top:1rem;font-size:.8rem;color:#bbb;
     }
     .install{
-      margin-top:.8rem;padding:.8rem;background:#ff0;color:#000;
+      margin-top:.6rem;padding:.6rem;background:#ff0;color:#000;
       border-radius:8px;font-weight:bold;display:none;
     }
   </style>
@@ -116,24 +127,29 @@
 <body>
 
   <div class="deck">
-    <h1>Skate Trick Detector</h1>
+    <div class="bolt"></div><div class="bolt"></div><div class="bolt"></div><div class="bolt"></div>
+    <div class="content">
 
-    <div class="stance">
-      <p style="color:#222;margin-bottom:.5rem;">Select stance:</p>
-      <button id="regularBtn">Regular</button>
-      <button id="goofyBtn">Goofy</button>
+      <h1>Vertical Skate</h1>
+
+      <div class="stance">
+        <p style="color:#222;margin-bottom:.4rem;">Stance:</p>
+        <button id="regularBtn">Regular</button>
+        <button id="goofyBtn">Goofy</button>
+      </div>
+
+      <button id="startBtn">Start Detecting</button>
+
+      <div id="output">Hold phone upright & flip!</div>
+
+      <div id="history"></div>
+
+      <div class="info">
+        <p>Add to Home Screen (iPhone required)</p>
+        <div id="installPrompt" class="install">Share → Add to Home Screen</div>
+      </div>
+
     </div>
-
-    <button id="startBtn">Start Detecting</button>
-
-    <div id="output">Hold phone like a mini deck & flip it!</div>
-  </div>
-
-  <div id="history"></div>
-
-  <div class="info">
-    <p>Add to Home Screen for best sensor access (required on iPhone)</p>
-    <div id="installPrompt" class="install">Share → Add to Home Screen</div>
   </div>
 
   <script>
@@ -142,8 +158,15 @@
     let stance = 'regular';
     let isDetecting = false;
     let history = [];
-    let lastEventTime = 0;
-    let current = {axis:null, startTime:0, rotSum:0, pop:false};
+
+    // motion state
+    let motion = {
+      axis: null,          // 'beta' (flip) or 'alpha' (shuv)
+      start: 0,
+      rotSum: 0,           // signed degrees
+      pop: false,
+      lastRotTime: 0       // timestamp of last high rotation
+    };
 
     // DOM
     const regularBtn = document.getElementById('regularBtn');
@@ -151,7 +174,7 @@
     const startBtn   = document.getElementById('startBtn');
     const output     = document.getElementById('output');
     const historyDiv = document.getElementById('history');
-    const installPrompt = document.getElementById('installPrompt');
+    const install    = document.getElementById('installPrompt');
 
     // ==== UI ====
     regularBtn.onclick = () => { stance='regular'; updateStance(); };
@@ -161,13 +184,10 @@
       goofyBtn.classList.toggle('active',stance==='goofy');
     }
 
-    function addToHistory(trick){
+    function addHistory(trick){
       const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
       history.unshift({trick,time:t});
       if(history.length>MAX_HISTORY) history.pop();
-      renderHistory();
-    }
-    function renderHistory(){
       historyDiv.innerHTML = history.map(h=>`
         <div class="trick"><span>${h.trick}</span><span>${h.time}</span></div>
       `).join('');
@@ -176,7 +196,7 @@
     // ==== Start ====
     startBtn.onclick = async () => {
       if(isDetecting) return;
-      if(typeof DeviceMotionEvent.requestPermission === 'function'){
+      if(typeof DeviceMotionEvent.requestPermission==='function'){
         const r = await DeviceMotionEvent.requestPermission();
         if(r!=='granted'){ output.textContent='Permission denied'; output.style.color='#f55'; return; }
       }
@@ -184,8 +204,8 @@
       startBtn.textContent='Detecting…';
       startBtn.disabled=true;
       output.textContent='Ready – try a trick!';
-      output.style.color='#ff6b00';
-      if(/iPhone|iPad|iPod/.test(navigator.userAgent)) installPrompt.style.display='block';
+      output.style.color=var(--accent);
+      if(/iPhone|iPad|iPod/.test(navigator.userAgent)) install.style.display='block';
       window.addEventListener('devicemotion', onMotion);
     };
 
@@ -193,9 +213,10 @@
     function onMotion(e){
       const rot = e.rotationRate, acc = e.accelerationIncludingGravity;
       if(!rot) return;
-      const now = Date.now(), dt = now - (lastEventTime||now); lastEventTime=now;
+      const now = Date.now();
 
-      if(acc && acc.z>12) current.pop=true;
+      // pop
+      if(acc && acc.z>12) motion.pop = true;
 
       const a = rot.alpha||0, b = rot.beta||0;
       const absA = Math.abs(a), absB = Math.abs(b);
@@ -203,25 +224,39 @@
       if(absB>80) newAxis='beta';
       else if(absA>80) newAxis='alpha';
 
-      if(newAxis && !current.axis){
-        current.axis=newAxis; current.startTime=now; current.rotSum=0; current.pop=false;
+      // start new gesture
+      if(newAxis && !motion.axis){
+        motion.axis = newAxis;
+        motion.start = now;
+        motion.rotSum = 0;
+        motion.pop = false;
+        motion.lastRotTime = now;
+        return;
       }
-      if(newAxis===current.axis){
-        const degSec = current.axis==='beta'?b:a;
-        current.rotSum += degSec*(dt/1000);
+
+      // accumulate while same axis
+      if(newAxis===motion.axis){
+        const degSec = motion.axis==='beta'?b:a;
+        const dt = now - motion.lastRotTime;
+        motion.rotSum += degSec * (dt/1000);
+        motion.lastRotTime = now;
       }
-      if(current.axis && (now-lastEventTime>300)) finalizeTrick();
+
+      // end detection after 300 ms of low rotation
+      if(motion.axis && (now - motion.lastRotTime > 300)){
+        finalize();
+      }
     }
 
-    // ==== Classify ====
-    function finalizeTrick(){
-      if(!current.axis) return;
-      const total = Math.abs(current.rotSum);
-      const dir = current.rotSum>0?1:-1;   // + CCW, - CW
-      const full=total>300, threeQ=total>220, half=total>140, quarter=total>70;
-      let trick='Unknown';
+    // ==== Finalize ====
+    function finalize(){
+      if(!motion.axis) return;
+      const totalDeg = Math.abs(motion.rotSum);
+      const dir = motion.rotSum>0?1:-1;   // + CCW, - CW
+      const full=totalDeg>300, threeQ=totalDeg>220, half=totalDeg>140, quarter=totalDeg>70;
+      let trick = 'Unknown';
 
-      if(current.axis==='beta'){
+      if(motion.axis==='beta'){
         if(full){
           const kick = (stance==='regular'&&dir<0)||(stance==='goofy'&&dir>0);
           trick = kick?'Kickflip':'Heelflip';
@@ -229,24 +264,25 @@
           const kick = (stance==='regular'&&dir<0)||(stance==='goofy'&&dir>0);
           trick = kick?'Varial Kickflip':'Varial Heelflip';
         }else if(half) trick='Half‑Flip';
-        else if(current.pop) trick='Impossible';
-      }else if(current.axis==='alpha'){
-        if(full) trick=current.pop?'360 Flip (Trey)':'360 Shuvit';
+        else if(motion.pop) trick='Impossible';
+      }else if(motion.axis==='alpha'){
+        if(full) trick=motion.pop?'360 Flip (Trey)':'360 Shuvit';
         else if(half) trick='180 Shuvit';
         else if(quarter) trick='Pop Shuvit';
       }
-      if(!trick.includes('Shuvit') && !trick.includes('Flip') && current.pop) trick='Ollie';
+      if(!trick.includes('Shuvit') && !trick.includes('Flip') && motion.pop) trick='Ollie';
 
-      output.textContent=`${trick}!`;
-      output.style.color='#0f0';
-      addToHistory(trick);
-      setTimeout(()=>{ if(isDetecting){ output.textContent='Ready for next…'; output.style.color='#ff6b00'; }},2000);
+      output.textContent = `${trick}!`;
+      output.style.color = '#0f0';
+      addHistory(trick);
+      setTimeout(()=>{ if(isDetecting){ output.textContent='Ready for next…'; output.style.color=var(--accent); }},2000);
 
-      current={axis:null,startTime:0,rotSum:0,pop:false};
+      // reset
+      motion = {axis:null,start:0,rotSum:0,pop:false,lastRotTime:0};
     }
 
     // Init
-    updateStance(); renderHistory();
+    updateStance();
   </script>
 </body>
 </html>
