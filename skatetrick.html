@@ -235,7 +235,7 @@
         const response = await DeviceMotionEvent.requestPermission();
         if (response !== 'granted') {
           output.textContent = 'Permission denied';
-          output.style.color = var(--error);
+          output.style.color = 'var(--error)';
           return;
         }
       }
@@ -244,7 +244,7 @@
       startBtn.textContent = 'Detecting...';
       startBtn.disabled = true;
       output.textContent = 'Ready! Perform a trick';
-      output.style.color = var(--text);
+      output.style.color = 'var(--text)';
 
       if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
         installPrompt.style.display = 'block';
@@ -337,13 +337,13 @@
       if (motion.pop && totalDeg < 100) trick = 'Ollie';
 
       output.textContent = trick + '!';
-      output.style.color = var(--success);
+      output.style.color = 'var(--success)';
       addToHistory(trick);
 
       setTimeout(() => {
         if (isTracking) {
           output.textContent = 'Ready...';
-          output.style.color = var(--text);
+          output.style.color = 'var(--text)';
         }
       }, 2000);
 
