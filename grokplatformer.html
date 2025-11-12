@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endless Platformer</title>
+    <style>
+        body { margin: 0; display: flex; flex-direction: column; align-items: center; background: #f0f0f0; }
+        canvas { background: #87CEEB; /* sky blue */ }
+        #menu { display: flex; flex-direction: column; align-items: center; position: absolute; top: 200px; }
+        #shopMenu { display: none; flex-direction: column; align-items: center; position: absolute; top: 100px; }
+        #controls { display: none; flex-direction: row; justify-content: space-around; width: 100%; max-width: 400px; }
+        button { padding: 20px; font-size: 20px; margin: 10px; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <div id="menu">
+        <button id="play">Play</button>
+        <button id="shop">Shop</button>
+    </div>
+    <div id="shopMenu">
+        <p>Total Coins: <span id="totalCoins">0</span></p>
+        <div id="characters"></div>
+        <button id="back">Back</button>
+    </div>
+    <div id="controls">
+        <button id="left">Left</button>
+        <button id="jump">Jump</button>
+        <button id="right">Right</button>
+    </div>
+    <script>
+        // Persistent data
+        let totalCoins = parseInt(localStorage.getItem('totalCoins')) || 0;
+        let ownedCharacters = JSON.parse(localStorage.getItem('ownedCharacters')) || ['red'];
+        let selectedCharacter = localStorage.getItem('selectedCharacter') || 'red';
+
+        // Character definitions
+        const characters = {
+            red: { name: 'Red', color: 'red', speed: 3, jumpHeight: -8, cost: 0 },
+            blue: { name: 'Blue', color: 'blue', speed: 2, jumpHeight: -10, cost: 50 },
+            green: { name: 'Green', color: 'green', speed: 4, jumpHeight: -6, cost: 100 }
+        };
+
+        // Power-up definitions (standard: speed boost, jump boost, invincible)
+        const powerupTypes = [
+            { name: 'speed', color: 'yellow', effect: () => { player.speed *= 2; }, revert: () => { player.speed /= 2; }, duration: 5000 },
+            { name: 'jump', color: 'green', effect: () => { player.jumpHeight *= 1.5; }, revert: () => { player.jumpHeight /= 1.5; }, duration: 5000 },
+            { name: 'invincible', color: 'purple', effect: () => { player.invincible = true; }, revert: () => { player.invincible = false; }, duration: 5000 }
+        ];
+
+        // Game elements
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        let cameraX = 0;
+        let gravity = 0.5;
+        let platforms = [];
+        let coins = [];
+        let powerups = [];
+        let coinsCollected = 0;
+        let levelTimer = 0;
+        let message = '';
+        let messageTimer = 0;
+        let activePowerup = null;
+        let powerTimer = 0;
+        let gameState = 'menu';
+
+        let player = {
+            x: 100, y: 100, width: 20, height: 20,
+            vx: 0, vy: 0, jumps: 0, maxJumps: 2, invincible: false,
+            ...characters[selectedCharacter]
+        };
+
+        // Controls
+        let leftPressed = false;
+        let rightPressed = false;
+        const leftBtn = document.getElementById('left');
+        const rightBtn = document.getElementById('right');
+        const jumpBtn = document.getElementById('jump');
+        leftBtn.addEventListener('touchstart', () => leftPressed = true);
+        leftBtn.addEventListener('touchend', () => leftPressed = false);
+        rightBtn.addEventListener('touchstart', () => rightPressed = true);
+        rightBtn.addEventListener('touchend', () => rightPressed = false);
+        jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (gameState === 'playing') doJump(); });
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') leftPressed = true;
+            if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') rightPressed = true;
+            if (e.key === ' ' || e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') if (gameState === 'playing') doJump();
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') leftPressed = false;
+            if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') rightPressed = false;
+        });
+
+        function doJump() {
+            if (player.jumps < player.maxJumps) {
+                player.vy = player.jumpHeight;
+                player.jumps++;
+            }
+        }
+
+        // Menu handling
+        const menu = document.getElementById('menu');
+        const shopMenu = document.getElementById('shopMenu');
+        const controls = document.getElementById('controls');
+        document.getElementById('play').addEventListener('click', () => {
+            menu.style.display = 'none';
+            shopMenu.style.display = 'none';
+            controls.style.display = 'flex';
+            startGame();
+        });
+        document.getElementById('shop').addEventListener('click', () => {
+            menu.style.display = 'none';
+            shopMenu.style.display = 'flex';
+            updateShop();
+        });
+        document.getElementById('back').addEventListener('click', () => {
+            shopMenu.style.display = 'none';
+            menu.style.display = 'flex';
+        });
+
+        function updateShop() {
+            document.getElementById('totalCoins').innerText = totalCoins;
+            const charsDiv = document.getElementById('characters');
+            charsDiv.innerHTML = '';
+            for (let key in characters) {
+                const char = characters[key];
+                const btn = document.createElement('button');
+                if (ownedCharacters.includes(key)) {
+                    btn.innerText = `Select ${char.name}`;
+                    btn.onclick = () => {
+                        selectedCharacter = key;
+                        localStorage.setItem('selectedCharacter', key);
+                        player = { ...player, ...char };
+                    };
+                } else {
+                    btn.innerText = `Buy ${char.name} - ${char.cost} coins`;
+                    btn.disabled = totalCoins < char.cost;
+                    btn.onclick = () => {
+                        if (totalCoins >= char.cost) {
+                            totalCoins -= char.cost;
+                            ownedCharacters.push(key);
+                            localStorage.setItem('totalCoins', totalCoins);
+                            localStorage.setItem('ownedCharacters', JSON.stringify(ownedCharacters));
+                            updateShop();
+                        }
+                    };
+                }
+                charsDiv.appendChild(btn);
+            }
+        }
+
+        function startGame() {
+            gameState = 'playing';
+            player.x = 100;
+            player.y = height - 100;
+            player.vx = 0;
+            player.vy = 0;
+            player.jumps = 0;
+            player.invincible = false;
+            if (activePowerup) activePowerup.revert();
+            activePowerup = null;
+            platforms = [{ x: 0, y: height - 50, width: 800, height: 10 }];
+            coins = [];
+            powerups = [];
+            coinsCollected = 0;
+            levelTimer = 0;
+            cameraX = 0;
+        }
+
+        function generateMorePlatforms() {
+            const last = platforms[platforms.length - 1];
+            if (last.x + last.width < cameraX + width + 200) {
+                const gap = Math.random() * 100 + 50;
+                const newX = last.x + last.width + gap;
+                const dy = Math.random() * 100 - 50;
+                const newY = Math.min(Math.max(last.y + dy, 100), height - 100);
+                const newWidth = Math.random() * 200 + 100;
+                platforms.push({ x: newX, y: newY, width: newWidth, height: 10 });
+
+                // Random coin
+                if (Math.random() < 0.7) {
+                    const coinX = newX + Math.random() * newWidth;
+                    const coinY = newY - 20;
+                    coins.push({ x: coinX, y: coinY, r: 5 });
+                }
+
+                // Random power-up
+                if (Math.random() < 0.2) {
+                    const puX = newX + Math.random() * newWidth;
+                    const puY = newY - 20;
+                    const type = Math.floor(Math.random() * 3);
+                    powerups.push({ x: puX, y: puY, width: 15, height: 15, type });
+                }
+            }
+        }
+
+        function rectOverlap(r1x, r1y, r1w, r1h, r2x, r2y, r2w, r2h) {
+            return r1x < r2x + r2w && r1x + r1w > r2x && r1y < r2y + r2h && r1y + r1h > r2y;
+        }
+
+        function update(delta) {
+            levelTimer += delta / 1000;
+
+            // Player movement
+            player.vx = 0;
+            if (leftPressed) player.vx -= player.speed;
+            if (rightPressed) player.vx += player.speed;
+            player.vy += gravity;
+            player.x += player.vx;
+            player.y += player.vy;
+
+            // Platform collisions (only from top when falling)
+            player.jumps = player.maxJumps; // Assume in air unless landed
+            for (let p of platforms) {
+                if (player.vy > 0 &&
+                    player.x + player.width > p.x &&
+                    player.x < p.x + p.width &&
+                    player.y + player.height <= p.y &&
+                    player.y + player.height + player.vy > p.y) {
+                    player.y = p.y - player.height;
+                    player.vy = 0;
+                    player.jumps = 0;
+                }
+            }
+
+            // Coin collection
+            for (let i = coins.length - 1; i >= 0; i--) {
+                const c = coins[i];
+                if (rectOverlap(player.x, player.y, player.width, player.height, c.x - c.r, c.y - c.r, c.r * 2, c.r * 2)) {
+                    coins.splice(i, 1);
+                    coinsCollected++;
+                    if (coinsCollected >= 25) {
+                        const bonus = levelTimer < 30 ? 10 : 5;
+                        totalCoins += 25 + bonus;
+                        localStorage.setItem('totalCoins', totalCoins);
+                        message = `Level Complete! Bonus: ${bonus} coins`;
+                        messageTimer = 3000;
+                        coinsCollected = 0;
+                        levelTimer = 0;
+                    }
+                }
+            }
+
+            // Power-up collection
+            for (let i = powerups.length - 1; i >= 0; i--) {
+                const pu = powerups[i];
+                if (rectOverlap(player.x, player.y, player.width, player.height, pu.x, pu.y, pu.width, pu.height)) {
+                    powerups.splice(i, 1);
+                    if (activePowerup) activePowerup.revert();
+                    activePowerup = { ...powerupTypes[pu.type] };
+                    activePowerup.effect();
+                    powerTimer = activePowerup.duration;
+                }
+            }
+
+            // Power-up timer
+            if (activePowerup) {
+                powerTimer -= delta;
+                if (powerTimer <= 0) {
+                    activePowerup.revert();
+                    activePowerup = null;
+                }
+            }
+
+            // Camera follow
+            if (player.x - cameraX > width * 0.7) cameraX = player.x - width * 0.7;
+            if (player.x - cameraX < width * 0.3) cameraX = player.x - width * 0.3;
+
+            // Generate platforms
+            generateMorePlatforms();
+
+            // Cull old objects
+            platforms = platforms.filter(p => p.x + p.width > cameraX - 100);
+            coins = coins.filter(c => c.x > cameraX - 100);
+            powerups = powerups.filter(pu => pu.x > cameraX - 100);
+
+            // Death check
+            if (!player.invincible && player.y > height + 50) {
+                gameState = 'menu';
+                menu.style.display = 'flex';
+                controls.style.display = 'none';
+                coinsCollected = 0; // Lose collected coins
+                levelTimer = 0;
+            }
+
+            // Message timer
+            if (messageTimer > 0) messageTimer -= delta;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.save();
+            ctx.translate(-cameraX, 0);
+
+            // Platforms
+            ctx.fillStyle = 'brown';
+            for (let p of platforms) {
+                ctx.fillRect(p.x, p.y, p.width, p.height);
+            }
+
+            // Coins
+            ctx.fillStyle = 'gold';
+            for (let c of coins) {
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Power-ups
+            for (let pu of powerups) {
+                ctx.fillStyle = powerupTypes[pu.type].color;
+                ctx.fillRect(pu.x, pu.y, pu.width, pu.height);
+            }
+
+            // Player
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            ctx.restore();
+
+            // HUD
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Coins: ${coinsCollected}`, 10, 30);
+
+            // Message
+            if (messageTimer > 0) {
+                ctx.fillText(message, width / 2 - 100, height / 2);
+            }
+        }
+
+        let lastTime = performance.now();
+        function loop() {
+            const now = performance.now();
+            const delta = now - lastTime;
+            lastTime = now;
+
+            if (gameState === 'playing') {
+                update(delta);
+            }
+
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>
