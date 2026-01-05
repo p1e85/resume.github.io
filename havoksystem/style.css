@@ -1,0 +1,83 @@
+/* Reset & Base */
+* { box-sizing: border-box; }
+body {
+    background-color: #E5E5E5;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: #000;
+    margin: 0;
+    padding: 0;
+    text-align: center; /* Centers the main container */
+}
+
+a { color: #003399; text-decoration: none; }
+a:hover { text-decoration: underline; color: #CC0000; }
+h3 { margin: 0; padding: 3px; font-size: 12px; font-weight: bold; }
+h4 { font-size: 11px; font-weight: bold; color: #6699cc; margin: 5px 0; }
+
+/* Navigation */
+.navbar { background-color: #003399; color: white; height: 30px; width: 100%; text-align: center; }
+.nav-inner { width: 800px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; height: 100%; }
+.nav-links a { color: white; margin: 0 5px; font-size: 10px; }
+.nav-logo { font-weight: bold; font-size: 14px; }
+
+/* Container */
+.container {
+    width: 800px;
+    background-color: #FFFFFF;
+    margin: 0 auto;
+    text-align: left;
+    padding-bottom: 20px;
+}
+
+/* Header Section */
+.profile-header { display: flex; padding: 10px; }
+.left-header { width: 60%; }
+.right-header { width: 40%; text-align: center; }
+.network-box { border: 1px solid #000; padding: 10px; font-weight: bold; font-size: 10px; width: 200px; margin-left: auto; }
+
+/* Layout Columns */
+.content-wrapper { display: flex; padding: 0 10px; gap: 15px; }
+.left-col { width: 320px; }
+.right-col { width: 450px; }
+
+/* Profile Pic Area */
+.profile-pic-area img { width: 170px; height: auto; margin-bottom: 5px; }
+.view-my-pics { font-size: 10px; }
+
+/* Contact Box */
+.contact-box { border: 1px solid #6699cc; margin: 15px 0; }
+.contact-box h3 { background-color: #6699cc; color: white; }
+.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 5px; }
+.contact-item { font-size: 10px; }
+.icon { font-style: normal; margin-right: 3px; }
+
+/* URL Box */
+.url-box { border: 1px solid #999; padding: 5px; margin-bottom: 15px; background: #F5F5F5; }
+.url-link { font-weight: bold; margin-top: 2px; }
+
+/* General Info */
+.general-info h3 { background-color: #6699cc; color: white; margin-bottom: 5px; }
+.interest-row { display: flex; margin-bottom: 8px; }
+.interest-label { width: 80px; font-weight: bold; color: #6699cc; flex-shrink: 0; }
+
+/* Right Column Headers */
+.orange-header { background-color: #FFCC99; color: #000000; padding: 3px 10px; margin-top: 15px; margin-bottom: 5px; }
+
+/* Friend Space */
+.friend-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; margin-top: 10px; }
+.friend-card img { width: 90px; height: auto; border: 0; }
+.friend-name { display: block; margin-bottom: 3px; font-weight: bold; color: #003399; }
+.view-all-friends { text-align: right; background-color: #CC0000; padding: 3px; margin-top: 10px; }
+.view-all-friends a { color: white; font-weight: bold; }
+
+/* Comments */
+.comment-row { display: flex; background-color: #F9F9F9; margin-bottom: 3px; padding: 5px; border-bottom: 1px solid #ccc; }
+.comment-avatar { width: 100px; text-align: center; flex-shrink: 0; }
+.comment-avatar img { width: 80px; }
+.comment-body { padding-left: 10px; }
+.comment-meta { font-weight: bold; margin-bottom: 5px; display: block; }
+.add-comment { text-align: right; margin-top: 5px; }
+
+/* Footer */
+.footer { text-align: center; margin-top: 30px; font-size: 10px; color: #666; padding-bottom: 20px;}
