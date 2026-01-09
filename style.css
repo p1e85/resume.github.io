@@ -449,3 +449,13 @@ select:hover {
     background: linear-gradient(to right, transparent, rgba(0, 255, 136, 0.2), transparent);
     margin-top: 80px;
 }
+
+@media (max-width: 768px) {
+    .impact-stats { 
+        padding: 60px 0 80px; /* Tighter spacing for smaller screens */
+    }
+    .stats-wrapper {
+        grid-template-columns: 1fr; /* Stack stats vertically on mobile */
+        gap: 60px;
+    }
+}
