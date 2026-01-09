@@ -93,3 +93,23 @@ footer { padding: 50px 0; text-align: center; border-top: 1px solid rgba(255, 25
 .funds-table td { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
 .logic-note { text-align: center; font-size: 0.8rem; opacity: 0.5; margin-top: 20px; }
+
+/* Add margin to the top of the Stat Cards container */
+.stats-grid { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 20px; 
+    margin-top: 60px;    /* Increased space above the 3 cards */
+    margin-bottom: 80px; 
+}
+
+/* Add margin after the Use of Funds table */
+.use-of-funds {
+    margin-top: 100px;   /* Space between Tier Boxes and Table */
+    margin-bottom: 120px; /* Space below the table before the footer */
+}
+
+/* Optional: Add internal padding to the table section for better focus */
+.funds-table-wrapper {
+    margin-bottom: 40px; /* Space specifically after the table card */
+}
