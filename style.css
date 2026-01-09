@@ -425,3 +425,27 @@ select:hover {
     font-size: 0.8rem;
     opacity: 0.3;
 }
+
+/* Update the Impact Section spacing */
+.impact-stats { 
+    padding: 100px 0 160px; /* Top: 100px, Bottom: 160px */
+    margin-bottom: 40px;    /* Extra push before the footer border */
+}
+
+/* Ensure the wrapper inside is centered and clean */
+.stats-wrapper { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 40px;
+    text-align: center;
+}
+
+/* Optional: Add a subtle fade-out effect at the bottom of the section */
+.impact-stats::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(0, 255, 136, 0.2), transparent);
+    margin-top: 80px;
+}
