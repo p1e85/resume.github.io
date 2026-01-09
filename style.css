@@ -369,3 +369,59 @@ select:hover {
     .origin-grid { grid-template-columns: 1fr; }
     .image-placeholder { height: 300px; }
 }
+
+/* Enhanced Footer Styles */
+.main-footer {
+    padding: 80px 0 40px;
+    background: #050505;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 60px;
+}
+
+.footer-brand .mission-text {
+    margin-top: 20px;
+    opacity: 0.6;
+    max-width: 300px;
+    line-height: 1.6;
+}
+
+.main-footer h4 {
+    color: var(--accent);
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.main-footer ul { list-style: none; }
+.main-footer ul li { margin-bottom: 12px; }
+.main-footer ul li a { 
+    text-decoration: none; 
+    color: var(--text); 
+    opacity: 0.5; 
+    transition: 0.3s;
+}
+.main-footer ul li a:hover { opacity: 1; color: var(--accent); }
+
+.tag-status {
+    display: inline-block;
+    font-size: 0.7rem;
+    background: rgba(0, 255, 136, 0.1);
+    color: var(--accent);
+    padding: 4px 10px;
+    border-radius: 4px;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 40px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.8rem;
+    opacity: 0.3;
+}
