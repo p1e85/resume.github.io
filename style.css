@@ -381,14 +381,33 @@ select:hover {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
     gap: 40px;
-    margin-bottom: 60px;
+    align-items: start;
+    text-align: left;
+}
+
+/* Ensure the Brand block stays left-aligned */
+.footer-brand {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; 
+}
+
+.footer-brand .logo {
+    font-weight: 900;
+    font-size: 1.5rem;
+    letter-spacing: -1px;
+    margin-bottom: 15px; /* Space between Logo and Mission */
+    color: var(--text);
 }
 
 .footer-brand .mission-text {
-    margin-top: 20px;
+    margin-top: 0;
     opacity: 0.6;
     max-width: 300px;
     line-height: 1.6;
+    font-size: 0.95rem;
+    text-align: left;
 }
 
 .main-footer h4 {
