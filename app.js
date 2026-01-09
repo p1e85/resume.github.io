@@ -19,6 +19,7 @@ class P1App {
             threshold: 0.15
         };
 
+        const investor = new InvestorEngine();
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -55,3 +56,21 @@ class P1App {
 window.addEventListener('DOMContentLoaded', () => {
     const p1 = new P1App();
 });
+
+// Extend the existing P1App class or add a new one
+class InvestorEngine {
+    constructor() {
+        this.init();
+    }
+
+    init() {
+        // Example: Add a simple calculator logic if needed later
+        this.logVisitorInterest();
+    }
+
+    logVisitorInterest() {
+        // This is a placeholder for future analytics
+        console.log("Investor Page Engine: Active");
+    }
+}
+
