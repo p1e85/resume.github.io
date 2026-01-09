@@ -478,3 +478,26 @@ select:hover {
         gap: 60px;
     }
 }
+
+.stat-box h3 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 10px;
+    letter-spacing: -1px;
+}
+
+.stat-box h4 {
+    font-size: 1.1rem;
+    color: var(--text);
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-box p {
+    font-size: 0.9rem;
+    opacity: 0.6;
+    line-height: 1.5;
+    max-width: 250px;
+    margin: 0 auto;
+}
