@@ -251,3 +251,55 @@ footer { padding: 50px 0; text-align: center; border-top: 1px solid rgba(255, 25
     left: -25px;
     color: var(--accent);
 }
+
+.form-wrapper {
+    max-width: 600px;
+    margin: 100px auto;
+    padding: 3rem;
+    background: var(--secondary);
+    border-radius: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.input-group { margin-bottom: 20px; }
+
+input, select, textarea {
+    width: 100%;
+    padding: 1.2rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: inherit;
+    transition: 0.3s;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.form-message {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.form-message.success { background: rgba(0, 255, 136, 0.1); color: var(--accent); }
+.form-message.error { background: rgba(255, 100, 100, 0.1); color: #ff6464; }
+
+/* Spinner */
+.loader {
+    width: 20px; height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    position: absolute; left: 50%; margin-left: -10px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.hidden { display: none; }
