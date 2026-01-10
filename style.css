@@ -602,3 +602,50 @@ select:hover {
     .impact-stats { padding: 60px 0 80px; }
 }
 
+/* Mobile Menu Toggle Styling */
+.menu-toggle {
+    display: none; /* Hidden on Desktop */
+    flex-direction: column;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 2000;
+}
+
+.bar {
+    width: 25px;
+    height: 2px;
+    background-color: var(--accent);
+    transition: 0.3s var(--transition);
+}
+
+/* Mobile Specific Navigation Logic */
+@media (max-width: 768px) {
+    .menu-toggle { display: flex; }
+
+    .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%; /* Hidden off-screen */
+        width: 80%;
+        height: 100vh;
+        background: var(--secondary);
+        flex-direction: column;
+        justify-content: center;
+        transition: 0.4s var(--transition);
+        box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+    }
+
+    .nav-links.active {
+        right: 0; /* Slides in from right */
+    }
+
+    .nav-links li { margin: 20px 0; }
+    .nav-links a { font-size: 1.5rem; opacity: 1; }
+    
+    /* Close Icon Animation */
+    .menu-toggle.active .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    .menu-toggle.active .bar:nth-child(2) { opacity: 0; }
+    .menu-toggle.active .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+}
