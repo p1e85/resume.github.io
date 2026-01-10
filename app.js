@@ -1,143 +1,166 @@
 /**
- * P1 Creations UI Controller
- * Uses Intersection Observer for high-performance scroll reveals.
+ * P1 CREATIONS LLC - Master Application Engine v1.0
+ * Author: Patrick, Founder & CEO
+ * Features: Mobile Menu, Scroll Animations, Investor Lead Logic
  */
+
 class P1App {
     constructor() {
-        this.revealElements = document.querySelectorAll('.reveal, .reveal-delay, .bento-item');
+        // Core UI Elements
+        this.menuBtn = document.querySelector('.menu-toggle');
+        this.navLinks = document.querySelector('.nav-links');
+        this.revealElements = document.querySelectorAll('.reveal, .reveal-delay, .bento-item, .stat-card, .timeline-item');
+        
+        // Investor Form Elements
+        this.investorForm = document.getElementById('p1-investor-form');
+        this.formStatus = document.getElementById('form-status');
+        
         this.init();
     }
 
+    /**
+     * Initialize all application modules
+     */
     init() {
-        this.setupRevealObserver();
+        this.setupMobileMenu();
+        this.setupScrollObserver();
         this.setupSmoothScroll();
-        console.log("P1 Creations Engine Initialized...");
+        
+        if (this.investorForm) {
+            this.setupInvestorForm();
+        }
+
+        console.log("P1 Creations LLC Engine: Operational");
     }
 
-    setupRevealObserver() {
-        const observerOptions = {
-            threshold: 0.15
+    /**
+     * Handle Mobile Navigation (Hamburger Menu)
+     */
+    setupMobileMenu() {
+        if (!this.menuBtn) return;
+        
+        this.menuBtn.addEventListener('click', () => {
+            const isActive = this.navLinks.classList.toggle('active');
+            this.menuBtn.classList.toggle('active');
+            
+            // Prevent body scroll when menu is open
+            document.body.style.overflow = isActive ? 'hidden' : 'auto';
+        });
+
+        // Close menu when a link is clicked (important for single-page jumps)
+        this.navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                this.menuBtn.classList.remove('active');
+                this.navLinks.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            });
+        });
+    }
+
+    /**
+     * High-Performance Reveal Animations
+     * Uses IntersectionObserver to trigger animations as user scrolls
+     */
+    setupScrollObserver() {
+        const options = {
+            threshold: 0.1, // Trigger when 10% of element is visible
+            rootMargin: '0px 0px -50px 0px' // Trigger slightly before it hits the viewport
         };
 
-        const investor = new InvestorEngine();
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('active');
-                    // Once animated, we don't need to observe it anymore
+                    // Stop observing once animation has played
                     observer.unobserve(entry.target);
                 }
             });
-        }, observerOptions);
+        }, options);
 
         this.revealElements.forEach(el => {
-            // Pre-add the reveal class if not there for Bento items
-            if (!el.classList.contains('reveal')) el.classList.add('reveal');
+            // Ensure classes exist for CSS to hook into
+            if (!el.classList.contains('reveal') && !el.classList.contains('reveal-delay')) {
+                el.classList.add('reveal');
+            }
             observer.observe(el);
         });
     }
 
+    /**
+     * Smooth Scrolling for internal anchor links
+     */
     setupSmoothScroll() {
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth'
+            anchor.addEventListener('click', (e) => {
+                const targetId = anchor.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    e.preventDefault();
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
                     });
                 }
             });
         });
     }
-}
 
-// Instantiate the App on Load
-window.addEventListener('DOMContentLoaded', () => {
-    const p1 = new P1App();
-});
+    /**
+     * Investor Form Submission Logic
+     * Uses fetch API for asynchronous submission without page reload
+     */
+    async setupInvestorForm() {
+        this.investorForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = this.investorForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // UI State: Loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = "Processing Request...";
+            
+            const formData = new FormData(this.investorForm);
+            
+            try {
+                // Connect to Formspree or your backend endpoint
+                const response = await fetch(this.investorForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Accept': 'application/json' }
+                });
 
-// Extend the existing P1App class or add a new one
-class InvestorEngine {
-    constructor() {
-        this.init();
-    }
-
-    init() {
-        // Example: Add a simple calculator logic if needed later
-        this.logVisitorInterest();
-    }
-
-    logVisitorInterest() {
-        // This is a placeholder for future analytics
-        console.log("Investor Page Engine: Active");
-    }
-}
-
-class InvestorContact {
-    constructor(formId) {
-        this.form = document.getElementById(formId);
-        if (!this.form) return;
-
-        this.submitBtn = this.form.querySelector('#submit-btn');
-        this.statusMsg = document.getElementById('form-status');
-        this.loader = this.submitBtn.querySelector('.loader');
-        
-        this.init();
-    }
-
-    init() {
-        this.form.addEventListener('submit', (e) => this.handleSubmit(e));
-        console.log("Investor Contact Engine: Active");
-    }
-
-    async handleSubmit(event) {
-        event.preventDefault();
-        this.setLoading(true);
-
-        const formData = new FormData(this.form);
-        
-        try {
-            const response = await fetch(this.form.action, {
-                method: 'POST',
-                body: formData,
-                headers: { 'Accept': 'application/json' }
-            });
-
-            if (response.ok) {
-                this.showMessage("Success! We will send the documents within 24 hours.", "success");
-                this.form.reset();
-            } else {
-                throw new Error();
+                if (response.ok) {
+                    this.showFormMessage("Request Sent. We will contact you shortly.", "success");
+                    this.investorForm.reset();
+                } else {
+                    throw new Error("Submission Failed");
+                }
+            } catch (err) {
+                this.showFormMessage("Service unavailable. Please email directly.", "error");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
             }
-        } catch (error) {
-            this.showMessage("Oops! There was a problem. Please email patrick@p1creations.com directly.", "error");
-        } finally {
-            this.setLoading(false);
-        }
+        });
     }
 
-    setLoading(isLoading) {
-        if (isLoading) {
-            this.submitBtn.disabled = true;
-            this.loader.classList.remove('hidden');
-            this.submitBtn.querySelector('.btn-text').style.opacity = '0.3';
-        } else {
-            this.submitBtn.disabled = false;
-            this.loader.classList.add('hidden');
-            this.submitBtn.querySelector('.btn-text').style.opacity = '1';
-        }
-    }
-
-    showMessage(text, type) {
-        this.statusMsg.innerText = text;
-        this.statusMsg.className = `form-message ${type}`;
-        this.statusMsg.classList.remove('hidden');
+    showFormMessage(text, type) {
+        if (!this.formStatus) return;
+        this.formStatus.innerText = text;
+        this.formStatus.className = `form-message ${type}`;
+        this.formStatus.style.display = 'block';
+        
+        // Auto-hide message after 8 seconds
+        setTimeout(() => {
+            this.formStatus.style.display = 'none';
+        }, 8000);
     }
 }
 
-// Instantiate in the DOMContentLoaded block
-window.addEventListener('DOMContentLoaded', () => {
-    new P1App(); // Existing UI logic
-    new InvestorContact('p1-investor-form');
+// Global Initialization
+document.addEventListener('DOMContentLoaded', () => {
+    window.p1App = new P1App();
 });
