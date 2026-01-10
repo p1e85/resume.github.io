@@ -505,9 +505,9 @@ select:hover {
 /* Company Name Prominence */
 .company-kicker {
     display: inline-block;
-    font-size: 1.1rem;
+    font-size: 1.5rem;
     font-weight: 900;
-    letter-spacing: 5px;
+    letter-spacing: 8px;
     color: var(--accent);
     margin-bottom: 20px;
     text-transform: uppercase;
