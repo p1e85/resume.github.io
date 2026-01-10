@@ -536,3 +536,69 @@ select:hover {
 .hero p strong {
     color: var(--accent); /* Makes Litter Bugs stand out as a product OF the LLC */
 }
+
+/* --- COMPREHENSIVE MOBILE REPAIR --- */
+
+@media (max-width: 768px) {
+    /* 1. Fix the Header/Nav for phones */
+    .glass-nav { height: 70px; }
+    .nav-links { display: none; } /* Hide the links; you'll want a hamburger menu later */
+    .logo { font-size: 1.2rem; }
+
+    /* 2. Tighten the Hero Section */
+    .hero {
+        min-height: 60vh;
+        padding-top: 100px;
+        text-align: center;
+    }
+    .company-kicker { font-size: 0.9rem; letter-spacing: 3px; }
+    .hero h1 { font-size: 2.8rem; line-height: 1.2; }
+    .hero p { font-size: 1rem; padding: 0 10px; }
+    
+    .hero-btns {
+        display: flex;
+        flex-direction: column; /* Stack buttons on top of each other */
+        gap: 15px;
+        align-items: center;
+    }
+    .btn-secondary { margin-left: 0 ! instinctive; width: 100%; max-width: 280px; }
+    .btn-primary { width: 100%; max-width: 280px; }
+
+    /* 3. The Origin (Dog Walker) Section */
+    .origin-grid {
+        grid-template-columns: 1fr !important; /* Force single column */
+        gap: 40px;
+        text-align: left;
+    }
+    .image-placeholder { height: 250px; border-radius: 20px; }
+    .origin-text h2 { font-size: 2.2rem; }
+
+    /* 4. Bento & Stats Stacking */
+    .bento-grid, .stats-wrapper, .stats-grid, .offering-grid {
+        grid-template-columns: 1fr !important; /* Everything becomes a stack */
+        gap: 20px;
+    }
+    .main-feature { grid-column: span 1; } /* Reset Bento spanning */
+
+    /* 5. Offering Page Specifics */
+    .offering-card { padding: 2rem; border-radius: 24px; }
+    .offering-card .price { font-size: 2.5rem; }
+    
+    /* 6. Fix Tables (Horizontal Scroll) */
+    .funds-table-wrapper, .terms-table-wrapper {
+        overflow-x: auto; /* Allows user to swipe left/right on tables */
+        -webkit-overflow-scrolling: touch;
+    }
+    .terms-table { font-size: 0.85rem; }
+
+    /* 7. Footer - Keep Left-Aligned but simplify */
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+    .footer-brand .mission-text { max-width: 100%; }
+    
+    /* 8. Spacing Fixes */
+    .impact-stats { padding: 60px 0 80px; }
+}
+
