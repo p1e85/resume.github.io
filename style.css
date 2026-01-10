@@ -501,3 +501,38 @@ select:hover {
     max-width: 250px;
     margin: 0 auto;
 }
+
+/* Company Name Prominence */
+.company-kicker {
+    display: inline-block;
+    font-size: 1.1rem;
+    font-weight: 900;
+    letter-spacing: 5px;
+    color: var(--accent);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+/* Subtle line under the company name for authority */
+.company-kicker::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 25%;
+    width: 50%;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0.5;
+}
+
+.hero h1 {
+    font-size: clamp(2.5rem, 8vw, 5rem); /* Slightly smaller than before to let the LLC breathe */
+    max-width: 900px;
+    margin: 0 auto 1.5rem;
+}
+
+.hero p strong {
+    color: var(--accent); /* Makes Litter Bugs stand out as a product OF the LLC */
+}
