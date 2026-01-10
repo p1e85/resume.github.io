@@ -649,3 +649,77 @@ select:hover {
     .menu-toggle.active .bar:nth-child(2) { opacity: 0; }
     .menu-toggle.active .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 }
+
+/* --- FOUNDER'S LOG STYLES --- */
+.log-hero {
+    padding: 140px 0 60px;
+    text-align: center;
+}
+
+.tag-log {
+    font-size: 0.6rem;
+    background: var(--text);
+    color: var(--bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.log-feed {
+    max-width: 800px;
+    margin: 0 auto 100px;
+}
+
+.log-entry {
+    background: var(--secondary);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 40px;
+    transition: 0.3s var(--transition);
+}
+
+.log-entry:hover {
+    border-color: var(--accent);
+    transform: translateX(10px);
+}
+
+.log-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.log-date {
+    font-size: 0.85rem;
+    font-weight: 700;
+    opacity: 0.4;
+}
+
+.log-category {
+    font-size: 0.75rem;
+    color: var(--accent);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.log-body h3 {
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+}
+
+.log-body p {
+    font-size: 1.05rem;
+    opacity: 0.7;
+    line-height: 1.7;
+}
+
+/* Mobile Fix for Logs */
+@media (max-width: 768px) {
+    .log-entry { padding: 1.5rem; }
+    .log-body h3 { font-size: 1.4rem; }
+    .log-entry:hover { transform: none; }
+}
