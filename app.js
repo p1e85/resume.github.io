@@ -37,25 +37,31 @@ class P1App {
      * Handle Mobile Navigation (Hamburger Menu)
      */
     setupMobileMenu() {
-        if (!this.menuBtn) return;
-        
-        this.menuBtn.addEventListener('click', () => {
-            const isActive = this.navLinks.classList.toggle('active');
-            this.menuBtn.classList.toggle('active');
-            
-            // Prevent body scroll when menu is open
-            document.body.style.overflow = isActive ? 'hidden' : 'auto';
-        });
-
-        // Close menu when a link is clicked (important for single-page jumps)
-        this.navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                this.menuBtn.classList.remove('active');
-                this.navLinks.classList.remove('active');
-                document.body.style.overflow = 'auto';
-            });
-        });
+    // Add a log to your console so you can see if the script is even firing
+    console.log("Initializing Mobile Menu...");
+    
+    if (!this.menuBtn || !this.navLinks) {
+        console.error("Menu elements not found in DOM!");
+        return;
     }
+    
+    this.menuBtn.addEventListener('click', (e) => {
+        // Prevent any default behavior
+        e.preventDefault();
+        
+        console.log("Hamburger Clicked");
+        this.menuBtn.classList.toggle('active');
+        this.navLinks.classList.toggle('active');
+        
+        // Block scrolling when menu is open
+        if (this.navLinks.classList.contains('active')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+    });
+}
+
 
     /**
      * High-Performance Reveal Animations
