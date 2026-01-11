@@ -3,16 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Daily Pulse</title>
+    <title>Daily Pulse | Checklist</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2ecc71">
+    
     <link rel="stylesheet" href="css/liststyle.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
 </head>
 <body class="theme-cyber">
 
     <div id="auth-overlay" class="overlay">
         <div class="modal-content auth-card">
-            <h1>Daily Pulse 🕒</h1>
-            <p>Syncing your day across devices.</p>
-            <button class="btn-primary" onclick="app.init()">Enter App</button>
+            <h1 id="auth-title">Sign In</h1>
+            <p id="auth-subtitle">Sync your routine across devices.</p>
+            
+            <div class="auth-inputs">
+                <input type="email" id="login-email" placeholder="Email Address">
+                <input type="password" id="login-password" placeholder="Password">
+                <button class="btn-primary" id="auth-main-btn" onclick="app.handleAuth()">Sign In</button>
+            </div>
+
+            <p class="toggle-text">
+                <span id="toggle-msg">New here?</span> 
+                <a href="#" onclick="app.toggleAuthMode()" id="auth-toggle-link">Create Account</a>
+            </p>
+
             <p class="legal-links">
                 By entering, you agree to our 
                 <a href="#" onclick="app.toggleModal('legal-modal', true)">TOS & Privacy Policy</a>.
@@ -28,6 +45,7 @@
                     <option value="theme-ocean">Ocean Breeze</option>
                     <option value="theme-sunset">Sunset Glow</option>
                 </select>
+                
                 <button class="add-main-btn" onclick="app.toggleModal('custom-modal', true)">+</button>
             </div>
 
@@ -35,42 +53,57 @@
                 <div class="title-row">
                     <h1>My Day</h1>
                     <div class="calendar-icon">
-                        <div id="cal-month" class="cal-top">---</div>
-                        <div id="cal-date" class="cal-body">--</div>
+                        <div id="cal-month" class="cal-top">JAN</div>
+                        <div id="cal-date" class="cal-body">11</div>
                     </div>
                 </div>
                 <div class="stats-box">
                     <span id="score">Score: 0%</span>
                 </div>
             </div>
+            
+            <button class="logout-link" onclick="app.logout()">Sign Out</button>
         </header>
 
-        <ul id="task-list"></ul>
+        <ul id="task-list">
+            </ul>
 
         <nav class="bottom-nav">
-            <button class="nav-item" onclick="app.toggleModal('template-modal', true)">📋 Templates</button>
-            <button class="nav-item" onclick="alert('History coming soon!')">📊 History</button>
+            <button class="nav-item" onclick="app.toggleModal('template-modal', true)">
+                <span>📋</span> Routines
+            </button>
+            <button class="nav-item" onclick="alert('History tracking coming soon!')">
+                <span>📊</span> History
+            </button>
         </nav>
     </main>
 
     <div id="custom-modal" class="modal hidden">
         <div class="modal-content">
-            <h2>New Task</h2>
-            <input type="text" id="task-name" placeholder="Task Name">
+            <h2>Add Reminder</h2>
+            <input type="text" id="task-name" placeholder="What needs doing?">
             <input type="time" id="task-time">
             <input type="text" id="task-emoji" placeholder="Emoji (e.g. 🍎)">
-            <button class="btn-primary" onclick="app.addCustomTask()">Add Task</button>
-            <button class="btn-close" onclick="app.toggleModal('custom-modal', false)">Cancel</button>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="app.addCustomTask()">Create</button>
+                <button class="btn-close" onclick="app.toggleModal('custom-modal', false)">Cancel</button>
+            </div>
         </div>
     </div>
 
     <div id="template-modal" class="modal hidden">
         <div class="modal-content">
-            <h2>Routines</h2>
+            <h2>Quick Start</h2>
             <div class="template-grid">
-                <div class="template-card" onclick="app.applyTemplate('morning')">☀️ Morning</div>
-                <div class="template-card" onclick="app.applyTemplate('work')">💻 Work</div>
-                <div class="template-card" onclick="app.applyTemplate('health')">🍎 Health</div>
+                <div class="template-card" onclick="app.applyTemplate('morning')">
+                    <span>☀️</span><p>Morning</p>
+                </div>
+                <div class="template-card" onclick="app.applyTemplate('work')">
+                    <span>💻</span><p>Work</p>
+                </div>
+                <div class="template-card" onclick="app.applyTemplate('health')">
+                    <span>🍎</span><p>Health</p>
+                </div>
             </div>
             <button class="btn-close" onclick="app.toggleModal('template-modal', false)">Close</button>
         </div>
@@ -78,9 +111,12 @@
 
     <div id="legal-modal" class="modal hidden">
         <div class="modal-content">
-            <h2>Privacy & Terms</h2>
-            <p>Data is synced to Firebase for cross-device use. P1 Creations LLC does not sell your data.</p>
-            <button class="btn-primary" onclick="app.toggleModal('legal-modal', false)">Got it</button>
+            <h2>Terms & Privacy</h2>
+            <div class="scroll-box">
+                <p><strong>Sync:</strong> Data is encrypted and stored via Firebase for cross-device access.</p>
+                <p><strong>Privacy:</strong> P1 Creations LLC does not sell or share your personal task data.</p>
+            </div>
+            <button class="btn-primary" onclick="app.toggleModal('legal-modal', false)">I Agree</button>
         </div>
     </div>
 
