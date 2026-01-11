@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Pulse Reminders</title>
+    <link rel="stylesheet" href="css/liststyle.css">
+</head>
+<body>
+
+    <div id="auth-overlay" class="overlay">
+        <div class="auth-card">
+            <h2>Welcome to Daily Pulse</h2>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="handleLogin()" class="btn-primary">Login / Sign Up</button>
+            <hr>
+            <button onclick="useGuestMode()" class="btn-secondary">Use Offline (Local Storage)</button>
+            <p class="legal-links">By using this app, you agree to our <a href="#" onclick="toggleLegal('tos')">TOS</a> and <a href="#" onclick="toggleLegal('privacy')">Privacy Policy</a>.</p>
+        </div>
+    </div>
+
+    <main class="app-container">
+        <header>
+            <h1>My Day <span>📅</span></h1>
+            <div id="stats-summary">Completed: <span id="comp-count">0</span> / <span id="total-count">0</span></div>
+        </header>
+
+        <ul id="task-list">
+            <li class="task-card overdue">
+                <span class="task-emoji">💊</span>
+                <div class="task-info">
+                    <h3>Take Vitamins</h3>
+                    <p>Reminder: 8:00 AM</p>
+                </div>
+                <div class="check-container" onclick="toggleTask(this)">
+                    <div class="custom-checkbox"></div>
+                </div>
+            </li>
+        </ul>
+
+        <button class="add-btn" onclick="openTemplateModal()">+ New Task</button>
+    </main>
+
+    <div id="legal-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="legal-title">Terms of Service</h2>
+            <div id="legal-text">...Terms go here...</div>
+            <button onclick="toggleLegal()">Close</button>
+        </div>
+    </div>
+
+    <script src="js/listapp.js"></script>
+</body>
+</html>
