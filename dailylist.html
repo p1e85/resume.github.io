@@ -8,6 +8,27 @@
 </head>
 <body>
 
+<div id="template-modal" class="modal hidden">
+    <div class="modal-content">
+        <h2>Choose a Template 📋</h2>
+        <div class="template-grid">
+            <div class="template-card" onclick="app.addTemplate('morning')">
+                <span>☀️</span>
+                <h4>Morning Routine</h4>
+            </div>
+            <div class="template-card" onclick="app.addTemplate('work')">
+                <span>💻</span>
+                <h4>Productivity</h4>
+            </div>
+            <div class="template-card" onclick="app.addTemplate('health')">
+                <span>🍎</span>
+                <h4>Health/Wellness</h4>
+            </div>
+        </div>
+        <button class="btn-close" onclick="app.closeTemplates()">Cancel</button>
+    </div>
+</div>
+
     <div id="auth-overlay" class="overlay">
         <div class="auth-card">
             <h2>Welcome to Daily Pulse</h2>
