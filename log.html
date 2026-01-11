@@ -5,79 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Founder's Log | P1 Creations LLC</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
-<body class="log-page">
+<body>
 
     <nav class="glass-nav">
-        <div class="container">
-            <div class="logo">P1 CREATIONS <span class="tag-log">LOG</span></div>
-            
-            <button class="menu-toggle" aria-label="Open Menu">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </button>
-
-            <ul class="nav-links">
-                <li><a href="landing.html">Home</a></li>
+        <div class="container nav-container">
+            <div class="logo">P1 CREATIONS</div>
+            <button id="menu-toggle-btn" class="menu-toggle"><span class="bar"></span><span class="bar"></span><span class="bar"></span></button>
+            <ul id="nav-links-list" class="nav-links">
+                <li><a href="index.html">Home</a></li>
                 <li><a href="roadmap.html">Roadmap</a></li>
-                <li><a href="offering.html">Offering</a></li>
-                <li><a href="investors.html" class="btn-sm">Investor Portal</a></li>
             </ul>
         </div>
     </nav>
 
-    <header class="log-hero">
+    <header class="hero">
         <div class="container">
-            <h1 class="reveal">The Founder's <span class="accent">Log.</span></h1>
-            <p class="reveal-delay">Building P1 Creations LLC in public. Real-time updates from the streets of Chicago to the App Store.</p>
+            <span class="company-kicker reveal">P1 CREATIONS LLC</span>
+            <h1>The <span class="accent">Founder's Log.</span></h1>
         </div>
     </header>
 
     <main class="container log-feed">
-        
         <article class="log-entry reveal">
             <div class="log-meta">
                 <span class="log-date">Jan 09, 2026</span>
                 <span class="log-category">#Launch</span>
             </div>
             <div class="log-body">
-                <h3>Investor Portal is Live</h3>
-                <p>Officially opened the P1 Creations Investor Portal for live testing. We are ready to begin conversations with our two $5,000 seed partners. The documentation for the Native Swift/Kotlin transition is finalized.</p>
+                <h3>Digital Data Room is Live</h3>
+                <p>Officially opened the P1 Creations Investor Portal. We are ready to begin conversations with our initial $5,000 seed partners.</p>
             </div>
         </article>
-
-        <article class="log-entry reveal">
-            <div class="log-meta">
-                <span class="log-date">Jan 01, 2026</span>
-                <span class="log-category">#Legal</span>
-            </div>
-            <div class="log-body">
-                <h3>P1 Creations LLC is Official</h3>
-                <p>New year, new entity. Registered P1 Creations LLC in the State of Illinois. Transitioning from a side-project to a professional software studio. The 99/1 ownership split is set, and the EIN is active.</p>
-            </div>
-        </article>
-
-        <article class="log-entry reveal">
-            <div class="log-meta">
-                <span class="log-date">Dec 15, 2025</span>
-                <span class="log-category">#Mission</span>
-            </div>
-            <div class="log-body">
-                <h3>The "Dog Walk" Insight</h3>
-                <p>While walking the dogs through Rogers Park, the frustration with local litter peaked. The concept for Litter Bugs moved from a "wouldn't it be cool" to a functional requirement: gamified civic action. Started mapping the first "Swarm" logic tonight.</p>
-            </div>
-        </article>
-
     </main>
-
-    <footer class="main-footer">
-        <div class="container">
-            <p class="mission-text">Documenting the journey from v1.0 to the world.</p>
-            <p class="footer-bottom">© 2026 P1 Creations LLC.</p>
-        </div>
-    </footer>
 
     <script src="app.js"></script>
 </body>
