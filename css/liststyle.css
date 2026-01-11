@@ -213,3 +213,49 @@ input {
         font-size: 0.65rem; /* Slightly smaller text for the watch */
     }
 }
+
+/* --- MODAL BUTTON STYLING --- */
+.modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-primary {
+    background: var(--header-grad);
+    color: #fff;
+    font-weight: 700;
+    padding: 16px;
+    border-radius: 50px;
+    border: none;
+    box-shadow: 0 8px 20px var(--accent-glow);
+    cursor: pointer;
+}
+
+/* Redesigned Close/Cancel Button */
+.btn-close {
+    background: rgba(255, 255, 255, 0.05); /* Subtle glass background */
+    color: var(--muted);
+    font-weight: 600;
+    padding: 14px;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%; /* Match width of primary button */
+}
+
+.btn-close:active {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text);
+    transform: scale(0.97);
+}
+
+/* Theme-specific tweaks for Close button visibility */
+.theme-ocean .btn-close {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+    color: #64748b;
+}
+
