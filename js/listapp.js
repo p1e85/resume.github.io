@@ -35,6 +35,7 @@ const app = {
         document.getElementById('theme-selector').value = this.theme;
         
         this.updateDynamicCalendar();
+        this.updateDynamicTitle();
 
         // AUTH LISTENER: Handles login state automatically
         onAuthStateChanged(auth, (user) => {
@@ -155,6 +156,9 @@ const app = {
                 </li>
             `;
         }).join('');
+
+        this.updateDynamicTitle();
+
     },
 
     // --- UTILITIES ---
@@ -198,3 +202,26 @@ const app = {
 // Global assignment so HTML onclicks work with Module scope
 window.app = app;
 app.init();
+
+updateDynamicTitle() {
+    const titleEl = document.getElementById('dynamic-title');
+    const hour = new Date().getHours();
+    const done = this.tasks.filter(t => t.completed).length;
+    const total = this.tasks.length;
+    
+    // 1. Check for perfection first
+    if (total > 0 && done === total) {
+        titleEl.innerText = "Day Complete! 🔥";
+        return;
+    }
+
+    // 2. Otherwise, time-based greetings
+    if (hour < 12) {
+        titleEl.innerText = "Good Morning";
+    } else if (hour < 18) {
+        titleEl.innerText = "Good Afternoon";
+    } else {
+        titleEl.innerText = "Good Evening";
+    }
+}
+
