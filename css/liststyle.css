@@ -191,3 +191,25 @@ input {
         font-size: 0.6rem;
     }
 }
+
+/* --- SUPPORT BUTTON STYLING --- */
+.support-link {
+    text-decoration: none;
+    color: var(--text);
+    transition: transform 0.2s ease;
+}
+
+.support-link span {
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.4)); /* Subtle gold glow */
+}
+
+/* Ensure the nav adjusts for three items on smaller screens */
+@media (max-width: 380px) {
+    .bottom-nav {
+        gap: 15px; /* Tighten gap to fit 3 items on the watch */
+        padding: 10px 15px;
+    }
+    .nav-item {
+        font-size: 0.65rem; /* Slightly smaller text for the watch */
+    }
+}
