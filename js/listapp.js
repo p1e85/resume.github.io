@@ -9,8 +9,22 @@ const app = {
         document.getElementById('main-app').classList.remove('hidden');
 
         this.checkMidnightReset();
+        this.updateDynamicCalendar()
         this.render();
         setInterval(() => this.render(), 30000); // Pulse check
+    },
+
+       updateDynamicCalendar() {
+        const now = new Date();
+        const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+        
+        const monthElement = document.getElementById('cal-month');
+        const dateElement = document.getElementById('cal-date');
+
+        if (monthElement && dateElement) {
+            monthElement.innerText = monthNames[now.getMonth()];
+            dateElement.innerText = now.getDate();
+        }
     },
 
     changeTheme(newTheme) {
