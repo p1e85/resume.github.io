@@ -1,0 +1,48 @@
+/* Checkbox Logic */
+.custom-checkbox {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #ccc; /* Greyed out initially */
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.task-card.completed .custom-checkbox {
+    background-color: #2ecc71; /* Turns Green */
+    border-color: #27ae60;
+}
+
+.task-card.completed .custom-checkbox::after {
+    content: '✔';
+    color: white;
+    font-weight: bold;
+}
+
+/* Overdue Pulsing Animation */
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+}
+
+.task-card.overdue {
+    border: 2px solid #e74c3c;
+    animation: pulse-red 2s infinite;
+}
+
+/* Basic Layout */
+.task-card {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: white;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.task-emoji { font-size: 2rem; margin-right: 15px; }
