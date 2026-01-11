@@ -323,3 +323,44 @@ input[type="text"]:focus, textarea:focus {
         text-align: center;
     }
 }
+
+/* --- DYNAMIC CALENDAR ICON --- */
+.title-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.calendar-icon {
+    width: 42px;
+    height: 44px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.cal-top {
+    background: #ff4757; /* Calendar Red */
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 900;
+    text-align: center;
+    padding: 2px 0;
+    text-transform: uppercase;
+}
+
+.cal-body {
+    color: #2d3436;
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    padding-bottom: 2px;
+}
+
