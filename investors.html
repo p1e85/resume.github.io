@@ -3,118 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Investor Relations | P1 Creations LLC</title>
+    <title>Investor Portal | P1 Creations LLC</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
-<body class="investor-page">
+<body>
 
     <nav class="glass-nav">
-        <div class="container">
+        <div class="container nav-container">
             <div class="logo">P1 CREATIONS</div>
-            <ul class="nav-links">
-                <li><a href="landing.html">Back to Site</a></li>
-                <li><a href="offering.html">The Offering</a></li>
-                <li><a href="roadmap.html">Roadmap</a></li>
-                
+            <button id="menu-toggle-btn" class="menu-toggle"><span class="bar"></span><span class="bar"></span><span class="bar"></span></button>
+            <ul id="nav-links-list" class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="offering.html">Back to Offering</a></li>
             </ul>
         </div>
     </nav>
 
-    <section class="investor-hero">
+    <header class="hero">
         <div class="container">
-            <h1 class="reveal">The $100k <span class="accent">Valuation.</span></h1>
-            <p class="reveal-delay">P1 Creations LLC is opening a $10,000 Seed Round to scale the Litter Bugs ecosystem. Join a product-led studio built on transparency and social impact.</p>
+            <span class="company-kicker reveal">P1 CREATIONS LLC</span>
+            <h1>Investor <span class="accent">Analytics.</span></h1>
         </div>
-    </section>
+    </header>
 
-    <section id="offering" class="stats-grid container">
-        <div class="stat-card reveal">
-            <h3>Target</h3>
-            <div class="stat-value">$10,000</div>
-            <p>10% Total Equity Offering</p>
-        </div>
-        <div class="stat-card reveal">
-            <h3>Governance</h3>
-            <div class="stat-value">Founder-Led</div>
-            <p>Optimized for high-velocity execution and vision alignment.</p>
-        </div>
-        <div class="stat-card reveal">
-            <h3>Valuation</h3>
-            <div class="stat-value">$100,000</div>
-            <p>Fixed Post-Money Valuation</p>
-        </div>
-    </section>
-
-    <section class="offering-logic container reveal">
-        <h2>Available Tiers</h2>
-        <div class="tier-container">
-            <div class="tier-box">
-                <h4>The Lead</h4>
-                <div class="price">$10,000</div>
-                <ul class="tier-perks">
-                    <li>10% Equity Stake</li>
-                    <li>Direct Founder Access</li>
-                    <li>First-Come Priority</li>
-                </ul>
+    <section class="container">
+        <div class="stats-grid">
+            <div class="stat-card reveal">
+                <h3>Target Seed</h3>
+                <div class="stat-value">$20,000</div>
             </div>
-            <div class="divider">OR</div>
-            <div class="tier-box">
-                <h4>The Partner</h4>
-                <div class="price">$5,000</div>
-                <ul class="tier-perks">
-                    <li>5% Equity Stake</li>
-                    <li>Two Seats Available</li>
-                    <li>Scaled Participation</li>
-                </ul>
+            <div class="stat-card reveal">
+                <h3>Valuation (Cap)</h3>
+                <div class="stat-value">$100k</div>
+            </div>
+            <div class="stat-card reveal">
+                <h3>Launch Date</h3>
+                <div class="stat-value">Q4 2026</div>
             </div>
         </div>
-        <p class="logic-note">*Acceptance of one $5k stake cancels the $10k option.</p>
     </section>
-
-    <section class="use-of-funds container reveal">
-    <h2>Strategic Deployment of $10,000</h2>
-    <div class="funds-table-wrapper">
-        <table class="funds-table">
-            <thead>
-                <tr>
-                    <th>Allocation</th>
-                    <th>Category</th>
-                    <th>Deliverable</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>$6,500</strong></td>
-                    <td>Native Mobile Build</td>
-                    <td>Dedicated iOS (Swift) & Android (Kotlin) apps.</td>
-                </tr>
-                <tr>
-                    <td><strong>$2,000</strong></td>
-                    <td>Infrastructure</td>
-                    <td>12-month server runway & real-time sync engine.</td>
-                </tr>
-                <tr>
-                    <td><strong>$1,000</strong></td>
-                    <td>UI/UX Rework</td>
-                    <td>Professional graphic assets & brand identity.</td>
-                </tr>
-                <tr>
-                    <td><strong>$500</strong></td>
-                    <td>Legal/App Store</td>
-                    <td>Developer accounts, licensing, and filing fees.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</section>
-
-    <footer>
-        <div class="container">
-            <p>P1 Creations LLC is a registered Illinois entity. This is not a public offering.</p>
-            <a href="mailto:patrick@p1creations.com" class="btn-primary">Request Subscription Documents</a>
-        </div>
-    </footer>
 
     <script src="app.js"></script>
 </body>
