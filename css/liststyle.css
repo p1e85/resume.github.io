@@ -69,10 +69,21 @@ header {
 
 .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 
-#theme-selector { 
-    background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); 
-    padding: 8px 12px; border-radius: 12px; font-size: 0.8rem; outline: none;
+#theme-selector {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    appearance: none; /* Removes default browser arrow for a cleaner look */
 }
+
 
 .title-row { display: flex; align-items: center; gap: 15px; }
 
