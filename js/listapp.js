@@ -96,20 +96,30 @@ const app = {
 
     // --- CLOUD SYNC ENGINE ---
     listenToCloud() {
-        if (!this.currentUser) return;
-        onSnapshot(doc(db, "users", this.currentUser.uid), (docSnap) => {
-            if (docSnap.exists()) {
-                this.tasks = docSnap.data().tasks || [];
-                this.render();
+       if (!this.currentUser) return;
+    onSnapshot(doc(db, "users", this.currentUser.uid), (docSnap) => {
+        if (docSnap.exists()) {
+            this.tasks = docSnap.data().tasks || [];
+        } else {
+            // NEW USER: Give them a starter list
+            this.tasks = [
+                { id: 1, name: 'Welcome to Daily Pulse!', time: '08:00', icon: '👋', completed: false },
+                { id: 2, name: 'Check this box to start', time: '09:00', icon: '✅', completed: false },
+                { id: 3, name: 'Add a custom task above', time: '10:00', icon: '➕', completed: false }
+            ];
+            this.save(); // Save this starter list to their new cloud folder
+        }
+        this.render();
             }
         });
     },
 
     async save() {
         if (!this.currentUser) return;
-        await setDoc(doc(db, "users", this.currentUser.uid), {
-            tasks: this.tasks,
-            lastSync: new Date()
+    await setDoc(doc(db, "users", this.currentUser.uid), {
+        email: this.currentUser.email, // <--- Add this line
+        tasks: this.tasks,
+        lastSync: new Date()
         });
     },
 
