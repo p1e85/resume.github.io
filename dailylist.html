@@ -4,12 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Daily Pulse | Checklist</title>
-    
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2ecc71">
-    
     <link rel="stylesheet" href="css/liststyle.css">
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
 </head>
 <body class="theme-cyber">
@@ -20,19 +16,20 @@
             <p id="auth-subtitle">Sync your day with P1 Creations.</p>
             
             <div class="auth-inputs">
-                <input type="email" id="login-email" placeholder="Email Address">
-                <input type="password" id="login-password" placeholder="Password">
-                <button class="btn-primary" id="auth-main-btn" onclick="app.handleAuth()">Sign In</button>
+                <input type="email" id="login-email" placeholder="Email Address" autocomplete="email">
+                <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
+                
+                <button type="button" class="btn-primary" id="auth-main-btn" onclick="app.handleAuth()">Sign In</button>
             </div>
 
             <p class="toggle-text">
                 <span id="toggle-msg">New here?</span> 
-                <a href="#" onclick="app.toggleAuthMode()" id="auth-toggle-link">Create Account</a>
+                <a href="javascript:void(0)" onclick="app.toggleAuthMode()" id="auth-toggle-link">Create Account</a>
             </p>
 
             <p class="legal-links">
                 By entering, you agree to our 
-                <a href="#" onclick="app.toggleModal('legal-modal', true)">TOS & Privacy Policy</a>.
+                <a href="javascript:void(0)" onclick="app.toggleModal('legal-modal', true)">TOS & Privacy Policy</a>.
             </p>
         </div>
     </div>
@@ -45,8 +42,7 @@
                     <option value="theme-ocean">Ocean Breeze</option>
                     <option value="theme-sunset">Sunset Glow</option>
                 </select>
-                
-                <button class="add-main-btn" onclick="app.toggleModal('custom-modal', true)">+</button>
+                <button type="button" class="add-main-btn" onclick="app.toggleModal('custom-modal', true)">+</button>
             </div>
 
             <div class="brand">
@@ -61,17 +57,16 @@
                     <span id="score">Score: 0%</span>
                 </div>
             </div>
-            
-            <button class="logout-link" onclick="app.logout()">Sign Out</button>
+            <button type="button" class="logout-link" onclick="app.logout()">Sign Out</button>
         </header>
 
         <ul id="task-list"></ul>
 
         <nav class="bottom-nav">
-            <button class="nav-item" onclick="app.haptic(); app.toggleModal('template-modal', true)">
+            <button type="button" class="nav-item" onclick="app.haptic(); app.toggleModal('template-modal', true)">
                 <span>📋</span> Routines
             </button>
-            <button class="nav-item" onclick="app.haptic(); alert('History tracking coming soon!')">
+            <button type="button" class="nav-item" onclick="app.haptic(); alert('History tracking coming soon!')">
                 <span>📊</span> History
             </button>
             <a href="https://buymeacoffee.com/p1skates" target="_blank" class="nav-item support-link" onclick="app.haptic()">
@@ -88,8 +83,8 @@
             <input type="text" id="task-emoji" placeholder="Emoji (e.g. 🍎)">
             
             <div class="modal-actions">
-                <button class="btn-primary" onclick="app.addCustomTask()">Create Task</button>
-                <button class="btn-close" onclick="app.toggleModal('custom-modal', false)">Cancel</button>
+                <button type="button" class="btn-primary" onclick="app.addCustomTask()">Create Task</button>
+                <button type="button" class="btn-close" onclick="app.toggleModal('custom-modal', false)">Cancel</button>
             </div>
         </div>
     </div>
@@ -109,7 +104,7 @@
                 </div>
             </div>
             <div class="modal-actions">
-                <button class="btn-close" onclick="app.toggleModal('template-modal', false)">Close</button>
+                <button type="button" class="btn-close" onclick="app.toggleModal('template-modal', false)">Close</button>
             </div>
         </div>
     </div>
@@ -118,11 +113,10 @@
         <div class="modal-content">
             <h2>Terms & Privacy</h2>
             <div class="scroll-box">
-                <p><strong>Sync:</strong> Data is stored via Firebase for cross-device access.</p>
-                <p><strong>Privacy:</strong> P1 Creations LLC does not sell your personal data.</p>
+                <p>Data is stored via Firebase for cross-device access. P1 Creations LLC does not sell your personal data.</p>
             </div>
             <div class="modal-actions">
-                <button class="btn-primary" onclick="app.toggleModal('legal-modal', false)">I Agree</button>
+                <button type="button" class="btn-primary" onclick="app.toggleModal('legal-modal', false)">I Agree</button>
             </div>
         </div>
     </div>
