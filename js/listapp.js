@@ -1,6 +1,6 @@
 /**
- * Daily Pulse - Core Logic (Firebase Integrated)
- * Project: Checklist app for Phone & Pixel Watch 4
+ * Daily Pulse - Core Logic
+ * Integrated: Firebase, Dynamic Titles, & Haptic Feedback
  */
 
 // 1. Firebase Imports
@@ -32,8 +32,6 @@ const app = {
 
     init() {
         document.body.className = this.theme;
-        document.getElementById('theme-selector').value = this.theme;
-        
         this.updateDynamicCalendar();
         this.updateDynamicTitle();
 
@@ -51,8 +49,16 @@ const app = {
             }
         });
 
-        // Overdue Check Timer (Every 30 seconds)
+        // Periodic Refresh for Overdue States
         setInterval(() => this.render(), 30000);
+    },
+
+    // --- HAPTIC FEEDBACK (Vibration) ---
+    haptic(type = 'light') {
+        if (!navigator.vibrate) return;
+        if (type === 'light') navigator.vibrate(10);
+        else if (type === 'success') navigator.vibrate([20, 30, 20]);
+        else if (type === 'warning') navigator.vibrate(50);
     },
 
     // --- AUTHENTICATION ENGINE ---
@@ -62,13 +68,13 @@ const app = {
         document.getElementById('auth-main-btn').innerText = this.isSignUpMode ? "Register" : "Sign In";
         document.getElementById('auth-toggle-link').innerText = this.isSignUpMode ? "Sign In" : "Create Account";
         document.getElementById('toggle-msg').innerText = this.isSignUpMode ? "Already have an account?" : "New here?";
+        this.haptic('light');
     },
 
     async handleAuth() {
         const email = document.getElementById('login-email').value;
         const pass = document.getElementById('login-password').value;
-
-        if (!email || !pass) return alert("Please enter email and password.");
+        if (!email || !pass) return alert("Please fill in all fields.");
 
         try {
             if (this.isSignUpMode) {
@@ -76,12 +82,14 @@ const app = {
             } else {
                 await signInWithEmailAndPassword(auth, email, pass);
             }
+            this.haptic('success');
         } catch (err) {
-            alert("Auth Error: " + err.message);
+            alert(err.message);
         }
     },
 
     async logout() {
+        this.haptic('warning');
         await signOut(auth);
         location.reload(); 
     },
@@ -89,7 +97,6 @@ const app = {
     // --- CLOUD SYNC ENGINE ---
     listenToCloud() {
         if (!this.currentUser) return;
-        // Listens for any changes in the cloud and updates the UI instantly
         onSnapshot(doc(db, "users", this.currentUser.uid), (docSnap) => {
             if (docSnap.exists()) {
                 this.tasks = docSnap.data().tasks || [];
@@ -100,34 +107,40 @@ const app = {
 
     async save() {
         if (!this.currentUser) return;
-        // Saves tasks to the specific User ID folder in Firestore
         await setDoc(doc(db, "users", this.currentUser.uid), {
             tasks: this.tasks,
-            lastUpdated: new Date()
+            lastSync: new Date()
         });
     },
 
-    // --- TASK MANAGEMENT ---
+    // --- TASK ACTIONS ---
     addCustomTask() {
         const name = document.getElementById('task-name').value;
         const time = document.getElementById('task-time').value;
         const emoji = document.getElementById('task-emoji').value || '📍';
 
-        if (!name || !time) return alert("Please fill in Name and Time");
+        if (!name || !time) return alert("Name and time required.");
 
         this.tasks.push({ id: Date.now(), name, time, icon: emoji, completed: false });
         this.save();
+        this.haptic('light');
         this.toggleModal('custom-modal', false);
         document.getElementById('task-name').value = '';
     },
 
     deleteTask(id) {
+        this.haptic('warning');
         this.tasks = this.tasks.filter(t => t.id !== id);
         this.save();
     },
 
     toggleTask(id) {
+        const task = this.tasks.find(t => t.id === id);
         this.tasks = this.tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+        
+        if (!task.completed) this.haptic('success');
+        else this.haptic('light');
+        
         this.save();
     },
 
@@ -138,7 +151,7 @@ const app = {
         
         const done = this.tasks.filter(t => t.completed).length;
         const score = this.tasks.length === 0 ? 0 : Math.round((done / this.tasks.length) * 100);
-        scoreEl.innerText = `Daily Score: ${score}%`;
+        scoreEl.innerText = `Score: ${score}%`;
 
         list.innerHTML = this.tasks.map(t => {
             const isOverdue = this.checkPast(t.time) && !t.completed;
@@ -147,7 +160,7 @@ const app = {
                     <div class="check-container" onclick="window.app.toggleTask(${t.id})">
                         <div class="custom-checkbox"></div>
                     </div>
-                    <span class="task-emoji">${t.icon}</span>
+                    <span class="task-emoji">${t.icon || '📍'}</span>
                     <div class="task-info">
                         <h3>${t.name}</h3>
                         <p>${t.time} ${isOverdue ? '<span class="overdue-tag">!</span>' : ''}</p>
@@ -158,15 +171,23 @@ const app = {
         }).join('');
 
         this.updateDynamicTitle();
-
     },
 
-    // --- UTILITIES ---
-    checkPast(time) {
-        const [h, m] = time.split(':');
-        const target = new Date();
-        target.setHours(h, m, 0, 0);
-        return new Date() > target;
+    // --- DYNAMIC HEADER LOGIC ---
+    updateDynamicTitle() {
+        const titleEl = document.getElementById('dynamic-title');
+        const hour = new Date().getHours();
+        const done = this.tasks.filter(t => t.completed).length;
+        const total = this.tasks.length;
+        
+        if (total > 0 && done === total) {
+            titleEl.innerText = "Day Complete! 🔥";
+            return;
+        }
+
+        if (hour < 12) titleEl.innerText = "Good Morning";
+        else if (hour < 18) titleEl.innerText = "Good Afternoon";
+        else titleEl.innerText = "Good Evening";
     },
 
     updateDynamicCalendar() {
@@ -176,52 +197,40 @@ const app = {
         document.getElementById('cal-date').innerText = now.getDate();
     },
 
+    // --- UI HELPERS ---
+    checkPast(time) {
+        const [h, m] = time.split(':');
+        const target = new Date();
+        target.setHours(h, m, 0, 0);
+        return new Date() > target;
+    },
+
     changeTheme(t) {
         this.theme = t;
         document.body.className = t;
         localStorage.setItem('userTheme', t);
+        this.haptic('light');
     },
 
     toggleModal(id, show) {
+        this.haptic('light');
         document.getElementById(id).classList.toggle('hidden', !show);
     },
 
     applyTemplate(k) {
         const tps = {
-            morning: [{name:'Water', time:'07:00', icon:'💧'}, {name:'Meditate', time:'07:30', icon:'🧘'}],
-            work: [{name:'Emails', time:'09:00', icon:'📧'}, {name:'Task List', time:'09:15', icon:'📝'}],
+            morning: [{name:'Hydrate', time:'07:00', icon:'💧'}, {name:'Meditate', time:'07:30', icon:'🧘'}],
+            work: [{name:'Emails', time:'09:00', icon:'📧'}, {name:'Prioritize', time:'09:15', icon:'📝'}],
             health: [{name:'Vitamins', time:'08:00', icon:'💊'}, {name:'Daily Walk', time:'18:00', icon:'🚶'}]
         };
         const newTasks = tps[k].map(t => ({ ...t, id: Date.now() + Math.random(), completed: false }));
         this.tasks = [...this.tasks, ...newTasks];
         this.save();
+        this.haptic('success');
         this.toggleModal('template-modal', false);
     }
 };
 
-// Global assignment so HTML onclicks work with Module scope
+// Expose to Global Scope
 window.app = app;
 app.init();
-
-updateDynamicTitle() {
-    const titleEl = document.getElementById('dynamic-title');
-    const hour = new Date().getHours();
-    const done = this.tasks.filter(t => t.completed).length;
-    const total = this.tasks.length;
-    
-    // 1. Check for perfection first
-    if (total > 0 && done === total) {
-        titleEl.innerText = "Day Complete! 🔥";
-        return;
-    }
-
-    // 2. Otherwise, time-based greetings
-    if (hour < 12) {
-        titleEl.innerText = "Good Morning";
-    } else if (hour < 18) {
-        titleEl.innerText = "Good Afternoon";
-    } else {
-        titleEl.innerText = "Good Evening";
-    }
-}
-
