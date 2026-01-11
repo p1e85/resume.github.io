@@ -1,3 +1,25 @@
+// 1. Import the Firebase "Brains" from the web
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// 2. PASTE YOUR CODE FROM STEP 2 HERE
+const firebaseConfig = {
+    apiKey: "AIzaSyAWmA5H8V9VVIBNFmZFaX8dn4OMe8QujDg",
+    authDomain: "daily-pulse-99c89.firebaseapp.com",
+    projectId: "daily-pulse-99c89",
+    storageBucket: "daily-pulse-99c89.firebasestorage.app",
+    messagingSenderId: "873686291276",
+    appId: "1:873686291276:web:b3ffe590158bc86dd635e9",
+    measurementId: "G-3FXFJ3DW5J"
+  };
+
+// 3. Start Firebase
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+
+// 4. Create a unique ID for your testing (use your name or something unique)
+const userId = "patrick_pixel_test"
+
 const app = {
     tasks: JSON.parse(localStorage.getItem('dailyTasks')) || [],
     theme: localStorage.getItem('userTheme') || 'theme-cyber',
