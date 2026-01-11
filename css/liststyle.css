@@ -1,330 +1,74 @@
-/* --- THEME DEFINITIONS --- */
-
-/* 1. Cyber Dark (Default) */
+/* --- THEME SYSTEM --- */
 .theme-cyber {
-    --bg: #0f172a;
-    --card: #1e293b;
-    --text: #f8fafc;
-    --accent: #2ecc71;  /* Neon Green */
-    --danger: #ef4444;  /* Red Pulse */
-    --muted: #64748b;
+    --bg: #0f172a; --card: #1e293b; --text: #f8fafc;
+    --accent: #2ecc71; --danger: #ef4444; --muted: #64748b;
+    --header-grad: linear-gradient(135deg, #2ecc71, #27ae60);
 }
-
-/* 2. Ocean Breeze */
 .theme-ocean {
-    --bg: #f0f9ff;
-    --card: #ffffff;
-    --text: #0c4a6e;
-    --accent: #0ea5e9;  /* Electric Blue */
-    --danger: #f43f5e;
-    --muted: #94a3b8;
+    --bg: #f0f9ff; --card: #ffffff; --text: #0c4a6e;
+    --accent: #0ea5e9; --danger: #f43f5e; --muted: #94a3b8;
+    --header-grad: linear-gradient(135deg, #0ea5e9, #2563eb);
 }
-
-/* 3. Sunset Glow */
 .theme-sunset {
-    --bg: #2d1b2d;
-    --card: #4a2c4a;
-    --text: #fff5f5;
-    --accent: #ff7e5f;  /* Peach/Orange */
-    --danger: #feb47b;
-    --muted: #a78bfa;
+    --bg: #2d1b2d; --card: #4a2c4a; --text: #fff5f5;
+    --accent: #ff7e5f; --danger: #feb47b; --muted: #a78bfa;
+    --header-grad: linear-gradient(135deg, #ff7e5f, #feb47b);
 }
 
 /* --- BASE STYLES --- */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Inter', -apple-system, sans-serif;
-}
-
-body {
-    background-color: var(--bg);
-    color: var(--text);
-    transition: background-color 0.4s ease, color 0.4s ease;
-    display: flex;
-    justify-content: center;
-    padding: 20px;
-    min-height: 100vh;
-}
-
-.app-container {
-    width: 100%;
-    max-width: 450px;
-}
-
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+body { background: var(--bg); color: var(--text); transition: 0.4s; display: flex; justify-content: center; min-height: 100vh; padding: env(safe-area-inset-top) 15px env(safe-area-inset-bottom) 15px; }
+.app-container { width: 100%; max-width: 480px; }
 .hidden { display: none !important; }
 
-/* --- HEADER --- */
+/* --- STYLISH HEADER --- */
 header {
-    margin-bottom: 30px;
+    margin-top: 20px; margin-bottom: 25px; padding: 25px;
+    background: var(--header-grad); border-radius: 28px;
+    color: white; box-shadow: 0 15px 30px rgba(0,0,0,0.2);
 }
-
-.header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-#theme-selector {
-    background: var(--card);
-    color: var(--text);
-    border: 1px solid var(--muted);
-    padding: 8px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.add-main-btn {
-    background: var(--accent);
-    color: white;
-    font-size: 24px;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-.stats-box {
-    background: var(--card);
-    padding: 10px 15px;
-    border-radius: 12px;
-    display: inline-block;
-    margin-top: 10px;
-    font-weight: bold;
-    border: 1px solid rgba(255,255,255,0.1);
-}
+.header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+#theme-selector { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 6px; border-radius: 10px; font-size: 0.8rem; }
+.add-main-btn { background: white; color: black; font-size: 24px; width: 44px; height: 44px; border-radius: 15px; border: none; cursor: pointer; }
+.brand h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -1.5px; }
+.stats-box { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); padding: 5px 15px; border-radius: 50px; display: inline-block; font-size: 0.9rem; margin-top: 10px; }
 
 /* --- TASK CARDS --- */
-#task-list {
-    list-style: none;
-    margin-bottom: 100px; /* Space for footer nav */
-}
-
+#task-list { list-style: none; margin-bottom: 120px; }
 .task-card {
-    background: var(--card);
-    margin-bottom: 15px;
-    padding: 20px;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    position: relative;
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
+    background: var(--card); margin-bottom: 12px; padding: 16px;
+    border-radius: 20px; display: flex; align-items: center; gap: 15px;
+    position: relative; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s;
 }
 
-/* The Delete Button (X) */
-.delete-btn {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 16px;
-    cursor: pointer;
+/* ROUNDED CHECKBOX BOX */
+.check-container { display: flex; align-items: center; justify-content: center; }
+.custom-checkbox {
+    width: 30px; height: 30px; background: rgba(0,0,0,0.05);
+    border: 2px solid var(--muted); border-radius: 10px; /* Rounded box */
+    cursor: pointer; transition: 0.2s; position: relative;
 }
+.task-card.completed .custom-checkbox { background-color: var(--accent); border-color: var(--accent); }
+.task-card.completed .custom-checkbox::after { content: '✓'; color: white; position: absolute; left: 6px; top: 1px; font-weight: bold; }
+.task-card.completed { opacity: 0.5; }
 
+/* INFO & DELETE */
+.task-emoji { font-size: 1.8rem; }
+.task-info { flex-grow: 1; }
+.task-info h3 { font-size: 1.05rem; margin-bottom: 2px; }
+.task-info p { font-size: 0.8rem; color: var(--muted); }
+.delete-btn { background: none; border: none; color: var(--muted); font-size: 18px; padding: 10px; cursor: pointer; }
 .delete-btn:hover { color: var(--danger); }
 
-.task-emoji {
-    font-size: 2rem;
-    margin-right: 15px;
-}
+/* OVERDUE */
+@keyframes pulse-red { 0%, 100% { border-color: transparent; } 50% { border-color: var(--danger); } }
+.task-card.overdue { animation: pulse-red 2s infinite; border: 1px solid var(--danger); }
 
-.task-info { flex-grow: 1; }
-.task-info h3 { font-size: 1.1rem; margin-bottom: 2px; }
-.task-info p { font-size: 0.85rem; color: var(--muted); }
+/* --- MODALS --- */
+.overlay, .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal-content { background: var(--card); padding: 30px; border-radius: 28px; width: 90%; max-width: 400px; text-align: center; }
+input { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid var(--muted); background: var(--bg); color: var(--text); font-size: 16px; }
 
-/* --- CHECKBOX LOGIC --- */
-.custom-checkbox {
-    width: 30px;
-    height: 30px;
-    border: 2px solid var(--muted);
-    border-radius: 50%;
-    cursor: pointer;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.task-card.completed .custom-checkbox {
-    background-color: var(--accent);
-    border-color: var(--accent);
-}
-
-.task-card.completed .custom-checkbox::after {
-    content: '✓';
-    color: white;
-    font-weight: bold;
-}
-
-.task-card.completed {
-    opacity: 0.6;
-}
-
-/* --- OVERDUE ANIMATION --- */
-@keyframes pulse-red {
-    0% { border-color: var(--danger); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-    70% { border-color: var(--danger); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-    100% { border-color: var(--danger); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-
-.task-card.overdue {
-    animation: pulse-red 2s infinite;
-}
-
-/* --- MODALS & OVERLAYS --- */
-.overlay, .modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background: var(--card);
-    color: var(--text);
-    padding: 30px;
-    border-radius: 24px;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-}
-
-.input-group {
-    text-align: left;
-    margin-bottom: 15px;
-}
-
-.input-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; }
-
-input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid var(--muted);
-    background: var(--bg);
-    color: var(--text);
-}
-
-/* --- BUTTONS --- */
-button { cursor: pointer; border: none; transition: 0.2s; }
-
-.btn-primary {
-    background: var(--accent);
-    color: white;
-    width: 100%;
-    padding: 14px;
-    border-radius: 12px;
-    font-weight: bold;
-}
-
-.btn-close { background: transparent; color: var(--muted); margin-top: 10px; }
-
-/* --- TEMPLATE GRID --- */
-.template-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin: 20px 0;
-}
-
-.template-card {
-    background: var(--bg);
-    padding: 15px;
-    border-radius: 15px;
-    cursor: pointer;
-    border: 1px solid var(--muted);
-}
-
-.template-card:hover { border-color: var(--accent); }
-
-/* --- BOTTOM NAV --- */
-.bottom-nav {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--card);
-    padding: 10px 20px;
-    border-radius: 50px;
-    display: flex;
-    gap: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-}
-
-.nav-item {
-    background: none;
-    color: var(--text);
-    font-size: 0.9rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* --- MOBILE OPTIMIZATIONS --- */
-
-@media (max-width: 600px) {
-    body {
-        padding: 10px; /* Less wasted space on small screens */
-    }
-
-    .app-container {
-        width: 100%;
-        max-width: 100%; /* Take full width on mobile */
-    }
-
-    /* Prevent text zooming on inputs in iOS */
-    input[type="text"], 
-    input[type="time"], 
-    select {
-        font-size: 16px !important; 
-    }
-
-    /* Make touch targets larger for thumbs */
-    .custom-checkbox {
-        width: 34px;
-        height: 34px;
-    }
-
-    .add-main-btn {
-        width: 55px;
-        height: 55px;
-        font-size: 30px;
-    }
-
-    /* Adjust the floating bottom nav for "Home Bar" on iPhones */
-    .bottom-nav {
-        width: 90%;
-        bottom: 30px;
-        padding: 15px;
-    }
-}
-
-/* Support for Notch / Dynamic Island */
-@supports (padding: env(safe-area-inset-top)) {
-    body {
-        padding-top: env(safe-area-inset-top);
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-}
-
-/* Disable "Sticky" hover effects on touch screens */
-@media (hover: none) {
-    .template-card:hover {
-        transform: none;
-        border-color: var(--muted);
-    }
-    .template-card:active {
-        background: var(--accent);
-        color: white;
-    }
-}
+/* --- NAVIGATION --- */
+.bottom-nav { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--card); padding: 12px 25px; border-radius: 50px; display: flex; gap: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.nav-item { background: none; border: none; color: var(--text); font-size: 0.9rem; font-weight: 600; cursor: pointer; }
