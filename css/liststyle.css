@@ -1,203 +1,271 @@
-/* --- Root Variables & Reset --- */
-:root {
-    --primary: #3498db;
-    --success: #27ae60;
-    --danger: #e74c3c;
-    --bg-color: #f4f7f6;
-    --card-bg: #ffffff;
-    --text-main: #2c3e50;
-    --text-muted: #7f8c8d;
+/* --- THEME DEFINITIONS --- */
+
+/* 1. Cyber Dark (Default) */
+.theme-cyber {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #f8fafc;
+    --accent: #2ecc71;  /* Neon Green */
+    --danger: #ef4444;  /* Red Pulse */
+    --muted: #64748b;
 }
 
+/* 2. Ocean Breeze */
+.theme-ocean {
+    --bg: #f0f9ff;
+    --card: #ffffff;
+    --text: #0c4a6e;
+    --accent: #0ea5e9;  /* Electric Blue */
+    --danger: #f43f5e;
+    --muted: #94a3b8;
+}
+
+/* 3. Sunset Glow */
+.theme-sunset {
+    --bg: #2d1b2d;
+    --card: #4a2c4a;
+    --text: #fff5f5;
+    --accent: #ff7e5f;  /* Peach/Orange */
+    --danger: #feb47b;
+    --muted: #a78bfa;
+}
+
+/* --- BASE STYLES --- */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', -apple-system, sans-serif;
 }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-main);
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 0.4s ease, color 0.4s ease;
     display: flex;
     justify-content: center;
     padding: 20px;
+    min-height: 100vh;
 }
 
-/* --- Layout --- */
 .app-container {
     width: 100%;
-    max-width: 500px;
+    max-width: 450px;
 }
 
+.hidden { display: none !important; }
+
+/* --- HEADER --- */
 header {
-    margin-bottom: 20px;
-    padding: 10px;
+    margin-bottom: 30px;
 }
 
-header h1 {
-    font-size: 1.8rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.stats-bar {
+.header-top {
     display: flex;
     justify-content: space-between;
-    margin-top: 10px;
-    font-weight: bold;
-    color: var(--primary);
+    align-items: center;
+    margin-bottom: 20px;
 }
 
-/* --- Task Cards --- */
+#theme-selector {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--muted);
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.add-main-btn {
+    background: var(--accent);
+    color: white;
+    font-size: 24px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.stats-box {
+    background: var(--card);
+    padding: 10px 15px;
+    border-radius: 12px;
+    display: inline-block;
+    margin-top: 10px;
+    font-weight: bold;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* --- TASK CARDS --- */
 #task-list {
     list-style: none;
+    margin-bottom: 100px; /* Space for footer nav */
 }
 
 .task-card {
-    background: var(--card-bg);
-    margin-bottom: 12px;
-    padding: 15px;
-    border-radius: 12px;
+    background: var(--card);
+    margin-bottom: 15px;
+    padding: 20px;
+    border-radius: 18px;
     display: flex;
     align-items: center;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    transition: transform 0.2s ease, opacity 0.3s ease;
+    position: relative;
     border: 2px solid transparent;
+    transition: all 0.3s ease;
 }
+
+/* The Delete Button (X) */
+.delete-btn {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.delete-btn:hover { color: var(--danger); }
 
 .task-emoji {
     font-size: 2rem;
     margin-right: 15px;
 }
 
-.task-info {
-    flex-grow: 1;
-}
+.task-info { flex-grow: 1; }
+.task-info h3 { font-size: 1.1rem; margin-bottom: 2px; }
+.task-info p { font-size: 0.85rem; color: var(--muted); }
 
-.task-info h3 {
-    font-size: 1.1rem;
-    margin-bottom: 4px;
-}
-
-.task-info p {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-}
-
-/* --- Checkbox States --- */
-.check-container {
-    padding-left: 10px;
-}
-
+/* --- CHECKBOX LOGIC --- */
 .custom-checkbox {
     width: 30px;
     height: 30px;
-    border: 3px solid #bdc3c7; /* Grey border by default */
-    border-radius: 8px;
+    border: 2px solid var(--muted);
+    border-radius: 50%;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-}
-
-/* Completed State */
-.task-card.completed {
-    opacity: 0.7;
 }
 
 .task-card.completed .custom-checkbox {
-    background-color: var(--success); /* Turns Green */
-    border-color: var(--success);
+    background-color: var(--accent);
+    border-color: var(--accent);
 }
 
 .task-card.completed .custom-checkbox::after {
-    content: '✔';
+    content: '✓';
     color: white;
     font-weight: bold;
-    font-size: 1.2rem;
 }
 
-/* --- Overdue Logic & Animation --- */
+.task-card.completed {
+    opacity: 0.6;
+}
+
+/* --- OVERDUE ANIMATION --- */
 @keyframes pulse-red {
-    0% { border-color: rgba(231, 76, 60, 1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
-    70% { border-color: rgba(231, 76, 60, 1); box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
-    100% { border-color: rgba(231, 76, 60, 1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+    0% { border-color: var(--danger); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    70% { border-color: var(--danger); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { border-color: var(--danger); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
 .task-card.overdue {
-    border: 2px solid var(--danger);
     animation: pulse-red 2s infinite;
 }
 
-/* --- Modals & Overlays --- */
+/* --- MODALS & OVERLAYS --- */
 .overlay, .modal {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 100;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
 }
 
-.hidden { display: none !important; }
-
-.auth-card, .modal-content {
-    background: white;
+.modal-content {
+    background: var(--card);
+    color: var(--text);
     padding: 30px;
-    border-radius: 16px;
+    border-radius: 24px;
     width: 90%;
     max-width: 400px;
     text-align: center;
 }
 
-/* --- Template Grid --- */
+.input-group {
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+.input-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; }
+
+input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--muted);
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* --- BUTTONS --- */
+button { cursor: pointer; border: none; transition: 0.2s; }
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.btn-close { background: transparent; color: var(--muted); margin-top: 10px; }
+
+/* --- TEMPLATE GRID --- */
 .template-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    gap: 12px;
     margin: 20px 0;
 }
 
 .template-card {
-    background: #f8f9fa;
+    background: var(--bg);
     padding: 15px;
-    border-radius: 12px;
+    border-radius: 15px;
     cursor: pointer;
-    border: 2px solid #eee;
-    transition: all 0.2s;
+    border: 1px solid var(--muted);
 }
 
-.template-card:hover {
-    border-color: var(--primary);
-    background: #ebf5fb;
-}
+.template-card:hover { border-color: var(--accent); }
 
-/* --- Buttons --- */
-button {
-    cursor: pointer;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-weight: bold;
-    transition: 0.2s;
-}
-
-.btn-primary { background: var(--primary); color: white; width: 100%; margin-top: 10px; }
-.btn-guest { background: #95a5a6; color: white; width: 100%; margin-top: 10px; }
-.btn-close { background: #eee; color: #333; margin-top: 10px; }
-
+/* --- BOTTOM NAV --- */
 .bottom-nav {
     position: fixed;
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
+    background: var(--card);
+    padding: 10px 20px;
+    border-radius: 50px;
     display: flex;
-    gap: 10px;
+    gap: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 
-/* --- Legal --- */
-.legal-links { font-size: 0.75rem; color: var(--text-muted); margin-top: 15px; }
-.legal-links a { color: var(--primary); }
+.nav-item {
+    background: none;
+    color: var(--text);
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
