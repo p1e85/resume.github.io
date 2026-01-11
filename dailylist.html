@@ -1,13 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-<link rel="manifest" href="manifest.json">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-
     <meta charset="UTF-8">
-    
-    <title>Daily Pulse | Checklist</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Daily Pulse</title>
     <link rel="stylesheet" href="css/liststyle.css">
 </head>
 <body class="theme-cyber">
@@ -15,13 +11,8 @@
     <div id="auth-overlay" class="overlay">
         <div class="modal-content auth-card">
             <h1>Daily Pulse 🕒</h1>
-            <p>Master your routine, track your progress.</p>
-            
-            <div class="auth-options">
-                <button class="btn-primary" onclick="app.init()">Enter as Guest (Offline)</button>
-                <button class="btn-secondary" style="margin-top: 10px; opacity: 0.6;" disabled>Login (Coming Soon)</button>
-            </div>
-
+            <p>Syncing your day across devices.</p>
+            <button class="btn-primary" onclick="app.init()">Enter App</button>
             <p class="legal-links">
                 By entering, you agree to our 
                 <a href="#" onclick="app.toggleModal('legal-modal', true)">TOS & Privacy Policy</a>.
@@ -37,95 +28,59 @@
                     <option value="theme-ocean">Ocean Breeze</option>
                     <option value="theme-sunset">Sunset Glow</option>
                 </select>
-                
                 <button class="add-main-btn" onclick="app.toggleModal('custom-modal', true)">+</button>
             </div>
 
             <div class="brand">
-                <div class="brand">
-    <div class="title-row">
-        <h1>My Day</h1>
-        <div class="calendar-icon">
-            <div id="cal-month" class="cal-top">JAN</div>
-            <div id="cal-date" class="cal-body">11</div>
-        </div>
-    </div>
-    <div class="stats-box">
-        <span id="score">Score: 0%</span>
-    </div>
-</div>
-
+                <div class="title-row">
+                    <h1>My Day</h1>
+                    <div class="calendar-icon">
+                        <div id="cal-month" class="cal-top">---</div>
+                        <div id="cal-date" class="cal-body">--</div>
+                    </div>
+                </div>
                 <div class="stats-box">
-                    <span id="score">Daily Score: 0%</span>
+                    <span id="score">Score: 0%</span>
                 </div>
             </div>
         </header>
 
-        <ul id="task-list">
-            </ul>
+        <ul id="task-list"></ul>
 
         <nav class="bottom-nav">
-            <button class="nav-item" onclick="app.toggleModal('template-modal', true)">
-                <span>📋</span> Templates
-            </button>
-            <button class="nav-item" onclick="alert('Data tracking history feature coming soon!')">
-                <span>📊</span> History
-            </button>
+            <button class="nav-item" onclick="app.toggleModal('template-modal', true)">📋 Templates</button>
+            <button class="nav-item" onclick="alert('History coming soon!')">📊 History</button>
         </nav>
     </main>
 
     <div id="custom-modal" class="modal hidden">
         <div class="modal-content">
-            <h2>Add New Reminder</h2>
-            <div class="input-group">
-                <label>Task Name</label>
-                <input type="text" id="task-name" placeholder="e.g. Drink Water">
-            </div>
-            <div class="input-group">
-                <label>Reminder Time</label>
-                <input type="time" id="task-time">
-            </div>
-            <div class="input-group">
-                <label>Icon (Emoji)</label>
-                <input type="text" id="task-emoji" placeholder="e.g. 💧">
-            </div>
-            <div class="modal-actions">
-                <button class="btn-primary" onclick="app.addCustomTask()">Create Task</button>
-                <button class="btn-close" onclick="app.toggleModal('custom-modal', false)">Cancel</button>
-            </div>
+            <h2>New Task</h2>
+            <input type="text" id="task-name" placeholder="Task Name">
+            <input type="time" id="task-time">
+            <input type="text" id="task-emoji" placeholder="Emoji (e.g. 🍎)">
+            <button class="btn-primary" onclick="app.addCustomTask()">Add Task</button>
+            <button class="btn-close" onclick="app.toggleModal('custom-modal', false)">Cancel</button>
         </div>
     </div>
 
     <div id="template-modal" class="modal hidden">
         <div class="modal-content">
-            <h2>Choose a Routine</h2>
+            <h2>Routines</h2>
             <div class="template-grid">
-                <div class="template-card" onclick="app.applyTemplate('morning')">
-                    <span class="t-icon">☀️</span>
-                    <p>Morning</p>
-                </div>
-                <div class="template-card" onclick="app.applyTemplate('work')">
-                    <span class="t-icon">💻</span>
-                    <p>Productivity</p>
-                </div>
-                <div class="template-card" onclick="app.applyTemplate('health')">
-                    <span class="t-icon">🍎</span>
-                    <p>Health</p>
-                </div>
+                <div class="template-card" onclick="app.applyTemplate('morning')">☀️ Morning</div>
+                <div class="template-card" onclick="app.applyTemplate('work')">💻 Work</div>
+                <div class="template-card" onclick="app.applyTemplate('health')">🍎 Health</div>
             </div>
             <button class="btn-close" onclick="app.toggleModal('template-modal', false)">Close</button>
         </div>
     </div>
 
     <div id="legal-modal" class="modal hidden">
-        <div class="modal-content legal-text">
-            <h2>Legal Information</h2>
-            <div class="scroll-box">
-                <p><strong>Terms of Service:</strong> This app is provided for personal use. Data is stored locally in your browser cache. If you clear your history, your tasks will be lost.</p>
-                <hr>
-                <p><strong>Privacy Policy:</strong> P1 Creations LLC does not collect, store, or sell your personal information. All checklist data remains on your device.</p>
-            </div>
-            <button class="btn-primary" onclick="app.toggleModal('legal-modal', false)">I Understand</button>
+        <div class="modal-content">
+            <h2>Privacy & Terms</h2>
+            <p>Data is synced to Firebase for cross-device use. P1 Creations LLC does not sell your data.</p>
+            <button class="btn-primary" onclick="app.toggleModal('legal-modal', false)">Got it</button>
         </div>
     </div>
 
