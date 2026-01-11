@@ -1,6 +1,6 @@
 /**
- * Daily Pulse - Core Logic
- * Integrated: Firebase, Dynamic Titles, & Haptic Feedback
+ * Daily Pulse - Core Logic v1.2
+ * P1 Creations LLC
  */
 
 // 1. Firebase Imports
@@ -8,7 +8,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// 2. Your Firebase Configuration
+// 2. Firebase Configuration
 const firebaseConfig = {
     apiKey: "AIzaSyAWmA5H8V9VVIBNFmZFaX8dn4OMe8QujDg",
     authDomain: "daily-pulse-99c89.firebaseapp.com",
@@ -35,7 +35,7 @@ const app = {
         this.updateDynamicCalendar();
         this.updateDynamicTitle();
 
-        // AUTH LISTENER: Handles login state automatically
+        // AUTH LISTENER: Handles login state and screen visibility
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 this.currentUser = user;
@@ -53,7 +53,7 @@ const app = {
         setInterval(() => this.render(), 30000);
     },
 
-    // --- HAPTIC FEEDBACK (Vibration) ---
+    // --- HAPTIC FEEDBACK ---
     haptic(type = 'light') {
         if (!navigator.vibrate) return;
         if (type === 'light') navigator.vibrate(10);
@@ -96,30 +96,28 @@ const app = {
 
     // --- CLOUD SYNC ENGINE ---
     listenToCloud() {
-       if (!this.currentUser) return;
-    onSnapshot(doc(db, "users", this.currentUser.uid), (docSnap) => {
-        if (docSnap.exists()) {
-            this.tasks = docSnap.data().tasks || [];
-        } else {
-            // NEW USER: Give them a starter list
-            this.tasks = [
-                { id: 1, name: 'Welcome to Daily Pulse!', time: '08:00', icon: '👋', completed: false },
-                { id: 2, name: 'Check this box to start', time: '09:00', icon: '✅', completed: false },
-                { id: 3, name: 'Add a custom task above', time: '10:00', icon: '➕', completed: false }
-            ];
-            this.save(); // Save this starter list to their new cloud folder
-        }
-        this.render();
+        if (!this.currentUser) return;
+        onSnapshot(doc(db, "users", this.currentUser.uid), (docSnap) => {
+            if (docSnap.exists()) {
+                this.tasks = docSnap.data().tasks || [];
+            } else {
+                // NEW USER ONBOARDING
+                this.tasks = [
+                    { id: 1, name: 'Welcome to Daily Pulse!', time: '08:00', icon: '👋', completed: false },
+                    { id: 2, name: 'Tap the box to finish', time: '09:00', icon: '✅', completed: false }
+                ];
+                this.save(); 
             }
+            this.render();
         });
     },
 
     async save() {
         if (!this.currentUser) return;
-    await setDoc(doc(db, "users", this.currentUser.uid), {
-        email: this.currentUser.email, // <--- Add this line
-        tasks: this.tasks,
-        lastSync: new Date()
+        await setDoc(doc(db, "users", this.currentUser.uid), {
+            email: this.currentUser.email,
+            tasks: this.tasks,
+            lastSync: new Date()
         });
     },
 
@@ -241,6 +239,6 @@ const app = {
     }
 };
 
-// Expose to Global Scope
+// 4. CRITICAL: EXPOSE TO GLOBAL SCOPE
 window.app = app;
 app.init();
