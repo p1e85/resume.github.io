@@ -1,45 +1,32 @@
 /**
- * P1 CREATIONS LLC - Master Script
+ * P1 CREATIONS LLC - Master Script v1.1
  */
 
 class P1App {
     constructor() {
-        // Use direct IDs for absolute certainty
         this.menuBtn = document.getElementById('menu-toggle-btn');
         this.navLinks = document.getElementById('nav-links-list');
-        this.revealElements = document.querySelectorAll('.reveal, .reveal-delay');
+        this.revealElements = document.querySelectorAll('.reveal, .reveal-delay, .stat-card, .log-entry, .offering-card');
         
         this.init();
     }
 
     init() {
-        console.log("P1 Engine Start...");
+        console.log("P1 Engine v1.1 Online");
         this.setupMobileMenu();
         this.setupScrollObserver();
     }
 
     setupMobileMenu() {
-        if (!this.menuBtn || !this.navLinks) {
-            console.error("Critical Error: Menu elements missing from HTML!");
-            return;
-        }
+        if (!this.menuBtn || !this.navLinks) return;
 
-        this.menuBtn.addEventListener('click', (e) => {
-            console.log("Toggle Clicked"); // This will show in your console
-            
-            // Toggle classes
+        this.menuBtn.addEventListener('click', () => {
+            const isOpen = this.navLinks.classList.toggle('active');
             this.menuBtn.classList.toggle('active');
-            this.navLinks.classList.toggle('active');
-
-            // Freeze background scroll
-            if (this.navLinks.classList.contains('active')) {
-                document.body.style.overflow = 'hidden';
-            } else {
-                document.body.style.overflow = 'auto';
-            }
+            document.body.style.overflow = isOpen ? 'hidden' : 'auto';
         });
 
-        // Close menu when a link is clicked
+        // Close menu on link click
         this.navLinks.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 this.menuBtn.classList.remove('active');
@@ -62,7 +49,7 @@ class P1App {
     }
 }
 
-// Ensure the script runs only after the DOM is fully ready
+// Re-initialize for every page load
 window.addEventListener('load', () => {
     new P1App();
 });
