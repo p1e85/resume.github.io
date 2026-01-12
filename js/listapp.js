@@ -1,6 +1,7 @@
 /**
- * Daily Pulse - Core Logic v1.2
- * P1 Creations LLC
+ * Daily Pulse - Core Logic v1.3
+ * P1 Creations LLC - Patrick DeQuattro
+ * Feature: Automatic Daily Reset & Cloud Sync
  */
 
 // 1. Firebase Imports
@@ -35,7 +36,7 @@ const app = {
         this.updateDynamicCalendar();
         this.updateDynamicTitle();
 
-        // AUTH LISTENER: Handles login state and screen visibility
+        // AUTH LISTENER: Handles login state and UI visibility
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 this.currentUser = user;
@@ -49,7 +50,7 @@ const app = {
             }
         });
 
-        // Periodic Refresh for Overdue States
+        // Periodic Refresh for Overdue States & Time greetings
         setInterval(() => this.render(), 30000);
     },
 
@@ -94,17 +95,29 @@ const app = {
         location.reload(); 
     },
 
-    // --- CLOUD SYNC ENGINE ---
+    // --- CLOUD SYNC & DAILY RESET ENGINE ---
     listenToCloud() {
         if (!this.currentUser) return;
+        
         onSnapshot(doc(db, "users", this.currentUser.uid), (docSnap) => {
             if (docSnap.exists()) {
-                this.tasks = docSnap.data().tasks || [];
+                const data = docSnap.data();
+                this.tasks = data.tasks || [];
+
+                // NEW DAY CHECK: Compare last save date to today
+                const lastCheckDate = data.lastCheckDate; // Format: "Mon Jan 11 2026"
+                const todayDate = new Date().toDateString(); // Format: "Mon Jan 12 2026"
+
+                if (lastCheckDate && lastCheckDate !== todayDate) {
+                    console.log("New Day detected. Resetting tasks...");
+                    this.tasks = this.tasks.map(t => ({ ...t, completed: false }));
+                    this.save(); // Save the fresh unchecked list back to cloud
+                }
             } else {
                 // NEW USER ONBOARDING
                 this.tasks = [
                     { id: 1, name: 'Welcome to Daily Pulse!', time: '08:00', icon: '👋', completed: false },
-                    { id: 2, name: 'Tap the box to finish', time: '09:00', icon: '✅', completed: false }
+                    { id: 2, name: 'Check a box to try haptics', time: '09:00', icon: '✅', completed: false }
                 ];
                 this.save(); 
             }
@@ -117,7 +130,8 @@ const app = {
         await setDoc(doc(db, "users", this.currentUser.uid), {
             email: this.currentUser.email,
             tasks: this.tasks,
-            lastSync: new Date()
+            lastSync: new Date(),
+            lastCheckDate: new Date().toDateString() // "Mon Jan 12 2026"
         });
     },
 
@@ -159,7 +173,7 @@ const app = {
         
         const done = this.tasks.filter(t => t.completed).length;
         const score = this.tasks.length === 0 ? 0 : Math.round((done / this.tasks.length) * 100);
-        scoreEl.innerText = `Score: ${score}%`;
+        scoreEl.innerText = `Daily Score: ${score}%`;
 
         list.innerHTML = this.tasks.map(t => {
             const isOverdue = this.checkPast(t.time) && !t.completed;
@@ -173,7 +187,7 @@ const app = {
                         <h3>${t.name}</h3>
                         <p>${t.time} ${isOverdue ? '<span class="overdue-tag">!</span>' : ''}</p>
                     </div>
-                    <button class="delete-btn" onclick="window.app.deleteTask(${t.id})">✕</button>
+                    <button type="button" class="delete-btn" onclick="window.app.deleteTask(${t.id})">✕</button>
                 </li>
             `;
         }).join('');
@@ -239,6 +253,6 @@ const app = {
     }
 };
 
-// 4. CRITICAL: EXPOSE TO GLOBAL SCOPE
+// 4. CRITICAL: EXPOSE TO GLOBAL SCOPE FOR HTML ONCLICK EVENTS
 window.app = app;
 app.init();
