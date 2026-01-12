@@ -10,9 +10,14 @@
 <body class="roadmap-page">
 
     <nav class="glass-nav">
-        <div class="container">
+        <div class="container nav-container">
             <div class="logo">P1 CREATIONS</div>
-            <ul class="nav-links">
+            <button id="menu-toggle-btn" class="menu-toggle" aria-label="Toggle Navigation">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+            <ul id="nav-links-list" class="nav-links">
                 <li><a href="landing.html">Back to Site</a></li>
                 <li><a href="log.html">Founder's Log</a></li>
                 <li><a href="roadmap.html">Roadmap</a></li>
@@ -22,8 +27,9 @@
         </div>
     </nav>
 
-    <header class="roadmap-hero">
+    <header class="hero">
         <div class="container">
+            <span class="company-kicker reveal">P1 CREATIONS LLC</span>
             <h1 class="reveal">The Path to <span class="accent">Global Impact.</span></h1>
             <p class="reveal-delay">A high-velocity development schedule for the Litter Bugs ecosystem.</p>
         </div>
@@ -37,7 +43,7 @@
             <div class="timeline-content">
                 <span class="date">Q1 2026</span>
                 <h3>Foundation & Seed Funding</h3>
-                <p>Establishing P1 Creations LLC, securing initial $10k seed round, and finalizing Native Architecture specs.</p>
+                <p>Establishing P1 Creations LLC, securing initial seed partners, and finalizing Native Architecture specs.</p>
                 <ul class="milestone-list">
                     <li>LLC Formation (Completed)</li>
                     <li>IP Assignment & Governance (Completed)</li>
@@ -68,28 +74,13 @@
                 <p>Deploying the 12-month server runway and preparing for high-concurrency user loads.</p>
                 <ul class="milestone-list">
                     <li>AWS/GCP Cloud Migration</li>
-                    <li>Automated Database Optimization</li>
                     <li>Regional Beta Testing (Chicago Focus)</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="timeline-item reveal">
-            <div class="timeline-dot"></div>
-            <div class="timeline-content">
-                <span class="date">Q4 2026</span>
-                <h3>Global Store Launch</h3>
-                <p>Official release on Apple App Store and Google Play Store with full marketing push.</p>
-                <ul class="milestone-list">
-                    <li>B2B Sponsorship Integration</li>
-                    <li>Global Leaderboard Activation</li>
-                    <li>Series A Preparation</li>
                 </ul>
             </div>
         </div>
     </section>
 
-        <footer class="main-footer">
+    <footer class="main-footer">
         <div class="container footer-grid">
             <div class="footer-brand">
                 <div class="logo">P1 CREATIONS</div>
@@ -110,7 +101,6 @@
                 <h4>Legal</h4>
                 <ul>
                     <li><a href="log.html">Founder's Log</a></li>
-                    
                 </ul>
             </div>
         </div>
@@ -121,5 +111,4 @@
 
     <script src="js/llcapp.js"></script>
 </body>
-    
 </html>
