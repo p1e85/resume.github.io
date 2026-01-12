@@ -4,14 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Founder's Log | P1 Creations LLC</title>
-    <link rel="stylesheet" href="ccs/llcstyle.css">
+    <link rel="stylesheet" href="css/llcstyle.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <nav class="glass-nav">
         <div class="container nav-container">
             <div class="logo">P1 CREATIONS</div>
-            <button id="menu-toggle-btn" class="menu-toggle"><span class="bar"></span><span class="bar"></span><span class="bar"></span></button>
+            <button id="menu-toggle-btn" class="menu-toggle" aria-label="Toggle Navigation">
+                <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            </button>
             <ul id="nav-links-list" class="nav-links">
                 <li><a href="landing.html">Back to Site</a></li>
                 <li><a href="log.html">Founder's Log</a></li>
@@ -26,10 +29,12 @@
         <div class="container">
             <span class="company-kicker reveal">P1 CREATIONS LLC</span>
             <h1>The <span class="accent">Founder's Log.</span></h1>
+            <p class="reveal-delay">Documenting the build from the streets of Chicago to the App Store.</p>
         </div>
     </header>
 
     <main class="container log-feed">
+
         <article class="log-entry reveal">
             <div class="log-meta">
                 <span class="log-date">Jan 09, 2026</span>
@@ -37,18 +42,40 @@
             </div>
             <div class="log-body">
                 <h3>Digital Data Room is Live</h3>
-                <p>Officially opened the P1 Creations Investor Portal. We are ready to begin conversations with our initial $5,000 seed partners.</p>
+                <p>Officially opened the P1 Creations Investor Portal. We are ready to begin conversations with our initial $5,000 seed partners to move from v1.0 to a globally scalable native ecosystem.</p>
             </div>
         </article>
+
+        <article class="log-entry reveal">
+            <div class="log-meta">
+                <span class="log-date">Jan 01, 2026</span>
+                <span class="log-category">#Legal</span>
+            </div>
+            <div class="log-body">
+                <h3>P1 Creations LLC is Official</h3>
+                <p>New year, new entity. Registered P1 Creations LLC in Illinois. Transitioning from a side-project to a professional software studio. The EIN is active and the infrastructure is ready for growth.</p>
+            </div>
+        </article>
+
+        <article class="log-entry reveal">
+            <div class="log-meta">
+                <span class="log-date">March, 2019</span>
+                <span class="log-category">#Mission</span>
+            </div>
+            <div class="log-body">
+                <h3>The "Dog Walk" Insight</h3>
+                <p>The concept for Litter Bugs moved from a 'wouldn't it be cool' to a functional requirement. While walking the dogs through Rogers Park, the frustration with local litter peaked. It’s time to treat the planet like a leaderboard.</p>
+            </div>
+        </article>
+
     </main>
 
-            <footer class="main-footer">
+    <footer class="main-footer">
         <div class="container footer-grid">
             <div class="footer-brand">
                 <div class="logo">P1 CREATIONS</div>
                 <p class="mission-text">Turning daily urban frustrations into collective community victories. Born on a dog walk, built for the world.</p>
             </div>
-            
             <div class="footer-nav">
                 <h4>Platform</h4>
                 <ul>
@@ -58,12 +85,10 @@
                     <li><a href="investors.html">Investor Portal</a></li>
                 </ul>
             </div>
-            
             <div class="footer-legal">
                 <h4>Legal</h4>
                 <ul>
                     <li><a href="log.html">Founder's Log</a></li>
-                    
                 </ul>
             </div>
         </div>
@@ -74,5 +99,4 @@
 
     <script src="js/llcapp.js"></script>
 </body>
-    
 </html>
