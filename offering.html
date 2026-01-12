@@ -10,9 +10,14 @@
 <body class="offering-page">
 
     <nav class="glass-nav">
-        <div class="container">
+        <div class="container nav-container">
             <div class="logo">P1 CREATIONS</div>
-            <ul class="nav-links">
+            <button id="menu-toggle-btn" class="menu-toggle" aria-label="Toggle Navigation">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+            <ul id="nav-links-list" class="nav-links">
                 <li><a href="landing.html">Back to Site</a></li>
                 <li><a href="log.html">Founder's Log</a></li>
                 <li><a href="roadmap.html">Roadmap</a></li>
@@ -22,12 +27,13 @@
         </div>
     </nav>
 
-    <section class="offering-header">
+    <header class="hero">
         <div class="container">
+            <span class="company-kicker reveal">P1 CREATIONS LLC</span>
             <h1 class="reveal">2026 Seed Offering</h1>
-            <p class="reveal-delay">Securing 10% Equity in P1 Creations LLC to fund Native Mobile Architecture.</p>
+            <p class="reveal-delay">Securing Equity in P1 Creations LLC to fund Native Mobile Architecture for Environmental Action.</p>
         </div>
-    </section>
+    </header>
 
     <main class="container">
         <div class="offering-grid">
@@ -40,10 +46,10 @@
                     <li>Priority Portfolio Access</li>
                     <li>One (1) Position Available</li>
                 </ul>
-                <button class="btn-primary full-width">Reserve 10% Stake</button>
+                <a href="#investor-form" class="btn-primary full-width">Reserve 10% Stake</a>
             </div>
 
-            <div class="offering-card highlight reveal">
+            <div class="offering-card reveal">
                 <div class="card-badge">PARTNER POSITION</div>
                 <h2>The Partner Stake</h2>
                 <div class="price">$5,000</div>
@@ -52,7 +58,7 @@
                     <li>Passive Income Participation</li>
                     <li>Two (2) Positions Available</li>
                 </ul>
-                <button class="btn-primary full-width">Reserve 5% Stake</button>
+                <a href="#investor-form" class="btn-secondary full-width">Reserve 5% Stake</a>
             </div>
         </div>
 
@@ -61,7 +67,8 @@
         </div>
 
         <section class="use-of-funds-section reveal">
-            <h2>Technical Deployment Strategy</h2>
+            <span class="tag">Capital Deployment</span>
+            <h2>Technical Strategy</h2>
             <div class="bento-funds">
                 <div class="fund-box main">
                     <h3>$6,500</h3>
@@ -91,50 +98,37 @@
             </table>
         </section>
 
-<section id="investor-form" class="container reveal">
-    <div class="form-wrapper glass">
-        <h2>Request Subscription Documents</h2>
-        <p>Submit your details to receive the official P1 Creations LLC Subscription Agreement and Operating Agreement.</p>
-        
-        <form id="p1-investor-form" action="https://formspree.io/f/your-id-here" method="POST">
-            <div class="input-group">
-                <input type="text" name="name" id="name" placeholder="Full Legal Name" required>
+        <section id="investor-form" class="form-section reveal">
+            <div class="form-wrapper glass">
+                <h2>Request Subscription Documents</h2>
+                <p>Submit details to receive the official P1 Creations LLC Operating Agreement.</p>
+                
+                <form id="p1-investor-form" action="https://formspree.io/f/your-id-here" method="POST">
+                    <div class="input-group">
+                        <input type="text" name="name" placeholder="Full Legal Name" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="email" name="email" placeholder="Email Address" required>
+                    </div>
+                    <div class="input-group">
+                        <select name="tier" required>
+                            <option value="" disabled selected>Select Investment Tier</option>
+                            <option value="Lead">$10,000 Stake (10%)</option>
+                            <option value="Partner">$5,000 Stake (5%)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary full-width">Submit Request</button>
+                </form>
             </div>
-            
-            <div class="input-group">
-                <input type="email" name="email" id="email" placeholder="Email Address" required>
-            </div>
-
-            <div class="input-group">
-                <select name="tier" id="tier-select" required>
-                    <option value="" disabled selected hidden>Select Investment Tier</option>
-                    <option value="Lead - $10,000">The Lead Stake ($10,000 - 10%)</option>
-                    <option value="Partner - $5,000">The Partner Stake ($5,000 - 5%)</option>
-                </select>
-            </div>
-
-            <div class="input-group">
-                <textarea name="message" placeholder="Optional: Questions or requested call-back time"></textarea>
-            </div>
-
-            <button type="submit" class="btn-primary full-width" id="submit-btn">
-                <span class="btn-text">Submit Request</span>
-                <div class="loader hidden"></div>
-            </button>
-            <p id="form-status" class="hidden"></p>
-        </form>
-    </div>
-</section>
-        
+        </section>
     </main>
 
-        <footer class="main-footer">
+    <footer class="main-footer">
         <div class="container footer-grid">
             <div class="footer-brand">
                 <div class="logo">P1 CREATIONS</div>
                 <p class="mission-text">Turning daily urban frustrations into collective community victories. Born on a dog walk, built for the world.</p>
             </div>
-            
             <div class="footer-nav">
                 <h4>Platform</h4>
                 <ul>
@@ -144,12 +138,10 @@
                     <li><a href="investors.html">Investor Portal</a></li>
                 </ul>
             </div>
-            
             <div class="footer-legal">
                 <h4>Legal</h4>
                 <ul>
                     <li><a href="log.html">Founder's Log</a></li>
-                    
                 </ul>
             </div>
         </div>
@@ -160,5 +152,4 @@
 
     <script src="js/llcapp.js"></script>
 </body>
-    
 </html>
