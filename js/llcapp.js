@@ -17,24 +17,34 @@ class P1App {
         this.setupScrollObserver();
     }
 
-    setupMobileMenu() {
-        if (!this.menuBtn || !this.navLinks) return;
-
-        this.menuBtn.addEventListener('click', () => {
-            const isOpen = this.navLinks.classList.toggle('active');
-            this.menuBtn.classList.toggle('active');
-            document.body.style.overflow = isOpen ? 'hidden' : 'auto';
-        });
-
-        // Close menu on link click
-        this.navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                this.menuBtn.classList.remove('active');
-                this.navLinks.classList.remove('active');
-                document.body.style.overflow = 'auto';
-            });
-        });
+setupMobileMenu() {
+    if (!this.menuBtn || !this.navLinks) {
+        console.error("P1 App: Navigation elements not found.");
+        return;
     }
+
+    this.menuBtn.addEventListener('click', () => {
+        // Toggle the 'active' class on both the button and the list
+        this.menuBtn.classList.toggle('active');
+        this.navLinks.classList.toggle('active');
+
+        // Prevent scrolling on the body when menu is open
+        if (this.navLinks.classList.contains('active')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+    });
+
+    // Close menu when a link is clicked (important for same-page anchors)
+    this.navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            this.menuBtn.classList.remove('active');
+            this.navLinks.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+    });
+}
 
     setupScrollObserver() {
         const observer = new IntersectionObserver((entries) => {
