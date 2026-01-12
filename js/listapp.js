@@ -1,15 +1,12 @@
 /**
- * Daily Pulse - Core Logic v1.4
+ * Daily Pulse - Core Logic v1.5 (Golden Copy)
  * P1 Creations LLC - Patrick DeQuattro
- * Features: Cloud Sync, Haptics, Daily Reset, & History Tracking
  */
 
-// 1. Firebase Imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// 2. Firebase Configuration
 const firebaseConfig = {
     apiKey: "AIzaSyAWmA5H8V9VVIBNFmZFaX8dn4OMe8QujDg",
     authDomain: "daily-pulse-99c89.firebaseapp.com",
@@ -20,14 +17,13 @@ const firebaseConfig = {
     measurementId: "G-3FXFJ3DW5J"
 };
 
-// 3. Initialize Firebase Services
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
 
 const app = {
     tasks: [],
-    history: [], // Stores the last 7 days of scores
+    history: [],
     currentUser: null,
     isSignUpMode: false,
     theme: localStorage.getItem('userTheme') || 'theme-cyber',
@@ -53,7 +49,6 @@ const app = {
         setInterval(() => this.render(), 30000);
     },
 
-    // --- HAPTIC ENGINE ---
     haptic(type = 'light') {
         if (!navigator.vibrate) return;
         if (type === 'light') navigator.vibrate(10);
@@ -61,7 +56,6 @@ const app = {
         else if (type === 'warning') navigator.vibrate(50);
     },
 
-    // --- AUTH ENGINE ---
     toggleAuthMode() {
         this.isSignUpMode = !this.isSignUpMode;
         document.getElementById('auth-title').innerText = this.isSignUpMode ? "Create Account" : "Sign In";
@@ -75,7 +69,6 @@ const app = {
         const email = document.getElementById('login-email').value;
         const pass = document.getElementById('login-password').value;
         if (!email || !pass) return alert("Please fill in all fields.");
-
         try {
             if (this.isSignUpMode) {
                 await createUserWithEmailAndPassword(auth, email, pass);
@@ -92,10 +85,8 @@ const app = {
         location.reload(); 
     },
 
-    // --- CLOUD SYNC & NEW DAY LOGIC ---
     listenToCloud() {
         if (!this.currentUser) return;
-        
         onSnapshot(doc(db, "users", this.currentUser.uid), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
@@ -106,18 +97,14 @@ const app = {
                 const todayDate = new Date().toDateString();
 
                 if (lastCheckDate && lastCheckDate !== todayDate) {
-                    // It's a New Day! Bank yesterday's score before resetting.
                     const done = this.tasks.filter(t => t.completed).length;
                     const lastScore = this.tasks.length === 0 ? 0 : Math.round((done / this.tasks.length) * 100);
-                    
                     const historyEntry = { date: lastCheckDate, score: lastScore };
                     const updatedHistory = [historyEntry, ...this.history].slice(0, 7);
-
                     this.tasks = this.tasks.map(t => ({ ...t, completed: false }));
                     this.save(updatedHistory); 
                 }
             } else {
-                // First time user setup
                 this.tasks = [{ id: 1, name: 'Welcome to Daily Pulse!', time: '08:00', icon: '👋', completed: false }];
                 this.save([]); 
             }
@@ -127,26 +114,21 @@ const app = {
 
     async save(updatedHistory = null) {
         if (!this.currentUser) return;
-        
         const dataToSave = {
             email: this.currentUser.email,
             tasks: this.tasks,
             lastSync: new Date(),
             lastCheckDate: new Date().toDateString()
         };
-
         if (updatedHistory) dataToSave.history = updatedHistory;
-
         await setDoc(doc(db, "users", this.currentUser.uid), dataToSave, { merge: true });
     },
 
-    // --- TASK ACTIONS ---
     addCustomTask() {
         const name = document.getElementById('task-name').value;
         const time = document.getElementById('task-time').value;
         const emoji = document.getElementById('task-emoji').value || '📍';
         if (!name || !time) return alert("Name and time required.");
-
         this.tasks.push({ id: Date.now(), name, time, icon: emoji, completed: false });
         this.save();
         this.haptic('light');
@@ -168,15 +150,12 @@ const app = {
         this.save();
     },
 
-    // --- HISTORY UI ---
     showHistory() {
         this.haptic('light');
         const chartContainer = document.getElementById('chart-container');
-        
         if (this.history.length === 0) {
             chartContainer.innerHTML = `<p style="color:var(--muted); padding: 20px;">No history yet. Finish today to see progress!</p>`;
         } else {
-            // Reverse so latest is on the right
             chartContainer.innerHTML = [...this.history].reverse().map(entry => {
                 const dayName = entry.date.split(' ')[0]; 
                 return `
@@ -184,14 +163,12 @@ const app = {
                         <span class="bar-val">${entry.score}%</span>
                         <div class="bar" style="height: ${entry.score}%"></div>
                         <span class="bar-label">${dayName}</span>
-                    </div>
-                `;
+                    </div>`;
             }).join('');
         }
         this.toggleModal('history-modal', true);
     },
 
-    // --- RENDER & DYNAMICS ---
     render() {
         const list = document.getElementById('task-list');
         const scoreEl = document.getElementById('score');
@@ -212,8 +189,7 @@ const app = {
                         <p>${t.time} ${isOverdue ? '<span class="overdue-tag">!</span>' : ''}</p>
                     </div>
                     <button type="button" class="delete-btn" onclick="window.app.deleteTask(${t.id})">✕</button>
-                </li>
-            `;
+                </li>`;
         }).join('');
         this.updateDynamicTitle();
     },
