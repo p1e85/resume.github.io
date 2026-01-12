@@ -95,7 +95,7 @@ const app = {
         location.reload(); 
     },
 
-    // --- CLOUD SYNC & DAILY RESET ENGINE ---
+// --- CLOUD SYNC & DAILY RESET ENGINE WITH HISTORY ---
     listenToCloud() {
         if (!this.currentUser) return;
         
@@ -103,15 +103,33 @@ const app = {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 this.tasks = data.tasks || [];
+                const history = data.history || [];
 
-                // NEW DAY CHECK: Compare last save date to today
-                const lastCheckDate = data.lastCheckDate; // Format: "Mon Jan 11 2026"
-                const todayDate = new Date().toDateString(); // Format: "Mon Jan 12 2026"
+                // NEW DAY CHECK
+                const lastCheckDate = data.lastCheckDate; 
+                const todayDate = new Date().toDateString();
 
                 if (lastCheckDate && lastCheckDate !== todayDate) {
-                    console.log("New Day detected. Resetting tasks...");
+                    console.log("New Day detected. Archiving score...");
+                    
+                    // 1. Calculate yesterday's final score
+                    const done = this.tasks.filter(t => t.completed).length;
+                    const lastScore = this.tasks.length === 0 ? 0 : Math.round((done / this.tasks.length) * 100);
+                    
+                    // 2. Add yesterday's score to the history array
+                    const historyEntry = {
+                        date: lastCheckDate,
+                        score: lastScore
+                    };
+                    
+                    // Keep only the last 7 days to save database space
+                    const updatedHistory = [historyEntry, ...history].slice(0, 7);
+
+                    // 3. Reset tasks for the new day
                     this.tasks = this.tasks.map(t => ({ ...t, completed: false }));
-                    this.save(); // Save the fresh unchecked list back to cloud
+                    
+                    // 4. Save everything back to the cloud
+                    this.save(updatedHistory); 
                 }
             } else {
                 // NEW USER ONBOARDING
@@ -119,20 +137,30 @@ const app = {
                     { id: 1, name: 'Welcome to Daily Pulse!', time: '08:00', icon: '👋', completed: false },
                     { id: 2, name: 'Check a box to try haptics', time: '09:00', icon: '✅', completed: false }
                 ];
-                this.save(); 
+                this.save([]); 
             }
             this.render();
         });
     },
 
-    async save() {
+    async save(updatedHistory = null) {
         if (!this.currentUser) return;
-        await setDoc(doc(db, "users", this.currentUser.uid), {
+        
+        // We fetch existing history if we aren't passing a new one (normal save)
+        // This prevents overwriting history during a simple task toggle
+        const dataToSave = {
             email: this.currentUser.email,
             tasks: this.tasks,
             lastSync: new Date(),
-            lastCheckDate: new Date().toDateString() // "Mon Jan 12 2026"
-        });
+            lastCheckDate: new Date().toDateString()
+        };
+
+        if (updatedHistory) {
+            dataToSave.history = updatedHistory;
+        }
+
+        // Use merge:true to avoid accidentally wiping out fields like 'history'
+        await setDoc(doc(db, "users", this.currentUser.uid), dataToSave, { merge: true });
     },
 
     // --- TASK ACTIONS ---
