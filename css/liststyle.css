@@ -1,6 +1,9 @@
-/* --- 1. THEME ENGINE --- */
+/**
+ * Daily Pulse - Master Stylesheet v1.5
+ * P1 Creations LLC - Patrick DeQuattro
+ */
 
-/* Default: Cyber Dark */
+/* --- 1. THEME ENGINE --- */
 .theme-cyber, :root {
     --bg: #0b0f1a; 
     --card: #161b2c; 
@@ -12,10 +15,10 @@
     --header-grad: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
     --input-bg: rgba(255, 255, 255, 0.07);
     --nav-bg: rgba(22, 27, 44, 0.8);
+    --glass: rgba(255, 255, 255, 0.05);
     --cal-text: #161b2c;
 }
 
-/* Ocean Breeze (Light Mode) */
 .theme-ocean {
     --bg: #f1f5f9; 
     --card: #ffffff; 
@@ -27,10 +30,10 @@
     --header-grad: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     --input-bg: #e2e8f0;
     --nav-bg: rgba(255, 255, 255, 0.8);
+    --glass: rgba(15, 23, 42, 0.05);
     --cal-text: #0f172a;
 }
 
-/* Sunset Glow (Warm Mode) */
 .theme-sunset {
     --bg: #2d1b2d; 
     --card: #3b233b; 
@@ -42,13 +45,14 @@
     --header-grad: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
     --input-bg: rgba(255, 255, 255, 0.1);
     --nav-bg: rgba(59, 35, 59, 0.8);
+    --glass: rgba(255, 255, 255, 0.05);
     --cal-text: #2d1b2d;
 }
 
-/* --- 2. CORE & FIXES --- */
-.hidden { display: none !important; }
-
+/* --- 2. CORE RESET & UTILITIES --- */
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+.hidden { display: none !important; }
 
 body { 
     background: var(--bg); color: var(--text); 
@@ -60,7 +64,7 @@ body {
 
 .app-container { width: 100%; max-width: 480px; position: relative; }
 
-/* --- 3. DYNAMIC HEADER & CALENDAR --- */
+/* --- 3. HEADER & DYNAMIC ELEMENTS --- */
 header { 
     background: var(--header-grad); padding: 25px; border-radius: 28px; 
     color: #ffffff; margin-top: 20px; margin-bottom: 25px; 
@@ -69,31 +73,40 @@ header {
 
 .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 
-#theme-selector {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 8px 12px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    outline: none;
-    cursor: pointer;
-    appearance: none; /* Removes default browser arrow for a cleaner look */
+#theme-selector { 
+    background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(5px);
+    color: white; border: 1px solid rgba(255, 255, 255, 0.2); 
+    padding: 8px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; outline: none;
 }
 
+.add-main-btn { 
+    background: white; color: #161b2c; width: 54px; height: 54px; 
+    border-radius: 18px; font-size: 32px; border: none; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; 
+}
 
 .title-row { display: flex; align-items: center; gap: 15px; }
 
-.calendar-icon { width: 44px; height: 46px; background: white; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+.calendar-icon { 
+    width: 44px; height: 46px; background: white; border-radius: 12px; 
+    overflow: hidden; display: flex; flex-direction: column; 
+}
 .cal-top { background: #ff4757; color: white; font-size: 0.65rem; font-weight: 900; text-align: center; padding: 3px 0; }
 .cal-body { color: var(--cal-text); font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-grow: 1; }
 
-.stats-box { background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); padding: 6px 18px; border-radius: 50px; margin-top: 15px; display: inline-block; font-weight: bold; }
+.stats-box { 
+    background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); 
+    padding: 6px 18px; border-radius: 50px; margin-top: 15px; display: inline-block; font-weight: bold; 
+}
 
-/* --- 4. TASK CARDS --- */
+.logout-link { 
+    position: absolute; bottom: 15px; right: 20px; 
+    background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(5px);
+    color: white; border: 1px solid rgba(255, 255, 255, 0.2); 
+    padding: 6px 14px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; 
+}
+
+/* --- 4. TASK LIST & CARDS --- */
 #task-list { list-style: none; padding-bottom: 160px; }
 
 .task-card { 
@@ -102,17 +115,27 @@ header {
     border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
-.custom-checkbox { width: 32px; height: 32px; border: 2px solid var(--muted); border-radius: 11px; cursor: pointer; position: relative; background: var(--input-bg); }
+.custom-checkbox { 
+    width: 32px; height: 32px; border: 2px solid var(--muted); 
+    border-radius: 11px; cursor: pointer; position: relative; background: var(--input-bg); 
+}
 .completed .custom-checkbox { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
-.completed .custom-checkbox::after { content: '✓'; color: white; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: bold; }
+.completed .custom-checkbox::after { 
+    content: '✓'; color: white; position: absolute; left: 50%; top: 50%; 
+    transform: translate(-50%, -50%); font-weight: bold; 
+}
 
 .task-info { flex-grow: 1; }
 .task-info h3 { font-size: 1.1rem; color: var(--text); }
 .task-info p { font-size: 0.85rem; color: var(--muted); }
 
-.delete-btn { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+.delete-btn { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; opacity: 0.5; }
+.delete-btn:hover { color: var(--danger); opacity: 1; }
 
-/* --- 5. PREMIUM PILL BUTTONS & INPUTS --- */
+@keyframes pulse-red { 0%, 100% { border-color: transparent; } 50% { border-color: var(--danger); box-shadow: 0 0 15px rgba(255, 71, 87, 0.2); } }
+.overdue { animation: pulse-red 2s infinite; border: 1px solid var(--danger); }
+
+/* --- 5. PREMIUM BUTTONS & INPUTS --- */
 input { 
     width: 100%; padding: 16px; border-radius: 16px; border: 1px solid var(--muted); 
     background: var(--input-bg); color: var(--text); font-size: 16px; margin-bottom: 12px; outline: none;
@@ -123,10 +146,13 @@ input {
     padding: 18px; border-radius: 50px; box-shadow: 0 8px 20px var(--accent-glow);
     border: none; width: 100%; cursor: pointer; transition: transform 0.2s;
 }
-
 .btn-primary:active { transform: scale(0.97); }
 
-.add-main-btn { background: white; color: #161b2c; width: 54px; height: 54px; border-radius: 18px; font-size: 32px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; }
+.btn-close {
+    background: rgba(255, 255, 255, 0.05); color: var(--muted); font-weight: 600;
+    padding: 14px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer; width: 100%; margin-top: 10px;
+}
 
 /* --- 6. GLASSMORPHISM NAVIGATION --- */
 .bottom-nav {
@@ -136,210 +162,42 @@ input {
     display: flex; gap: 40px; z-index: 1000; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
 }
 
-.nav-item { background: transparent; color: var(--text); border: none; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+.nav-item { 
+    background: transparent; color: var(--text); border: none; 
+    display: flex; flex-direction: column; align-items: center; 
+    gap: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer; text-decoration: none;
+}
+.nav-item span { font-size: 1.4rem; }
 
-/* --- 7. MODALS --- */
-.overlay, .modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
-.overlay { background: var(--bg); }
-.modal { background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
+.support-link span { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.4)); }
+
+/* --- 7. MODALS & GRIDS --- */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
 .modal-content { background: var(--card); padding: 35px 25px; border-radius: 32px; width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
 
-/* --- 8. WATCH OPTIMIZATION --- */
+.template-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+.template-card { background: var(--input-bg); padding: 15px 5px; border-radius: 18px; cursor: pointer; text-align: center; border: 1px solid transparent; transition: 0.2s; }
+.template-card:active { border-color: var(--accent); background: var(--glass); }
+.template-card span { font-size: 1.6rem; display: block; margin-bottom: 5px; }
+.template-card p { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: var(--muted); }
+
+/* --- 8. HISTORY CHART --- */
+.history-chart { display: flex; align-items: flex-end; justify-content: space-around; height: 150px; margin: 20px 0; background: rgba(0,0,0,0.1); border-radius: 20px; padding: 10px; }
+.bar-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.bar { width: 12px; background: var(--header-grad); border-radius: 10px 10px 2px 2px; transition: height 0.5s ease-out; }
+.bar-val { font-size: 0.6rem; font-weight: bold; color: var(--accent); }
+.bar-label { font-size: 0.6rem; color: var(--muted); font-weight: bold; }
+
+/* --- 9. WATCH & SMALL PHONE OVERRIDES --- */
 @media (max-width: 380px) {
     .bottom-nav { bottom: 20px; width: 92%; justify-content: space-around; gap: 10px; }
     #task-list { padding-bottom: 120px; }
     .task-emoji { display: none; }
+    .nav-item { font-size: 0.65rem; }
 }
 
 @media (max-width: 320px) and (max-aspect-ratio: 1/1) {
     .bottom-nav { bottom: 30px; }
     header { padding: 15px; }
+    .template-grid { gap: 8px; }
 }
-
-/* --- STYLISH SIGN OUT BUTTON --- */
-.logout-link {
-    position: absolute;
-    bottom: 15px;
-    right: 20px;
-    background: rgba(255, 255, 255, 0.15); /* Translucent glass effect */
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 6px 14px;
-    border-radius: 50px; /* Pill shape to match other buttons */
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-decoration: none; /* Remove underline */
-}
-
-.logout-link:active {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(0.95);
-}
-
-/* Specific adjustment for the Watch to prevent accidental clicks */
-@media (max-width: 350px) {
-    .logout-link {
-        bottom: 10px;
-        right: 15px;
-        padding: 4px 10px;
-        font-size: 0.6rem;
-    }
-}
-
-/* --- SUPPORT BUTTON STYLING --- */
-.support-link {
-    text-decoration: none;
-    color: var(--text);
-    transition: transform 0.2s ease;
-}
-
-.support-link span {
-    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.4)); /* Subtle gold glow */
-}
-
-/* Ensure the nav adjusts for three items on smaller screens */
-@media (max-width: 380px) {
-    .bottom-nav {
-        gap: 15px; /* Tighten gap to fit 3 items on the watch */
-        padding: 10px 15px;
-    }
-    .nav-item {
-        font-size: 0.65rem; /* Slightly smaller text for the watch */
-    }
-}
-
-/* --- MODAL BUTTON STYLING --- */
-.modal-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.btn-primary {
-    background: var(--header-grad);
-    color: #fff;
-    font-weight: 700;
-    padding: 16px;
-    border-radius: 50px;
-    border: none;
-    box-shadow: 0 8px 20px var(--accent-glow);
-    cursor: pointer;
-}
-
-/* Redesigned Close/Cancel Button */
-.btn-close {
-    background: rgba(255, 255, 255, 0.05); /* Subtle glass background */
-    color: var(--muted);
-    font-weight: 600;
-    padding: 14px;
-    border-radius: 50px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 100%; /* Match width of primary button */
-}
-
-.btn-close:active {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text);
-    transform: scale(0.97);
-}
-
-/* Theme-specific tweaks for Close button visibility */
-.theme-ocean .btn-close {
-    background: #e2e8f0;
-    border-color: #cbd5e1;
-    color: #64748b;
-}
-
-/* --- HISTORY BAR CHART --- */
-.history-chart {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-around;
-    height: 150px;
-    margin: 30px 0;
-    padding-top: 20px;
-    border-bottom: 2px solid var(--glass);
-}
-
-.bar-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    width: 30px;
-}
-
-.bar {
-    width: 14px;
-    background: var(--header-grad);
-    border-radius: 10px 10px 4px 4px;
-    box-shadow: 0 4px 10px var(--accent-glow);
-    transition: height 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    height: 0; /* Starts at 0 for animation */
-}
-
-.bar-label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase;
-}
-
-.bar-val {
-    font-size: 0.6rem;
-    color: var(--accent);
-    font-weight: bold;
-}
-
-/* --- GRID & CHART UPDATES --- */
-.template-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin: 20px 0;
-}
-
-.template-card {
-    background: var(--input-bg);
-    padding: 15px 5px;
-    border-radius: 18px;
-    cursor: pointer;
-    text-align: center;
-    border: 1px solid transparent;
-}
-
-.template-card:active {
-    border-color: var(--accent);
-    background: var(--glass);
-}
-
-.template-card span { font-size: 1.6rem; display: block; margin-bottom: 5px; }
-.template-card p { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: var(--muted); }
-
-.history-chart {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-around;
-    height: 150px;
-    margin: 20px 0;
-    background: rgba(0,0,0,0.1);
-    border-radius: 20px;
-    padding: 10px;
-}
-
-.bar-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-.bar { 
-    width: 12px; background: var(--header-grad); border-radius: 10px 10px 2px 2px; 
-    transition: height 0.5s ease-out; 
-}
-.bar-val { font-size: 0.6rem; font-weight: bold; color: var(--accent); }
-.bar-label { font-size: 0.6rem; color: var(--muted); font-weight: bold; }
