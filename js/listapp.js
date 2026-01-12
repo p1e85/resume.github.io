@@ -1,7 +1,7 @@
 /**
- * Daily Pulse - Core Logic v1.3
+ * Daily Pulse - Core Logic v1.4
  * P1 Creations LLC - Patrick DeQuattro
- * Feature: Automatic Daily Reset & Cloud Sync
+ * Features: Cloud Sync, Haptics, Daily Reset, & History Tracking
  */
 
 // 1. Firebase Imports
@@ -27,6 +27,7 @@ const auth = getAuth(firebaseApp);
 
 const app = {
     tasks: [],
+    history: [], // Stores the last 7 days of scores
     currentUser: null,
     isSignUpMode: false,
     theme: localStorage.getItem('userTheme') || 'theme-cyber',
@@ -36,7 +37,6 @@ const app = {
         this.updateDynamicCalendar();
         this.updateDynamicTitle();
 
-        // AUTH LISTENER: Handles login state and UI visibility
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 this.currentUser = user;
@@ -50,11 +50,10 @@ const app = {
             }
         });
 
-        // Periodic Refresh for Overdue States & Time greetings
         setInterval(() => this.render(), 30000);
     },
 
-    // --- HAPTIC FEEDBACK ---
+    // --- HAPTIC ENGINE ---
     haptic(type = 'light') {
         if (!navigator.vibrate) return;
         if (type === 'light') navigator.vibrate(10);
@@ -62,7 +61,7 @@ const app = {
         else if (type === 'warning') navigator.vibrate(50);
     },
 
-    // --- AUTHENTICATION ENGINE ---
+    // --- AUTH ENGINE ---
     toggleAuthMode() {
         this.isSignUpMode = !this.isSignUpMode;
         document.getElementById('auth-title').innerText = this.isSignUpMode ? "Create Account" : "Sign In";
@@ -84,9 +83,7 @@ const app = {
                 await signInWithEmailAndPassword(auth, email, pass);
             }
             this.haptic('success');
-        } catch (err) {
-            alert(err.message);
-        }
+        } catch (err) { alert(err.message); }
     },
 
     async logout() {
@@ -95,7 +92,7 @@ const app = {
         location.reload(); 
     },
 
-// --- CLOUD SYNC & DAILY RESET ENGINE WITH HISTORY ---
+    // --- CLOUD SYNC & NEW DAY LOGIC ---
     listenToCloud() {
         if (!this.currentUser) return;
         
@@ -103,40 +100,25 @@ const app = {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 this.tasks = data.tasks || [];
-                const history = data.history || [];
+                this.history = data.history || [];
 
-                // NEW DAY CHECK
                 const lastCheckDate = data.lastCheckDate; 
                 const todayDate = new Date().toDateString();
 
                 if (lastCheckDate && lastCheckDate !== todayDate) {
-                    console.log("New Day detected. Archiving score...");
-                    
-                    // 1. Calculate yesterday's final score
+                    // It's a New Day! Bank yesterday's score before resetting.
                     const done = this.tasks.filter(t => t.completed).length;
                     const lastScore = this.tasks.length === 0 ? 0 : Math.round((done / this.tasks.length) * 100);
                     
-                    // 2. Add yesterday's score to the history array
-                    const historyEntry = {
-                        date: lastCheckDate,
-                        score: lastScore
-                    };
-                    
-                    // Keep only the last 7 days to save database space
-                    const updatedHistory = [historyEntry, ...history].slice(0, 7);
+                    const historyEntry = { date: lastCheckDate, score: lastScore };
+                    const updatedHistory = [historyEntry, ...this.history].slice(0, 7);
 
-                    // 3. Reset tasks for the new day
                     this.tasks = this.tasks.map(t => ({ ...t, completed: false }));
-                    
-                    // 4. Save everything back to the cloud
                     this.save(updatedHistory); 
                 }
             } else {
-                // NEW USER ONBOARDING
-                this.tasks = [
-                    { id: 1, name: 'Welcome to Daily Pulse!', time: '08:00', icon: '👋', completed: false },
-                    { id: 2, name: 'Check a box to try haptics', time: '09:00', icon: '✅', completed: false }
-                ];
+                // First time user setup
+                this.tasks = [{ id: 1, name: 'Welcome to Daily Pulse!', time: '08:00', icon: '👋', completed: false }];
                 this.save([]); 
             }
             this.render();
@@ -146,8 +128,6 @@ const app = {
     async save(updatedHistory = null) {
         if (!this.currentUser) return;
         
-        // We fetch existing history if we aren't passing a new one (normal save)
-        // This prevents overwriting history during a simple task toggle
         const dataToSave = {
             email: this.currentUser.email,
             tasks: this.tasks,
@@ -155,11 +135,8 @@ const app = {
             lastCheckDate: new Date().toDateString()
         };
 
-        if (updatedHistory) {
-            dataToSave.history = updatedHistory;
-        }
+        if (updatedHistory) dataToSave.history = updatedHistory;
 
-        // Use merge:true to avoid accidentally wiping out fields like 'history'
         await setDoc(doc(db, "users", this.currentUser.uid), dataToSave, { merge: true });
     },
 
@@ -168,7 +145,6 @@ const app = {
         const name = document.getElementById('task-name').value;
         const time = document.getElementById('task-time').value;
         const emoji = document.getElementById('task-emoji').value || '📍';
-
         if (!name || !time) return alert("Name and time required.");
 
         this.tasks.push({ id: Date.now(), name, time, icon: emoji, completed: false });
@@ -187,18 +163,38 @@ const app = {
     toggleTask(id) {
         const task = this.tasks.find(t => t.id === id);
         this.tasks = this.tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
-        
         if (!task.completed) this.haptic('success');
         else this.haptic('light');
-        
         this.save();
     },
 
-    // --- UI RENDERING ---
+    // --- HISTORY UI ---
+    showHistory() {
+        this.haptic('light');
+        const chartContainer = document.getElementById('chart-container');
+        
+        if (this.history.length === 0) {
+            chartContainer.innerHTML = `<p style="color:var(--muted); padding: 20px;">No history yet. Finish today to see progress!</p>`;
+        } else {
+            // Reverse so latest is on the right
+            chartContainer.innerHTML = [...this.history].reverse().map(entry => {
+                const dayName = entry.date.split(' ')[0]; 
+                return `
+                    <div class="bar-wrapper">
+                        <span class="bar-val">${entry.score}%</span>
+                        <div class="bar" style="height: ${entry.score}%"></div>
+                        <span class="bar-label">${dayName}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        this.toggleModal('history-modal', true);
+    },
+
+    // --- RENDER & DYNAMICS ---
     render() {
         const list = document.getElementById('task-list');
         const scoreEl = document.getElementById('score');
-        
         const done = this.tasks.filter(t => t.completed).length;
         const score = this.tasks.length === 0 ? 0 : Math.round((done / this.tasks.length) * 100);
         scoreEl.innerText = `Daily Score: ${score}%`;
@@ -219,22 +215,15 @@ const app = {
                 </li>
             `;
         }).join('');
-
         this.updateDynamicTitle();
     },
 
-    // --- DYNAMIC HEADER LOGIC ---
     updateDynamicTitle() {
         const titleEl = document.getElementById('dynamic-title');
         const hour = new Date().getHours();
         const done = this.tasks.filter(t => t.completed).length;
         const total = this.tasks.length;
-        
-        if (total > 0 && done === total) {
-            titleEl.innerText = "Day Complete! 🔥";
-            return;
-        }
-
+        if (total > 0 && done === total) { titleEl.innerText = "Day Complete! 🔥"; return; }
         if (hour < 12) titleEl.innerText = "Good Morning";
         else if (hour < 18) titleEl.innerText = "Good Afternoon";
         else titleEl.innerText = "Good Evening";
@@ -247,7 +236,6 @@ const app = {
         document.getElementById('cal-date').innerText = now.getDate();
     },
 
-    // --- UI HELPERS ---
     checkPast(time) {
         const [h, m] = time.split(':');
         const target = new Date();
@@ -281,6 +269,5 @@ const app = {
     }
 };
 
-// 4. CRITICAL: EXPOSE TO GLOBAL SCOPE FOR HTML ONCLICK EVENTS
 window.app = app;
 app.init();
