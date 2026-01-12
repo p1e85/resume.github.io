@@ -1,0 +1,104 @@
+/* --- MASTER CSS CORE FIX --- */
+
+:root {
+    --bg: #0a0a0b;
+    --secondary: #161618;
+    --text: #f0f0f2;
+    --accent: #00ff88;
+    --border: rgba(255, 255, 255, 0.1);
+}
+
+/* 1. BODY FIX: Ensure full coverage and dark theme */
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 2. FOOTER FIX: Correcting the Grid and Brand Alignment */
+.main-footer {
+    margin-top: auto; /* Pushes footer to bottom if page content is short */
+    padding: 100px 0 50px;
+    background: #050505;
+    border-top: 1px solid var(--border);
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr; /* Brand gets more space */
+    gap: 60px;
+    align-items: start;
+}
+
+.footer-brand {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Forces brand items to stay left */
+}
+
+.footer-brand .logo {
+    font-size: 2rem;
+    font-weight: 900;
+    margin-bottom: 20px;
+    letter-spacing: -1.5px;
+}
+
+.footer-brand .mission-text {
+    opacity: 0.5;
+    max-width: 320px;
+    line-height: 1.7;
+    font-size: 0.95rem;
+}
+
+/* Footer Nav Styling */
+.main-footer h4 {
+    color: var(--accent);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    margin-bottom: 25px;
+}
+
+.main-footer ul {
+    list-style: none;
+    padding: 0;
+}
+
+.main-footer ul li {
+    margin-bottom: 12px;
+}
+
+.main-footer ul li a {
+    color: var(--text);
+    opacity: 0.4;
+    transition: 0.3s;
+    font-size: 0.9rem;
+}
+
+.main-footer ul li a:hover {
+    opacity: 1;
+    color: var(--accent);
+}
+
+.footer-bottom {
+    margin-top: 80px;
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 0.8rem;
+    opacity: 0.2;
+}
+
+/* Responsive Footer for Mobile */
+@media (max-width: 768px) {
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+}
