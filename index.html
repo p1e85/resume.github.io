@@ -3,108 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patrick DeQuattro | Software Developer Portfolio</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:500,700" rel="stylesheet" type="text/css" />
-    <link href="https://fonts.googleapis.com/css?family=Muli:400,400i,800,800i" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="css/styles.css">
+    <title>P1 Creations LLC | Founder-Led Innovation</title>
+    <link rel="stylesheet" href="css/llcstyle.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="index.html">Patrick DeQuattro</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="index.html">Projects</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about.html">About / Resume</a></li>
+<nav class="glass-nav">
+    <div class="container nav-container">
+        <div class="logo">P1 CREATIONS</div>
+        
+        <button id="menu-toggle-btn" class="menu-toggle" aria-label="Toggle Navigation">
+            <div class="hamburger-box">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </button>
+
+        <ul id="nav-links-list" class="nav-links">
+            <li><a href="log.html">Founder's Log</a></li>
+            <li><a href="roadmap.html">Roadmap</a></li>
+            <li><a href="offering.html">Offering</a></li>
+            <li><a href="investors.html">Investor Portal</a></li>
+        </ul>
+    </div>
+</nav>
+
+    <header class="hero">
+        <div class="container">
+            <span class="company-kicker reveal">P1 CREATIONS LLC</span>
+            <h1 class="reveal-delay">Building the future of <span class="accent">Environmental Action.</span></h1>
+            <p class="reveal-delay">Through our flagship platform <strong>Litter Troopers</strong>, we are turning daily urban frustrations into collective victories.</p>
+            <div class="hero-btns reveal-delay">
+                <a href="offering.html" class="btn-primary">View the Offering</a>
+                <a href="https://www.littertroopers.com/mapbeta.html" class="btn-secondary">Explore the App</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="origin-section container reveal">
+        <div class="origin-grid">
+            <div class="image-placeholder">
+                <span class="accent">CHICAGO INSIGHT</span>
+            </div>
+            <div class="origin-text">
+                <span class="tag">The Story</span>
+                <h2>From Pavement to Platform</h2>
+                <p>P1 Creations didn't start in a boardroom. It started on a daily walk. Navigating Chicago sidewalks, our founder saw a recurring problem: a city losing its shine to unmanaged litter.</p>
+                <p><strong>Litter Troopers</strong> was born from a simple question: <em>What if we treated the planet like a leaderboard?</em></p>
+                <div class="founder-sig">
+                    <p><strong>Patrick DeQuattro</strong></p>
+                    <p class="opacity-50">Founder & CEO, P1 Creations LLC</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<section id="product" class="bento-section container reveal">
+    <span class="tag">The Flagship: Litter Troopers</span>
+    <div class="bento-grid">
+        <div class="bento-item main-feature">
+            <h3>The Swarm Engine</h3>
+            <p>Coordinate hundreds of users in real-time to clean specific city blocks. Collective action at scale.</p>
+        </div>
+        
+        <div class="bento-item">
+            <h3>Heatmaps</h3>
+            <p>Precision tracking of litter density using GIS data for municipal efficiency.</p>
+        </div>
+        
+        <div class="bento-item">
+            <h3>Leaderboards</h3>
+            <p>Neighborhood vs. Neighborhood. Turn local pride into impact.</p>
+        </div>
+    </div>
+</section>
+
+    <section class="impact-stats container reveal">
+        <div class="stats-wrapper">
+            <div class="stat-box">
+                <h3 class="accent">60 FPS</h3>
+                <h4>Native Performance</h4>
+                <p>Zero-latency interface built on Swift and Kotlin for a premium experience.</p>
+            </div>
+            <div class="stat-box">
+                <h3 class="accent">REAL-TIME</h3>
+                <h4>Sync Architecture</h4>
+                <p>Proprietary logic designed to coordinate thousands of 'troopers' simultaneously.</p>
+            </div>
+            <div class="stat-box">
+                <h3 class="accent">CHICAGO</h3>
+                <h4>Hyper-Local Focus</h4>
+                <p>Built for the streets of Rogers Park, scaled for global urban impact.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="main-footer">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <div class="logo">P1 CREATIONS</div>
+                <p class="mission-text">Turning daily urban frustrations into collective community victories. Born on a dog walk, built for the world.</p>
+            </div>
+            
+            <div class="footer-nav">
+                <h4>Platform</h4>
+                <ul>
+                    <li><a href="https://www.littertroopers.com">Litter Troopers</a></li>
+                    <li><a href="roadmap.html">Roadmap</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-legal">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="log.html">Founder's Log</a></li>
+                    <li><a href="offering.html">Offering</a></li>
+                    <li><a href="investors.html">Investor Portal</a></li>
                 </ul>
             </div>
         </div>
-    </nav>
-
-    <main class="container py-5">
-        <header class="text-center mb-5">
-            <h1 class="display-4">My Work</h1>
-            <p class="lead text-muted">A collection of my projects. Click on one to see it live.</p>
-        </header>
-
-
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-
-            <div class="col">
-                <div class="card h-100 shadow-sm project-card">
-                    <img src="assets/img/dailylist.png" class="card-img-top" alt="Screenshot of Daily List application">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">Daily List App</h5>
-                        <p class="card-text text-muted">A streamlined productivity tool designed for daily task management. It features a clean, focused UI to help users organize their priorities without clutter, utilizing custom styling and efficient logic for a smooth user experience.</p>
-                        <div class="mt-auto">
-                            <p class="mb-2">
-                                <span class="tag">JavaScript</span><span class="tag">CSS3</span><span class="tag">HTML5</span><span class="tag">DOM Manipulation</span>
-                            </p>
-                            <a href="https://www.p1creations.com/dailylist.html" class="btn btn-dark w-100 mb-2">View Live Project</a>
-                            <a href="https://github.com/p1e85/Daily-Pulse" class="btn btn-outline-secondary w-100">View Code (coming soon)</a>
-                        </div>
-                    </div>
-                </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 P1 Creations LLC. Chicago, IL. All Rights Reserved.</p>
+                <p><a href="oldindex.html">Personal Portfolio</a></p>
             </div>
+    </footer>
 
-            <div class="col">
-                <div class="card h-100 shadow-sm project-card">
-                    <img src="assets/img/ourworlss.png" class="card-img-top" alt="Screenshot of Our World Time application">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">Our World Time</h5>
-                        <p class="card-text text-muted">A sophisticated, real-time world clock with a dynamic theme system that changes the UI based on the time of day in the selected city. Built with the modern `Intl` API for accurate, DST-aware time zone conversions and Hammer.js for mobile touch gestures.</p>
-                        <div class="mt-auto">
-                            <p class="mb-2">
-                                <span class="tag">JavaScript</span><span class="tag">Intl API</span><span class="tag">Hammer.js</span><span class="tag">CSS3</span>
-                            </p>
-                            <a href="https://www.ourworldtime.com" class="btn btn-dark w-100 mb-2">View Live Project</a>
-                            <a href="https://github.com/p1e85/ourworldtime.github.io" class="btn btn-outline-secondary w-100">View Code</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="card h-100 shadow-sm project-card">
-                    <img src="assets/img/retrodbterm.png" class="card-img-top" alt="Screenshot of RETRO-DB Terminal Application">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">RETRO-DB Terminal</h5>
-                        <p class="card-text text-muted">A retro-themed note-taking app that performs full CRUD operations without a backend by persisting data to the browser's Local Storage. Features a dynamic multi-theme system and a robust function to download single or multiple entries as a formatted text file.</p>
-                         <div class="mt-auto">
-                            <p class="mb-2">
-                                <span class="tag">JavaScript</span><span class="tag">CSS Variables</span><span class="tag">HTML5</span><span class="tag">Local Storage</span>
-                            </p>
-                            <a href="https://www.p1creations.com/data.html" class="btn btn-dark w-100 mb-2">View Live Project</a>
-                            <a href="https://github.com/p1e85/RetroDbTerminal" class="btn btn-outline-secondary w-100">View Code</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="card h-100 shadow-sm project-card">
-                    <img src="assets/img/mememaker.png" class="card-img-top" alt="Screenshot of P1 Meme Workbench">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">P1 Meme Workbench</h5>
-                        <p class="card-text text-muted">A client-side meme generator with a creative Amiga Workbench retro theme. Users can upload an image, add classic outlined text, and apply live image filters (brightness, contrast, saturation, etc.), all handled through real-time manipulation of the HTML5 Canvas.</p>
-                        <div class="mt-auto">
-                             <p class="mb-2">
-                                <span class="tag">HTML5 Canvas</span><span class="tag">JavaScript</span><span class="tag">Tailwind CSS</span><span class="tag">FileReader API</span>
-                            </p>
-                            <a href="https://www.p1creations.com/memepro.html" class="btn btn-dark w-100 mb-2">View Live Project</a>
-                            <a href="https://github.com/p1e85/MemeMaker" class="btn btn-outline-secondary w-100">View Code</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/llcapp.js"></script>
 </body>
 </html>
