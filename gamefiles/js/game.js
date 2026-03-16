@@ -14,12 +14,10 @@ let player = { inventory: [], race: null, health: 0, maxHealth: 0, equipment: {}
 let playerName = ""; 
 let isTyping = false; 
 const TYPEWRITER_SPEED = 15;
-
-// We create a deep copy of the original data to track changes (unlocked doors, etc.)
 let worldState = {}; 
 
 // ======================================================
-// SECTION 3: GAME DATA
+// SECTION 3: GAME DATA (With all original rooms)
 // ======================================================
 const originalGameState = {
     title: {
@@ -50,9 +48,9 @@ const originalGameState = {
     start: {
         text: "The Supra Mansion looms before you. Massive oak doors stand before you.\n\n- knock loudly\n- ring the bell\n- try the door",
         options: {
-            'knock loudly': { descriptions: { human: "No answer.", elf: "No answer.", orc: "No answer." }},
-            'ring the bell': { descriptions: { human: "A faint jingle.", elf: "Beautiful chimes.", orc: "The rope breaks." }},
-            'try the door': { destination: 'foyer', descriptions: { human: "It's unlatched. You slip inside.", elf: "It swings open silently.", orc: "You heave it open." }}
+            'knock loudly': { descriptions: { human: "You knock. No answer.", elf: "You tap rhythmically. Silence.", orc: "You hammer the door. It booms, but stays shut." }},
+            'ring the bell': { descriptions: { human: "A faint jingle echoes inside.", elf: "Beautiful chimes resonate, then fade.", orc: "The rope snaps in your hand." }},
+            'try the door': { destination: 'foyer', descriptions: { human: "It's unlatched. You slip inside.", elf: "It swings open silently.", orc: "You heave it open with a grunt." }}
         }
     },
     foyer: {
@@ -69,11 +67,17 @@ const originalGameState = {
             'western doorway': { destination: 'foyer' },
             'music box': { 
                 description: "A small box on the mantel.",
-                action: { command: ['press switch', 'smash'], text: "You find a **silver locket**.", item: 'a silver locket' }
+                action: { 
+                    command: ['press switch', 'smash', 'open'], 
+                    text: "You find a **silver locket** inside.", 
+                    item: 'a silver locket' 
+                }
             }
         }
+    },
+    end: {
+        text: `As you grasp the Gem of Life, the mansion transforms. The curse is broken. Congratulations, \${playerName}!\n\n--- THE END ---\nType 'restart' to play again.`
     }
-    // ... (Remaining rooms from your original data go here)
 };
 
 // ======================================================
@@ -109,7 +113,7 @@ function saveGame() {
         location: currentPlayerLocation,
         playerData: player,
         name: playerName,
-        world: worldState // Saves unlocked doors/picked up items
+        world: worldState
     };
     localStorage.setItem('supra_mansion_save', JSON.stringify(gameSave));
 }
@@ -131,6 +135,16 @@ async function loadGame() {
     return true;
 }
 
+async function checkWinCondition() {
+    if (player.inventory.includes('the Gem of Life')) {
+        gamePhase = 'end';
+        await sleep(1000);
+        await displayText(originalGameState.end.text, true);
+        return true;
+    }
+    return false;
+}
+
 function createPlayer(race) {
     player.race = race;
     player.inventory = [];
@@ -147,6 +161,10 @@ async function parseCommand(command) {
     if (cleanCmd === 'restart') { localStorage.removeItem('supra_mansion_save'); window.location.reload(); return; }
     if (cleanCmd === 'save') { saveGame(); await displayText("Progress saved."); return; }
     if (cleanCmd === 'load') { await loadGame(); return; }
+    if (cleanCmd === 'card') {
+        await displayText(`--- \${playerName} ---\nRace: \${player.race}\nHP: \${player.health}/\${player.maxHealth}\nWeapon: \${player.equipment.weapon}`);
+        return;
+    }
 
     switch (gamePhase) {
         case 'title':
@@ -167,7 +185,7 @@ async function parseCommand(command) {
         case 'name_selection':
             playerName = command;
             gamePhase = 'instructions';
-            await displayText(`Welcome, ${playerName}.`, true);
+            await displayText(`Welcome, \${playerName}.`, true);
             await sleep(800);
             await displayText(worldState.instructions.text);
             break;
@@ -176,7 +194,7 @@ async function parseCommand(command) {
             if (cleanCmd.includes('begin')) {
                 gamePhase = 'playing';
                 await displayText(worldState.start.text, true);
-                saveGame(); // Auto-save at start
+                saveGame();
             }
             break;
 
@@ -193,19 +211,72 @@ async function parseCommand(command) {
                 } else {
                     currentPlayerLocation = target.destination;
                     await displayText(worldState[currentPlayerLocation].text, true);
-                    saveGame(); // Auto-save on move
+                    saveGame();
                 }
                 return;
             }
 
-            // 2. Inventory Check
+            // 2. Options (Fix for "Stuck" at door)
+            const availableOptions = room.options || {};
+            const matchedOption = Object.keys(availableOptions).find(opt => cleanCmd.includes(opt));
+            if (matchedOption) {
+                const option = availableOptions[matchedOption];
+                actionTaken = true;
+                await displayText(`\n> ${command}`);
+                if (option.descriptions) await displayText(option.descriptions[player.race]);
+                if (option.destination) {
+                    currentPlayerLocation = option.destination;
+                    await sleep(1000);
+                    await displayText(worldState[currentPlayerLocation].text, true);
+                }
+                saveGame();
+                return;
+            }
+
+            // 3. Search / Look At Objects
+            const matchedObjKey = Object.keys(room.objects || {}).find(k => cleanCmd.includes(k));
+            if (matchedObjKey && (cleanCmd.startsWith('look') || cleanCmd.startsWith('search'))) {
+                const obj = room.objects[matchedObjKey];
+                actionTaken = true;
+                await displayText(`\n> ${command}`);
+                let desc = obj.description;
+                if (obj.items && obj.items.length > 0) {
+                    desc += "\nYou found: " + obj.items.join(', ');
+                    player.inventory.push(...obj.items);
+                    obj.items = []; // Remove items from world
+                    await checkWinCondition();
+                }
+                await displayText(desc);
+                saveGame();
+                return;
+            }
+
+            // 4. Custom Actions (like Smash Music Box)
+            if (matchedObjKey && room.objects[matchedObjKey].action) {
+                const objAction = room.objects[matchedObjKey].action;
+                if (objAction.command.some(c => cleanCmd.includes(c))) {
+                    actionTaken = true;
+                    await displayText(`\n> ${command}\n${objAction.text}`);
+                    if (objAction.item) {
+                        player.inventory.push(objAction.item);
+                        delete objAction.item; // Prevent infinite items
+                        await checkWinCondition();
+                    }
+                    saveGame();
+                    return;
+                }
+            }
+
+            // 5. Inventory Check
             if (['inventory', 'inv', 'i'].includes(cleanCmd)) {
                 let inv = player.inventory.length ? player.inventory.join(', ') : "Empty.";
                 await displayText(`\n> ${command}\nInventory: ${inv}`);
                 return;
             }
 
-            // (Add more 'playing' logic here for searching and using items...)
+            if (!actionTaken) {
+                await displayText(`\n> ${command}\nI don't know how to do that.`);
+            }
             break;
     }
 }
@@ -222,12 +293,10 @@ commandForm.addEventListener('submit', async (e) => {
 });
 
 async function initGame() {
-    // Initialize worldState from the original data
     worldState = JSON.parse(JSON.stringify(originalGameState));
-    
     const savedData = localStorage.getItem('supra_mansion_save');
     if (savedData) {
-        await displayText("Welcome back. Type 'load' to resume your adventure or 'start' for a new game.", true);
+        await displayText("Welcome back. Type 'load' to resume or 'start' for a new game.", true);
     } else {
         await displayText(worldState.title.text, true);
     }
