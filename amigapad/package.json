@@ -1,0 +1,6 @@
+"homepage": "https://p1e85.github.io/amigapad",
+"scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "deploy": "gh-pages -d dist"
+}
