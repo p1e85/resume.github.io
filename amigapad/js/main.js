@@ -5,6 +5,7 @@ import { Note } from './classes/Note.js';
 import { TabManager } from './classes/TabManager.js';
 import { MenuBar } from './classes/MenuBar.js';
 import { DialogManager } from './classes/DialogManager.js';
+import { WindowManager } from './classes/WindowManager.js';
 
 class AmigaPad {
     constructor() {
@@ -18,6 +19,9 @@ class AmigaPad {
         this.tabManager = new TabManager('tab-bar', 'editor-container', this.onTabChange.bind(this));
         
         this.menuBar = new MenuBar(this.tabManager, this.themeManager, this.dialogManager);
+
+        this.windowManager = new WindowManager();
+        this.menuBar.windowManager = this.windowManager;   // so menu can access toggle
 
         this.loadLastSession();
         this.createInitialTab();
