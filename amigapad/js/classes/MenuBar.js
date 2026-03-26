@@ -3,25 +3,25 @@ import { StorageManager } from './StorageManager.js';
 import { Note } from './Note.js';
 
 export class MenuBar {
-    constructor(tabManager, themeManager, dialogManager) {
+    constructor(tabManager, themeManager, dialogManager, windowManager = null) {
         this.tabManager = tabManager;
         this.themeManager = themeManager;
         this.dialogManager = dialogManager;
+        this.windowManager = windowManager;        // For mode switching
         this.menuContainer = document.getElementById('menu-bar');
         this.currentOpenMenu = null;
         this.buildMenu();
     }
 
     buildMenu() {
-// Inside buildMenu() - replace the innerHTML part with bigger targets
-    this.menuContainer.innerHTML = `
-        <div class="amiga-menu-bar-inner">
-            <span class="menu-item" data-menu="file">File</span>
-            <span class="menu-item" data-menu="edit">Edit</span>
-            <span class="menu-item" data-menu="format">Format</span>
-            <span class="menu-item" data-menu="view">View</span>
-            <span class="menu-item" data-menu="help">Help</span>
-        </div>
+        this.menuContainer.innerHTML = `
+            <div class="amiga-menu-bar-inner">
+                <span class="menu-item" data-menu="file">File</span>
+                <span class="menu-item" data-menu="edit">Edit</span>
+                <span class="menu-item" data-menu="format">Format</span>
+                <span class="menu-item" data-menu="view">View</span>
+                <span class="menu-item" data-menu="help">Help</span>
+            </div>
         `;
 
         this.menuContainer.addEventListener('click', (e) => {
@@ -31,22 +31,18 @@ export class MenuBar {
     }
 
     toggleMenu(menuType) {
-        // Close any open menu first
         if (this.currentOpenMenu) this.currentOpenMenu.remove();
 
         const rect = this.menuContainer.getBoundingClientRect();
         const menuEl = document.createElement('div');
-        menuEl.className = 'amiga-dropdown-menu';
+        
+        menuEl.className = 'amiga-dropdown-menu amiga-bevel-raised';
         menuEl.style.position = 'absolute';
-        menuEl.style.left = `${rect.left + 10}px`;
-        menuEl.style.top = `${rect.bottom + 2}px`;
-        menuEl.style.background = 'var(--amiga-window-bg)';
-        menuEl.style.border = '2px solid';
-        menuEl.style.borderColor = 'var(--bevel-light) var(--bevel-dark) var(--bevel-dark) var(--bevel-light)';
-        menuEl.style.padding = '4px 0';
-        menuEl.style.minWidth = '180px';
-        menuEl.style.boxShadow = '4px 4px 0 #00000080';
+        menuEl.style.left = `${rect.left + 8}px`;
+        menuEl.style.top = `${rect.bottom + 4}px`;
+        menuEl.style.minWidth = '200px';
         menuEl.style.zIndex = '1000';
+        menuEl.style.padding = '4px 0';
 
         let items = [];
 
@@ -62,25 +58,32 @@ export class MenuBar {
                 { label: 'Save Session', action: () => this.saveSession() },
                 { label: 'Load Session', action: () => this.loadSession() }
             ];
-} else if (menuType === 'edit') {
-    items = [
-        { label: 'Undo', action: () => document.execCommand('undo') },
-        { label: 'Cut', action: () => document.execCommand('cut') },
-        { label: 'Copy', action: () => document.execCommand('copy') },
-        { label: 'Paste', action: () => document.execCommand('paste') },
-        { label: 'Delete', action: () => document.execCommand('delete') },
-        { label: '---' },
-        { label: 'Select All', action: () => document.execCommand('selectAll') },
-        { label: 'Time/Date', action: () => this.insertTimeDate() }
-    ];
-} else if (menuType === 'format') {
-    items = [
-        { label: 'Word Wrap', action: () => alert('Word Wrap toggle coming soon') },
-        { label: 'Font...', action: () => alert('Font dialog coming soon') }
-    ];
-        } else if (menuType === 'view') {
+        } else if (menuType === 'edit') {
             items = [
-                { label: 'Toggle Theme (Light/Dark)', action: () => this.themeManager.toggle() }
+                { label: 'Undo', action: () => document.execCommand('undo') },
+                { label: 'Cut', action: () => document.execCommand('cut') },
+                { label: 'Copy', action: () => document.execCommand('copy') },
+                { label: 'Paste', action: () => document.execCommand('paste') },
+                { label: 'Delete', action: () => document.execCommand('delete') },
+                { label: '---' },
+                { label: 'Select All', action: () => document.execCommand('selectAll') },
+                { label: 'Time/Date', action: () => this.insertTimeDate() }
+            ];
+        } else if (menuType === 'format') {
+            items = [
+                { 
+                    label: this.tabManager.wordWrap ? '✓ Word Wrap' : 'Word Wrap', 
+                    action: () => this.tabManager.toggleWordWrap() 
+                },
+                { label: 'Font...', action: () => alert('Font dialog coming soon') }
+            ];
+        } else if (menuType === 'view') {
+            const modeLabel = this.windowManager && this.windowManager.isWorkbenchMode 
+                ? 'Switch to Classic Mode' 
+                : 'Switch to Workbench Mode';
+            items = [
+                { label: 'Toggle Theme (Light/Dark)', action: () => this.themeManager.toggle() },
+                { label: modeLabel, action: () => this.windowManager && this.windowManager.toggleMode() }
             ];
         } else if (menuType === 'help') {
             items = [
@@ -93,28 +96,38 @@ export class MenuBar {
                 const hr = document.createElement('div');
                 hr.style.height = '1px';
                 hr.style.background = 'var(--bevel-dark)';
-                hr.style.margin = '4px 8px';
+                hr.style.margin = '6px 12px';
                 menuEl.appendChild(hr);
                 return;
             }
 
             const row = document.createElement('div');
-            row.style.padding = '4px 20px';
+            row.style.padding = '8px 24px';           // Bigger, easier to click
             row.style.cursor = 'pointer';
+            row.style.fontSize = '15px';
             row.textContent = item.label;
+            
             row.addEventListener('click', () => {
                 item.action();
                 if (this.currentOpenMenu) this.currentOpenMenu.remove();
             });
-            row.addEventListener('mouseover', () => row.style.background = '#0000aa');
-            row.addEventListener('mouseout', () => row.style.background = '');
+            
+            row.addEventListener('mouseover', () => {
+                row.style.background = '#0000aa';
+                row.style.color = '#ffffff';
+            });
+            row.addEventListener('mouseout', () => {
+                row.style.background = '';
+                row.style.color = '';
+            });
+            
             menuEl.appendChild(row);
         });
 
         document.body.appendChild(menuEl);
         this.currentOpenMenu = menuEl;
 
-        // Close when clicking outside
+        // Close menu when clicking outside
         setTimeout(() => {
             document.addEventListener('click', this.closeMenu.bind(this), { once: true });
         }, 10);
@@ -127,7 +140,7 @@ export class MenuBar {
         }
     }
 
-    // File operations (same as before, but cleaner)
+    // === File Operations (cleaned up) ===
     async openFile() {
         const input = document.createElement('input');
         input.type = 'file';
@@ -141,7 +154,7 @@ export class MenuBar {
                 this.tabManager.addTab(newNote);
                 StorageManager.addRecentFile(file.name);
             } catch (err) {
-                alert("Failed to open file");
+                alert("Failed to open file: " + err.message);
             }
         };
         input.click();
@@ -162,7 +175,7 @@ export class MenuBar {
     saveAsCurrentFile() {
         const active = this.tabManager.getActiveNote();
         if (!active) return;
-        const defaultName = active.filename || `amigapad-${this.tabManager.tabs.indexOf(active) + 1}.txt`;
+        const defaultName = active.filename || `amigapad-${Date.now().toString().slice(-6)}.txt`;
         const name = prompt("Save file as:", defaultName);
         if (name) {
             this.downloadFile(name, active.content);
@@ -178,15 +191,16 @@ export class MenuBar {
         a.href = URL.createObjectURL(blob);
         a.download = filename.endsWith('.txt') ? filename : filename + '.txt';
         a.click();
+        URL.revokeObjectURL(a.href);
     }
 
     showRecentFiles() {
         const recent = StorageManager.getRecentFiles();
         if (recent.length === 0) {
-            alert("No recent files.");
+            alert("No recent files yet.");
             return;
         }
-        alert("Recent:\n" + recent.map((f,i) => `${i+1}. ${f}`).join('\n'));
+        alert("Recent Files:\n\n" + recent.map((f, i) => `${i+1}. ${f}`).join('\n'));
     }
 
     saveSession() {
@@ -213,7 +227,7 @@ export class MenuBar {
                 this.tabManager.loadTabsFromData(data);
                 StorageManager.saveLastSession(data);
             } catch (err) {
-                alert("Failed to load session");
+                alert("Failed to load session: " + err.message);
             }
         };
         input.click();
@@ -224,9 +238,11 @@ export class MenuBar {
         if (!activeNote) return;
         const textarea = document.querySelector('#editor-container textarea');
         if (!textarea) return;
+
         const now = new Date().toLocaleString();
-        const start = textarea.selectionStart;
+        const start = textarea.selectionStart || 0;
         textarea.setRangeText(now, start, start, 'end');
+        
         activeNote.updateContent(textarea.value);
         this.tabManager.renderTabs();
     }
