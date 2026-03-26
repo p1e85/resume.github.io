@@ -17,8 +17,9 @@ class AmigaPad {
 
         this.initUI();
         
+        // Create TabManager
         this.tabManager = new TabManager('tab-bar', 'editor-container', this.onTabChange.bind(this));
-        this.tabManager.dialogManager = this.dialogManager;   // Required for unsaved dialog
+        this.tabManager.dialogManager = this.dialogManager;   // Link for unsaved dialog
 
         this.windowManager = new WindowManager();
         
@@ -29,8 +30,9 @@ class AmigaPad {
             this.windowManager
         );
 
+        // Final features
         this.keyboardShortcuts = new KeyboardShortcuts(this.tabManager, this.menuBar);
-        this.tabManager.startAutoSave(30000);
+        this.tabManager.startAutoSave(30000);   // Auto-save every 30 seconds
 
         this.loadLastSession();
         this.createInitialTab();
@@ -102,7 +104,6 @@ class AmigaPad {
     }
 
     onTabChange(activeNote) {
-        // Can be expanded later for status or other features
         console.log('Active tab changed:', activeNote ? activeNote.getDisplayTitle() : 'none');
     }
 
