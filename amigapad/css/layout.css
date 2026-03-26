@@ -1,31 +1,38 @@
 body {
-    background: var(--amiga-bg);
-    font-family: "Courier New", monospace; /* Closest web-safe to Topaz feel */
-    font-size: 13px;
-    letter-spacing: 0.5px; /* Helps retro monospace look */
-}
-
-/* Main container */
-#app {
+    margin: 0;
+    padding: 0;
     height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Amiga Pad Window (will be controlled by JS) */
-.amiga-window {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin: 20px;
-    box-shadow: 4px 4px 0 #00000080;
     overflow: hidden;
+    background: var(--amiga-bg);
 }
 
-/* Fullscreen classic mode on mobile */
-@media (max-width: 768px) {
-    .amiga-window {
-        margin: 0;
-        border-radius: 0;
-    }
+/* Workbench Desktop Mode (draggable window inside background) */
+.workbench-mode #main-window {
+    position: absolute;
+    top: 40px;
+    left: 80px;
+    width: 860px;
+    height: 620px;
+    margin: 0;
+    box-shadow: 8px 8px 0 rgba(0,0,0,0.6);
+    z-index: 10;
+}
+
+/* Classic Mode (full screen, mobile friendly) */
+.classic-mode #main-window {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* Make sure editor fills space properly in both modes */
+.amiga-editor-container {
+    flex: 1;
+    overflow: hidden;
+    min-height: 200px;
 }
