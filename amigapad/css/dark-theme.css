@@ -1,0 +1,9 @@
+.dark-theme {
+    --amiga-bg:          #112233;
+    --amiga-window-bg:   #334455;
+    --amiga-title-active:#223366;
+    --amiga-title-text:  #aaccff;
+    --amiga-text:        #ddeeff;
+    --amiga-border-light:#667788;
+    --amiga-border-dark: #112233;
+}
