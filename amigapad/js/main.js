@@ -6,6 +6,7 @@ import { TabManager } from './classes/TabManager.js';
 import { MenuBar } from './classes/MenuBar.js';
 import { DialogManager } from './classes/DialogManager.js';
 import { WindowManager } from './classes/WindowManager.js';
+import { KeyboardShortcuts } from './classes/KeyboardShortcuts.js';
 
 class AmigaPad {
     constructor() {
@@ -30,6 +31,9 @@ class AmigaPad {
 
         this.loadLastSession();
         this.createInitialTab();
+
+        this.keyboardShortcuts = new KeyboardShortcuts(this.tabManager, this.menuBar);
+        this.tabManager.startAutoSave();   // Start auto-save
     }
 
     initUI() {
