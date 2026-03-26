@@ -29,11 +29,11 @@ class AmigaPad {
             this.windowManager
         );
 
+        this.keyboardShortcuts = new KeyboardShortcuts(this.tabManager, this.menuBar);
+        this.tabManager.startAutoSave(30000);
+
         this.loadLastSession();
         this.createInitialTab();
-
-        this.keyboardShortcuts = new KeyboardShortcuts(this.tabManager, this.menuBar);
-        this.tabManager.startAutoSave();   // Start auto-save
     }
 
     initUI() {
