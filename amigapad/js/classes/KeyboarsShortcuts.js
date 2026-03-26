@@ -8,7 +8,6 @@ export class KeyboardShortcuts {
 
     setup() {
         document.addEventListener('keydown', (e) => {
-            // Ctrl/Cmd key combinations
             if (e.ctrlKey || e.metaKey) {
                 switch (e.key.toLowerCase()) {
                     case 'n':
@@ -29,12 +28,12 @@ export class KeyboardShortcuts {
                         break;
                     case 'f':
                         e.preventDefault();
-                        alert("Find & Replace - coming in next update");
+                        alert("🔍 Find/Replace - Full dialog coming in future update");
                         break;
                 }
             }
 
-            // F5 for Time/Date (classic Notepad behavior)
+            // F5 = Time/Date (classic Notepad style)
             if (e.key === 'F5') {
                 e.preventDefault();
                 this.menuBar.insertTimeDate();
