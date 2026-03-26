@@ -1,5 +1,6 @@
 // js/classes/MenuBar.js
 import { StorageManager } from './StorageManager.js';
+import { Note } from './Note.js';
 
 export class MenuBar {
     constructor(tabManager, themeManager, dialogManager) {
