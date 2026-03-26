@@ -17,11 +17,16 @@ class AmigaPad {
         this.initUI();
         
         this.tabManager = new TabManager('tab-bar', 'editor-container', this.onTabChange.bind(this));
-        
-        this.menuBar = new MenuBar(this.tabManager, this.themeManager, this.dialogManager);
+        this.tabManager.dialogManager = this.dialogManager;   // Required for unsaved dialog
 
         this.windowManager = new WindowManager();
-        this.menuBar.windowManager = this.windowManager;   // so menu can access toggle
+        
+        this.menuBar = new MenuBar(
+            this.tabManager,
+            this.themeManager,
+            this.dialogManager,
+            this.windowManager
+        );
 
         this.loadLastSession();
         this.createInitialTab();
@@ -29,12 +34,14 @@ class AmigaPad {
 
     initUI() {
         const app = document.getElementById('app');
+        app.classList.add('workbench-mode'); // Start in Workbench mode
+
         app.innerHTML = `
             <div class="amiga-window amiga-bevel-raised" id="main-window">
                 <!-- Title Bar -->
                 <div class="amiga-title-bar" id="title-bar">
                     <div class="amiga-close-gadget" id="close-gadget"></div>
-                    <div style="flex: 1; text-align: center;">Amiga Pad</div>
+                    <div style="flex: 1; text-align: center; font-size: 15px;">Amiga Pad</div>
                 </div>
 
                 <!-- Menu Bar -->
@@ -43,20 +50,20 @@ class AmigaPad {
                 <!-- Tab Bar -->
                 <div class="amiga-tab-bar" id="tab-bar"></div>
 
-                <!-- Editor -->
-                <div class="amiga-editor-container amiga-bevel-inset" id="editor-container" style="flex: 1;"></div>
+                <!-- Editor Area -->
+                <div class="amiga-editor-container amiga-bevel-inset" id="editor-container"></div>
 
                 <!-- Status Bar -->
                 <div class="amiga-status-bar amiga-bevel-raised" id="status-bar">
-                    <span id="status-left">Line 1, Col 1</span>
-                    <span id="status-right">100%</span>
+                    <span id="status-left">Ln 1, Col 1</span>
+                    <span id="status-right">0 chars</span>
                 </div>
             </div>
         `;
 
+        // Close gadget
         document.getElementById('close-gadget').addEventListener('click', () => {
-            if (confirm('Close Amiga Pad? Unsaved changes will be lost.')) {
-                // In real app we could save session first
+            if (confirm('Close Amiga Pad?')) {
                 window.close();
             }
         });
@@ -64,7 +71,7 @@ class AmigaPad {
         this.makeDraggable();
     }
 
-    makeDraggable() { /* keep the same draggable code from previous version */ 
+    makeDraggable() {
         const titleBar = document.getElementById('title-bar');
         const windowEl = document.getElementById('main-window');
         let isDragging = false;
@@ -73,8 +80,9 @@ class AmigaPad {
         titleBar.addEventListener('mousedown', (e) => {
             if (e.target.id === 'close-gadget') return;
             isDragging = true;
-            offsetX = e.clientX - windowEl.offsetLeft;
-            offsetY = e.clientY - windowEl.offsetTop;
+            const rect = windowEl.getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
         });
 
         document.addEventListener('mousemove', (e) => {
@@ -84,16 +92,19 @@ class AmigaPad {
             windowEl.style.top = (e.clientY - offsetY) + 'px';
         });
 
-        document.addEventListener('mouseup', () => isDragging = false);
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
     }
 
     onTabChange(activeNote) {
-        console.log('Tab changed:', activeNote?.getDisplayTitle());
+        // Can be expanded later for status or other features
+        console.log('Active tab changed:', activeNote ? activeNote.getDisplayTitle() : 'none');
     }
 
     createInitialTab() {
         const note = new Note("Welcome to Amiga Pad");
-        note.content = "Welcome to Amiga Pad!\n\nThis is a faithful recreation of a classic notepad with Amiga Workbench 1.3 styling.\n\nEnjoy the retro vibes! 🚀";
+        note.content = "Welcome to Amiga Pad!\n\nA faithful recreation with Amiga Workbench 1.3 styling.\n\nStart typing to see the * modified indicator.\n\nEnjoy the retro vibes! 🚀";
         this.tabManager.addTab(note);
     }
 
@@ -105,6 +116,7 @@ class AmigaPad {
     }
 }
 
+// Start the application
 document.addEventListener('DOMContentLoaded', () => {
     window.amigaPad = new AmigaPad();
 });
