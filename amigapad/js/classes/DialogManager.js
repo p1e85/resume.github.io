@@ -1,59 +1,101 @@
 // js/classes/DialogManager.js
-// Handles Amiga-style requester dialogs
-
 export class DialogManager {
     showAboutDialog() {
-        const dialogHTML = `
-            <div id="about-dialog" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                        background: var(--amiga-window-bg, #c0c0c0); 
-                        border: 4px solid; 
-                        border-color: var(--bevel-light, #ffffff) var(--bevel-dark, #808080) var(--bevel-dark, #808080) var(--bevel-light, #ffffff);
-                        padding: 20px; width: 420px; max-width: 90%; font-family: monospace; 
-                        box-shadow: 6px 6px 0 #00000080; z-index: 10000; color: var(--amiga-text, #000000);">
-                
-                <div style="background: var(--amiga-title-active, #0000aa); color: var(--amiga-title-text, #ffffff); 
-                            padding: 6px; text-align: center; margin-bottom: 16px; font-weight: bold;">
-                    About Amiga Pad
-                </div>
-                
-                <div style="line-height: 1.5;">
-                    <p><strong>Amiga Pad</strong> — Version 0.2</p>
-                    <p>A multi-tab notepad with authentic Amiga Workbench 1.3 styling.</p>
-                    <p>Features classic Notepad functions + tabs, sessions, and retro vibes.</p>
-                    <p style="margin-top: 12px;">Coded with Grok by xAI</p>
-                </div>
-                
-                <div style="text-align: center; margin-top: 24px;">
-                    <button id="about-ok-btn" 
-                            style="padding: 6px 20px; background: var(--amiga-button, #c0c0c0); 
-                                   border: 2px solid; border-color: var(--bevel-light) var(--bevel-dark) var(--bevel-dark) var(--bevel-light); 
-                                   cursor: pointer; font-family: monospace;">
-                        OK
-                    </button>
-                </div>
+        this.createDialog(
+            "About Amiga Pad",
+            `
+                <p><strong>Amiga Pad v0.3</strong></p>
+                <p>A retro multi-tab notepad inspired by Amiga Workbench 1.3 and Windows Notepad.</p>
+                <p>Coded with Grok by xAI</p>
+                <p style="margin-top: 15px; font-size: 13px;">Enjoy the classic vibes!</p>
+            `,
+            "OK"
+        );
+    }
+
+    showUnsavedDialog(noteTitle, onSave, onDiscard) {
+        this.createDialog(
+            "Amiga Pad",
+            `
+                <p>Save changes to <strong>${noteTitle}</strong>?</p>
+            `,
+            "Yes", "No", "Cancel",
+            (choice) => {
+                if (choice === "Yes") onSave();
+                else if (choice === "No") onDiscard();
+                // Cancel does nothing (just closes)
+            }
+        );
+    }
+
+    createDialog(title, contentHTML, ...buttons) {
+        const dialog = document.createElement('div');
+        dialog.style.position = 'fixed';
+        dialog.style.top = '50%';
+        dialog.style.left = '50%';
+        dialog.style.transform = 'translate(-50%, -50%)';
+        dialog.style.background = 'var(--amiga-window-bg, #c0c0c0)';
+        dialog.style.border = '4px solid';
+        dialog.style.borderColor = 'var(--bevel-light, #ffffff) var(--bevel-dark, #808080) var(--bevel-dark, #808080) var(--bevel-light, #ffffff)';
+        dialog.style.padding = '20px';
+        dialog.style.width = '380px';
+        dialog.style.maxWidth = '92%';
+        dialog.style.boxShadow = '6px 6px 0 rgba(0,0,0,0.7)';
+        dialog.style.zIndex = '10000';
+        dialog.style.fontFamily = 'monospace';
+        dialog.style.fontSize = '15px';
+        dialog.style.color = 'var(--amiga-text, #000000)';
+
+        dialog.innerHTML = `
+            <div style="background: var(--amiga-title-active, #0000aa); color: var(--amiga-title-text, #ffffff); 
+                        padding: 6px 10px; margin-bottom: 16px; text-align: center; font-weight: bold;">
+                ${title}
             </div>
-            
-            <!-- Backdrop -->
-            <div id="about-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999;"></div>
+            <div style="margin-bottom: 24px; line-height: 1.5;">
+                ${contentHTML}
+            </div>
+            <div style="text-align: center; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                ${buttons.map((btnText, i) => `
+                    <button class="dialog-btn" data-choice="${btnText}" 
+                            style="padding: 6px 22px; min-width: 80px; font-family: monospace;">
+                        ${btnText}
+                    </button>
+                `).join('')}
+            </div>
         `;
 
-        const container = document.createElement('div');
-        container.innerHTML = dialogHTML;
-        document.body.appendChild(container);
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.inset = '0';
+        overlay.style.background = 'rgba(0,0,0,0.4)';
+        overlay.style.zIndex = '9999';
 
-        // Close handlers
-        const closeDialog = () => container.remove();
+        document.body.appendChild(overlay);
+        document.body.appendChild(dialog);
 
-        document.getElementById('about-ok-btn').addEventListener('click', closeDialog);
-        document.getElementById('about-overlay').addEventListener('click', closeDialog);
+        const close = () => {
+            dialog.remove();
+            overlay.remove();
+        };
 
-        // Allow Escape key to close
-        const escHandler = (e) => {
+        dialog.querySelectorAll('.dialog-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const choice = btn.dataset.choice;
+                if (dialog.onChoice) dialog.onChoice(choice);
+                close();
+            });
+        });
+
+        // Store callback
+        dialog.onChoice = buttons.length > 1 ? arguments[3] : null;
+
+        // Escape key support
+        const esc = (e) => {
             if (e.key === 'Escape') {
-                closeDialog();
-                document.removeEventListener('keydown', escHandler);
+                close();
+                document.removeEventListener('keydown', esc);
             }
         };
-        document.addEventListener('keydown', escHandler);
+        document.addEventListener('keydown', esc);
     }
 }
