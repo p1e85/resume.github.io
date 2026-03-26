@@ -1,6 +1,8 @@
 // js/classes/TabManager.js
 // Manages tabs, rendering, switching, and basic drag & drop
 
+import { Note } from './Note.js';
+
 export class TabManager {
     constructor(containerId, editorContainerId, onTabChangeCallback) {
         this.tabs = [];
@@ -8,6 +10,8 @@ export class TabManager {
         this.tabContainer = document.getElementById(containerId);
         this.editorContainer = document.getElementById(editorContainerId);
         this.onTabChange = onTabChangeCallback || (() => {});
+        
+        this.wordWrap = true;
         
         this.setupDragAndDrop();
     }
@@ -39,17 +43,18 @@ export class TabManager {
             tabEl.textContent = note.getDisplayTitle();
             tabEl.dataset.tabId = note.id;
             
-            // Click to switch
+            // Click to switch tab
             tabEl.addEventListener('click', () => this.switchToTab(note.id));
             
-            // Close button (small Amiga style)
+            // Close button
             const closeBtn = document.createElement('span');
             closeBtn.textContent = ' ×';
-            closeBtn.style.marginLeft = '8px';
+            closeBtn.style.marginLeft = '10px';
             closeBtn.style.cursor = 'pointer';
-            closeBtn.style.opacity = '0.7';
+            closeBtn.style.opacity = '0.8';
+            closeBtn.style.fontSize = '18px';
             closeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
+                e.stopImmediatePropagation();
                 this.closeTab(note.id);
             });
             
@@ -57,17 +62,28 @@ export class TabManager {
             this.tabContainer.appendChild(tabEl);
         });
 
-// New Tab button
-const newTabBtn = document.createElement('div');
-newTabBtn.className = 'amiga-tab';
-newTabBtn.textContent = '+ New';
-newTabBtn.style.fontWeight = 'bold';
-newTabBtn.style.minWidth = '60px';
-newTabBtn.addEventListener('click', (e) => {
-    e.stopImmediatePropagation();
-    this.addNewEmptyTab();
-});
-this.tabContainer.appendChild(newTabBtn);
+        // Improved + New Tab button
+        const newTabBtn = document.createElement('div');
+        newTabBtn.className = 'amiga-tab';
+        newTabBtn.textContent = '+';
+        newTabBtn.style.fontWeight = 'bold';
+        newTabBtn.style.padding = '6px 18px';
+        newTabBtn.style.minWidth = '40px';
+        newTabBtn.style.textAlign = 'center';
+        newTabBtn.addEventListener('click', (e) => {
+            e.stopImmediatePropagation();
+            this.addNewEmptyTab();
+        });
+        this.tabContainer.appendChild(newTabBtn);
+    }
+
+    toggleWordWrap() {
+        this.wordWrap = !this.wordWrap;
+        const textarea = this.editorContainer.querySelector('textarea');
+        if (textarea) {
+            textarea.style.whiteSpace = this.wordWrap ? 'pre-wrap' : 'pre';
+            textarea.style.overflowWrap = this.wordWrap ? 'break-word' : 'normal';
+        }
     }
 
     renderCurrentEditor() {
@@ -79,14 +95,37 @@ this.tabContainer.appendChild(newTabBtn);
             textarea = document.createElement('textarea');
             this.editorContainer.appendChild(textarea);
             
-            // Auto-save on input + mark modified
+            // Mark as modified + update tabs when typing
             textarea.addEventListener('input', () => {
                 activeNote.updateContent(textarea.value);
-                this.renderTabs(); // update * indicator
+                this.renderTabs();           // refresh * indicator
+                this.updateStatusBar();      // live status
             });
+
+            // Live line/column update when moving cursor
+            textarea.addEventListener('keyup', () => this.updateStatusBar());
+            textarea.addEventListener('click', () => this.updateStatusBar());
+            textarea.addEventListener('select', () => this.updateStatusBar());
         }
         
         textarea.value = activeNote.content;
+        setTimeout(() => this.updateStatusBar(), 50);
+    }
+
+    updateStatusBar() {
+        const textarea = this.editorContainer.querySelector('textarea');
+        if (!textarea) return;
+
+        const textBeforeCursor = textarea.value.substring(0, textarea.selectionStart);
+        const lines = textBeforeCursor.split('\n');
+        const currentLine = lines.length;
+        const currentCol = lines[lines.length - 1].length + 1;
+
+        const statusLeft = document.getElementById('status-left');
+        const statusRight = document.getElementById('status-right');
+
+        if (statusLeft) statusLeft.textContent = `Ln ${currentLine}, Col ${currentCol}`;
+        if (statusRight) statusRight.textContent = `${textarea.value.length} chars`;
     }
 
     addNewEmptyTab() {
@@ -99,17 +138,15 @@ this.tabContainer.appendChild(newTabBtn);
         if (!note) return;
 
         if (note.modified) {
-            // Use better dialog later – for now keep simple confirm, we'll upgrade next
             if (!confirm(`Save changes to "${note.getDisplayTitle()}" before closing?`)) {
                 return;
             }
-            // In future we'll call dialogManager.showUnsavedDialog()
         }
 
         this.tabs = this.tabs.filter(t => t.id !== tabId);
         
         if (this.activeTabId === tabId) {
-            this.activeTabId = this.tabs.length ? this.tabs[0].id : null;
+            this.activeTabId = this.tabs.length ? this.tabs[this.tabs.length - 1].id : null;
         }
         
         this.renderTabs();
@@ -117,7 +154,7 @@ this.tabContainer.appendChild(newTabBtn);
     }
 
     setupDragAndDrop() {
-        // Basic drag-to-reorder support (can be enhanced later)
+        // Basic drag & drop support (can be expanded later)
         this.tabContainer.addEventListener('dragstart', (e) => {
             if (e.target.classList.contains('amiga-tab')) {
                 e.dataTransfer.setData('text/plain', e.target.dataset.tabId);
@@ -128,8 +165,7 @@ this.tabContainer.appendChild(newTabBtn);
         
         this.tabContainer.addEventListener('drop', (e) => {
             e.preventDefault();
-            const draggedId = e.dataTransfer.getData('text/plain');
-            // Simple reordering logic can be added here later
+            // Reordering logic can be added here in the future
         });
     }
 
