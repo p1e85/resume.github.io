@@ -57,13 +57,17 @@ export class TabManager {
             this.tabContainer.appendChild(tabEl);
         });
 
-        // New Tab button
-        const newTabBtn = document.createElement('div');
-        newTabBtn.className = 'amiga-tab';
-        newTabBtn.textContent = '+';
-        newTabBtn.style.fontWeight = 'bold';
-        newTabBtn.addEventListener('click', () => this.addNewEmptyTab());
-        this.tabContainer.appendChild(newTabBtn);
+// New Tab button
+const newTabBtn = document.createElement('div');
+newTabBtn.className = 'amiga-tab';
+newTabBtn.textContent = '+ New';
+newTabBtn.style.fontWeight = 'bold';
+newTabBtn.style.minWidth = '60px';
+newTabBtn.addEventListener('click', (e) => {
+    e.stopImmediatePropagation();
+    this.addNewEmptyTab();
+});
+this.tabContainer.appendChild(newTabBtn);
     }
 
     renderCurrentEditor() {
