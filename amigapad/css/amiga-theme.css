@@ -1,26 +1,127 @@
 :root {
-    /* Authentic Amiga Workbench 1.3 colors */
-    --amiga-bg:          #0055aa;        /* Classic blue desktop */
-    --amiga-window-bg:   #c0c0c0;        /* Light gray window body */
-    --amiga-title-active:#0000aa;        /* Dark blue title bar */
+    /* Authentic Amiga Workbench 1.3 light palette */
+    --amiga-bg:          #0055aa;
+    --amiga-window-bg:   #c0c0c0;
+    --amiga-title-active:#0000aa;
     --amiga-title-text:  #ffffff;
     --amiga-text:        #000000;
     --amiga-border-light:#ffffff;
-    --amiga-border-dark: #808080;        /* Medium gray for depth */
+    --amiga-border-dark: #808080;
     --amiga-button:      #c0c0c0;
-    --amiga-gadget:      #0000aa;
     
     --bevel-light: var(--amiga-border-light);
     --bevel-dark:  var(--amiga-border-dark);
 }
 
-/* Topaz-like font feel - closest with web-safe monospace */
+/* Bigger, more readable retro font */
 body {
     font-family: "Courier New", "Lucida Console", monospace;
-    font-size: 13px;
-    line-height: 1.25;
-    letter-spacing: 0.6px; /* Gives that slightly chunky Topaz character */
+    font-size: 15px;                    /* Increased from 13px */
+    line-height: 1.35;
+    letter-spacing: 0.4px;              /* Closer to Topaz feel */
 }
 
-/* Rest of the previous styles stay the same - just append them below if you want */
-.amiga-bevel-raised { ... } /* keep all the previous bevel, title-bar, tab, etc. rules */
+/* Amiga 3D bevels */
+.amiga-bevel-raised {
+    border: 2px solid;
+    border-color: var(--bevel-light) var(--bevel-dark) var(--bevel-dark) var(--bevel-light);
+    background: var(--amiga-window-bg);
+}
+
+.amiga-bevel-inset {
+    border: 2px solid;
+    border-color: var(--bevel-dark) var(--bevel-light) var(--bevel-light) var(--bevel-dark);
+    background: var(--amiga-window-bg);
+}
+
+/* Title bar */
+.amiga-title-bar {
+    background: var(--amiga-title-active);
+    color: var(--amiga-title-text);
+    padding: 4px 8px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    height: 28px;                       /* Slightly taller */
+    user-select: none;
+    cursor: move;
+}
+
+.amiga-close-gadget {
+    width: 18px;
+    height: 18px;
+    background: #c0c0c0;
+    border: 2px solid;
+    border-color: white #555555 #555555 white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.amiga-close-gadget::after {
+    content: "•";
+    color: black;
+}
+
+/* Better menu bar - larger click targets */
+.amiga-menu-bar-inner {
+    display: flex;
+    gap: 24px;
+    padding: 6px 10px;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.menu-item {
+    padding: 4px 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Tab bar */
+.amiga-tab-bar {
+    background: var(--amiga-window-bg);
+    border-bottom: 2px solid var(--bevel-dark);
+    display: flex;
+    overflow-x: auto;
+    padding: 4px 6px 0;
+    gap: 3px;
+}
+
+.amiga-tab {
+    padding: 6px 14px;                  /* Bigger click area */
+    background: var(--amiga-button);
+    border: 2px solid;
+    border-color: var(--bevel-light) var(--bevel-dark) var(--bevel-dark) var(--bevel-light);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    font-size: 14px;
+    min-height: 26px;
+}
+
+.amiga-tab.active {
+    background: var(--amiga-window-bg);
+    border-color: var(--bevel-dark) var(--bevel-light) var(--bevel-light) var(--bevel-dark);
+    border-bottom: 2px solid var(--amiga-window-bg);
+}
+
+/* Editor */
+.amiga-editor-container textarea {
+    font-size: 15px;
+    padding: 10px;
+    line-height: 1.4;
+}
+
+/* Status bar */
+.amiga-status-bar {
+    background: var(--amiga-window-bg);
+    border-top: 2px solid var(--bevel-dark);
+    padding: 4px 8px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+}
