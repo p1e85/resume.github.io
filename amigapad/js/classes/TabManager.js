@@ -14,6 +14,8 @@ export class TabManager {
         this.wordWrap = true;
         
         this.setupDragAndDrop();
+        this.autoSaveTimer = null;
+        this.lastAutoSave = Date.now();
     }
 
     addTab(note) {
@@ -196,4 +198,25 @@ export class TabManager {
         this.renderTabs();
         this.renderCurrentEditor();
     }
+
+        startAutoSave(intervalMs = 30000) {
+        if (this.autoSaveTimer) clearInterval(this.autoSaveTimer);
+        this.autoSaveTimer = setInterval(() => {
+            const active = this.getActiveNote();
+            if (active && active.modified) {
+                // For now we just mark as "saved" in memory. Real file save would require user action.
+                active.markSaved(active.filename);
+                this.renderTabs();
+                console.log('Auto-saved tab:', active.getDisplayTitle());
+            }
+        }, intervalMs);
+    }
+
+    stopAutoSave() {
+        if (this.autoSaveTimer) {
+            clearInterval(this.autoSaveTimer);
+            this.autoSaveTimer = null;
+        }
+    }
+    
 }
