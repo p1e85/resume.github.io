@@ -95,9 +95,11 @@ export class TabManager {
         if (!note) return;
 
         if (note.modified) {
-            // TODO: Show Amiga requester dialog "Save changes?"
-            if (!confirm(`Save changes to ${note.getDisplayTitle()}?`)) return;
-            // For now we just discard – we'll replace with nice dialog later
+            // Use better dialog later – for now keep simple confirm, we'll upgrade next
+            if (!confirm(`Save changes to "${note.getDisplayTitle()}" before closing?`)) {
+                return;
+            }
+            // In future we'll call dialogManager.showUnsavedDialog()
         }
 
         this.tabs = this.tabs.filter(t => t.id !== tabId);
@@ -107,7 +109,7 @@ export class TabManager {
         }
         
         this.renderTabs();
-        this.renderCurrentEditor();
+        if (this.activeTabId) this.renderCurrentEditor();
     }
 
     setupDragAndDrop() {
