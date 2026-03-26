@@ -1,9 +1,27 @@
+/* css/dark-theme.css - Improved retro dark theme */
 .dark-theme {
-    --amiga-bg:          #112233;
-    --amiga-window-bg:   #334455;
-    --amiga-title-active:#223366;
-    --amiga-title-text:  #aaccff;
-    --amiga-text:        #ddeeff;
-    --amiga-border-light:#667788;
-    --amiga-border-dark: #112233;
+    /* Dark retro Amiga-inspired palette */
+    --amiga-bg:          #001122;        /* Deep dark blue desktop */
+    --amiga-window-bg:   #223344;        /* Dark gray window body */
+    --amiga-title-active:#000066;        /* Darker blue title bar */
+    --amiga-title-text:  #aaddff;        /* Light blue-ish white */
+    --amiga-text:        #cceeff;        /* Bright readable text */
+    --amiga-border-light:#6688aa;        /* Lighter bevel for 3D */
+    --amiga-border-dark: #112233;        /* Darker bevel */
+    --amiga-button:      #334455;
+    --amiga-gadget:      #000088;
+}
+
+/* Dark mode specific overrides for better readability */
+.dark-theme .amiga-tab {
+    color: var(--amiga-text);
+}
+
+.dark-theme textarea {
+    color: var(--amiga-text);
+    background: var(--amiga-window-bg);
+}
+
+.dark-theme .amiga-status-bar {
+    color: var(--amiga-text);
 }
