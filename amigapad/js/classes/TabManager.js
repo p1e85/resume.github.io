@@ -138,11 +138,26 @@ export class TabManager {
         if (!note) return;
 
         if (note.modified) {
-            if (!confirm(`Save changes to "${note.getDisplayTitle()}" before closing?`)) {
-                return;
-            }
+            // Use proper Amiga requester
+            this.dialogManager.showUnsavedDialog(
+                note.getDisplayTitle(),
+                () => {
+                    // "Yes" - Save (for now we just mark saved, real save dialog later)
+                    note.markSaved();
+                    this.performClose(tabId);
+                },
+                () => {
+                    // "No" - Discard
+                    this.performClose(tabId);
+                }
+            );
+            return;
         }
 
+        this.performClose(tabId);
+    }
+
+    performClose(tabId) {
         this.tabs = this.tabs.filter(t => t.id !== tabId);
         
         if (this.activeTabId === tabId) {
