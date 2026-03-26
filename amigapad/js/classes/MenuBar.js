@@ -13,14 +13,15 @@ export class MenuBar {
     }
 
     buildMenu() {
-        this.menuContainer.innerHTML = `
-            <div class="amiga-menu-bar-inner" style="display: flex; gap: 20px; padding: 3px 8px; user-select: none;">
-                <span class="menu-item" data-menu="file">File</span>
-                <span class="menu-item" data-menu="edit">Edit</span>
-                <span class="menu-item" data-menu="format">Format</span>
-                <span class="menu-item" data-menu="view">View</span>
-                <span class="menu-item" data-menu="help">Help</span>
-            </div>
+// Inside buildMenu() - replace the innerHTML part with bigger targets
+    this.menuContainer.innerHTML = `
+        <div class="amiga-menu-bar-inner">
+            <span class="menu-item" data-menu="file">File</span>
+            <span class="menu-item" data-menu="edit">Edit</span>
+            <span class="menu-item" data-menu="format">Format</span>
+            <span class="menu-item" data-menu="view">View</span>
+            <span class="menu-item" data-menu="help">Help</span>
+        </div>
         `;
 
         this.menuContainer.addEventListener('click', (e) => {
@@ -61,20 +62,22 @@ export class MenuBar {
                 { label: 'Save Session', action: () => this.saveSession() },
                 { label: 'Load Session', action: () => this.loadSession() }
             ];
-        } else if (menuType === 'edit') {
-            items = [
-                { label: 'Undo', action: () => document.execCommand('undo') },
-                { label: 'Cut', action: () => document.execCommand('cut') },
-                { label: 'Copy', action: () => document.execCommand('copy') },
-                { label: 'Paste', action: () => document.execCommand('paste') },
-                { label: 'Delete', action: () => document.execCommand('delete') },
-                { label: '---' },
-                { label: 'Find...', action: () => alert('Find dialog coming soon') },
-                { label: 'Replace...', action: () => alert('Replace coming soon') },
-                { label: 'Go To...', action: () => alert('Go To coming soon') },
-                { label: 'Select All', action: () => document.execCommand('selectAll') },
-                { label: 'Time/Date', action: () => this.insertTimeDate() }
-            ];
+} else if (menuType === 'edit') {
+    items = [
+        { label: 'Undo', action: () => document.execCommand('undo') },
+        { label: 'Cut', action: () => document.execCommand('cut') },
+        { label: 'Copy', action: () => document.execCommand('copy') },
+        { label: 'Paste', action: () => document.execCommand('paste') },
+        { label: 'Delete', action: () => document.execCommand('delete') },
+        { label: '---' },
+        { label: 'Select All', action: () => document.execCommand('selectAll') },
+        { label: 'Time/Date', action: () => this.insertTimeDate() }
+    ];
+} else if (menuType === 'format') {
+    items = [
+        { label: 'Word Wrap', action: () => alert('Word Wrap toggle coming soon') },
+        { label: 'Font...', action: () => alert('Font dialog coming soon') }
+    ];
         } else if (menuType === 'view') {
             items = [
                 { label: 'Toggle Theme (Light/Dark)', action: () => this.themeManager.toggle() }
