@@ -1,0 +1,31 @@
+body {
+    background: var(--amiga-bg);
+    font-family: "Courier New", monospace; /* Closest web-safe to Topaz feel */
+    font-size: 13px;
+    letter-spacing: 0.5px; /* Helps retro monospace look */
+}
+
+/* Main container */
+#app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Amiga Pad Window (will be controlled by JS) */
+.amiga-window {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin: 20px;
+    box-shadow: 4px 4px 0 #00000080;
+    overflow: hidden;
+}
+
+/* Fullscreen classic mode on mobile */
+@media (max-width: 768px) {
+    .amiga-window {
+        margin: 0;
+        border-radius: 0;
+    }
+}
