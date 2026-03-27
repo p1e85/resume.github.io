@@ -178,3 +178,14 @@ body {
 .amiga-editor-container {
     display: flex;
 }
+
+/* Force editor to fill space */
+.amiga-editor-container {
+    flex: 1;
+    min-height: 0;   /* Important for flex child */
+}
+
+.amiga-editor-container textarea {
+    font-size: 16px;
+    line-height: 1.55;
+}
