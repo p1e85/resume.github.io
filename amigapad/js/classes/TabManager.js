@@ -11,10 +11,11 @@ export class TabManager {
         this.editorContainer = document.getElementById(editorContainerId);
         this.onTabChange = onTabChangeCallback || (() => {});
         
-        this.setupDragAndDrop();
         this.wordWrap = true;
         this.autoSaveTimer = null;
-        this.lastAutoSave = Date.now();
+        this.dialogManager = null;        // ← Will be set from main.js
+        
+        this.setupDragAndDrop();
     }
 
     addTab(note) {
@@ -44,10 +45,8 @@ export class TabManager {
             tabEl.textContent = note.getDisplayTitle();
             tabEl.dataset.tabId = note.id;
             
-            // Click to switch tab
             tabEl.addEventListener('click', () => this.switchToTab(note.id));
             
-            // Close button
             const closeBtn = document.createElement('span');
             closeBtn.textContent = ' ×';
             closeBtn.style.marginLeft = '10px';
@@ -63,7 +62,7 @@ export class TabManager {
             this.tabContainer.appendChild(tabEl);
         });
 
-        // Improved + New Tab button
+        // + New Tab button
         const newTabBtn = document.createElement('div');
         newTabBtn.className = 'amiga-tab';
         newTabBtn.textContent = '+';
@@ -96,15 +95,13 @@ export class TabManager {
             textarea = document.createElement('textarea');
             this.editorContainer.appendChild(textarea);
             textarea.style.fontSize = '16px';
-            
-            // Mark as modified + update tabs when typing
+
             textarea.addEventListener('input', () => {
                 activeNote.updateContent(textarea.value);
-                this.renderTabs();           // refresh * indicator
-                this.updateStatusBar();      // live status
+                this.renderTabs();
+                this.updateStatusBar();
             });
 
-            // Live line/column update when moving cursor
             textarea.addEventListener('keyup', () => this.updateStatusBar());
             textarea.addEventListener('click', () => this.updateStatusBar());
             textarea.addEventListener('select', () => this.updateStatusBar());
@@ -140,18 +137,22 @@ export class TabManager {
         if (!note) return;
 
         if (note.modified) {
-            // Use proper Amiga requester
+            if (!this.dialogManager) {
+                // Fallback if dialogManager not set yet
+                if (confirm(`Save changes to "${note.getDisplayTitle()}" before closing?`)) {
+                    note.markSaved();
+                }
+                this.performClose(tabId);
+                return;
+            }
+
             this.dialogManager.showUnsavedDialog(
                 note.getDisplayTitle(),
                 () => {
-                    // "Yes" - Save (for now we just mark saved, real save dialog later)
                     note.markSaved();
                     this.performClose(tabId);
                 },
-                () => {
-                    // "No" - Discard
-                    this.performClose(tabId);
-                }
+                () => this.performClose(tabId)
             );
             return;
         }
@@ -171,7 +172,6 @@ export class TabManager {
     }
 
     setupDragAndDrop() {
-        // Basic drag & drop support (can be expanded later)
         this.tabContainer.addEventListener('dragstart', (e) => {
             if (e.target.classList.contains('amiga-tab')) {
                 e.dataTransfer.setData('text/plain', e.target.dataset.tabId);
@@ -179,11 +179,7 @@ export class TabManager {
         });
         
         this.tabContainer.addEventListener('dragover', (e) => e.preventDefault());
-        
-        this.tabContainer.addEventListener('drop', (e) => {
-            e.preventDefault();
-            // Reordering logic can be added here in the future
-        });
+        this.tabContainer.addEventListener('drop', (e) => e.preventDefault());
     }
 
     getAllTabsData() {
@@ -199,13 +195,13 @@ export class TabManager {
         this.renderCurrentEditor();
     }
 
-    startAutoSave(intervalMs = 30000) {  // 30 seconds
+    startAutoSave(intervalMs = 30000) {
         if (this.autoSaveTimer) clearInterval(this.autoSaveTimer);
         
         this.autoSaveTimer = setInterval(() => {
             const active = this.getActiveNote();
             if (active && active.modified) {
-                active.markSaved(active.filename);   // Mark as saved in memory
+                active.markSaved(active.filename);
                 this.renderTabs();
                 console.log(`💾 Auto-saved: ${active.getDisplayTitle()}`);
             }
@@ -218,5 +214,4 @@ export class TabManager {
             this.autoSaveTimer = null;
         }
     }
-    
 }
