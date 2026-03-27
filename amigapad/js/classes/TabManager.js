@@ -95,6 +95,7 @@ export class TabManager {
         if (!textarea) {
             textarea = document.createElement('textarea');
             this.editorContainer.appendChild(textarea);
+            textarea.style.fontSize = '16px';
             
             // Mark as modified + update tabs when typing
             textarea.addEventListener('input', () => {
