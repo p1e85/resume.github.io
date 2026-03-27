@@ -1,24 +1,37 @@
-body {
+body, html, #app {
+    height: 100%;
     margin: 0;
     padding: 0;
-    height: 100vh;
     overflow: hidden;
-    background: var(--amiga-bg);
-    font-family: "Courier New", "Lucida Console", monospace;
 }
 
-/* Workbench Desktop Mode */
+#app {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Main window */
+.amiga-window {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 640px;
+    min-height: 400px;
+}
+
+/* Workbench mode (draggable window) */
 .workbench-mode #main-window {
     position: absolute;
-    top: 40px;
-    left: 80px;
-    width: 900px;      /* Wider window */
-    height: 680px;     /* Taller window */
+    top: 60px;
+    left: 100px;
+    width: 920px;
+    height: 680px;
     margin: 0;
-    box-shadow: 8px 8px 0 rgba(0,0,0,0.6);
+    box-shadow: 10px 10px 0 rgba(0,0,0,0.65);
 }
 
-/* Classic Mode (mobile / full screen) */
+/* Classic mode (full screen) */
 .classic-mode #main-window {
     position: fixed;
     top: 0;
@@ -26,13 +39,36 @@ body {
     width: 100%;
     height: 100%;
     margin: 0;
-    border-radius: 0;
     box-shadow: none;
 }
 
-/* Ensure the whole app takes full height */
-#app {
-    height: 100vh;
+/* Make sure editor takes ALL remaining space */
+.amiga-editor-container {
+    flex: 1 1 auto;
+    overflow: hidden;
     display: flex;
-    flex-direction: column;
+    background: var(--amiga-window-bg);
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+.amiga-editor-container textarea {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    padding: 14px;
+    font-family: "Courier New", "Lucida Console", monospace;
+    font-size: 16px;
+    line-height: 1.55;
+    resize: none;
+    background: inherit;
+    color: inherit;
+    box-sizing: border-box;
+}
+
+/* Status bar stays at bottom */
+.amiga-status-bar {
+    flex-shrink: 0;
 }
