@@ -4,21 +4,21 @@ body {
     height: 100vh;
     overflow: hidden;
     background: var(--amiga-bg);
+    font-family: "Courier New", "Lucida Console", monospace;
 }
 
-/* Workbench Desktop Mode (draggable window inside background) */
+/* Workbench Desktop Mode */
 .workbench-mode #main-window {
     position: absolute;
     top: 40px;
     left: 80px;
-    width: 860px;
-    height: 620px;
+    width: 900px;      /* Wider window */
+    height: 680px;     /* Taller window */
     margin: 0;
     box-shadow: 8px 8px 0 rgba(0,0,0,0.6);
-    z-index: 10;
 }
 
-/* Classic Mode (full screen, mobile friendly) */
+/* Classic Mode (mobile / full screen) */
 .classic-mode #main-window {
     position: fixed;
     top: 0;
@@ -30,9 +30,9 @@ body {
     box-shadow: none;
 }
 
-/* Make sure editor fills space properly in both modes */
-.amiga-editor-container {
-    flex: 1;
-    overflow: hidden;
-    min-height: 200px;
+/* Ensure the whole app takes full height */
+#app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
