@@ -149,3 +149,32 @@ body {
     background: inherit;
     color: inherit;
 }
+
+/* Editor - Make it big and readable */
+.amiga-editor-container {
+    flex: 1;
+    overflow: hidden;
+    background: var(--amiga-window-bg);
+    padding: 8px;
+    min-height: 300px;
+}
+
+.amiga-editor-container textarea {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    padding: 12px 14px;
+    font-family: "Courier New", "Lucida Console", monospace;
+    font-size: 16px;           /* Bigger text */
+    line-height: 1.5;
+    resize: none;
+    background: inherit;
+    color: inherit;
+    box-sizing: border-box;
+}
+
+/* Make sure it fills the container properly */
+.amiga-editor-container {
+    display: flex;
+}
