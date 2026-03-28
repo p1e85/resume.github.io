@@ -1,4 +1,3 @@
-// js/classes/MenuBar.js
 import { StorageManager } from './StorageManager.js';
 import { Note } from './Note.js';
 
@@ -7,7 +6,7 @@ export class MenuBar {
         this.tabManager = tabManager;
         this.themeManager = themeManager;
         this.dialogManager = dialogManager;
-        this.windowManager = windowManager;        // For mode switching
+        this.windowManager = windowManager;
         this.menuContainer = document.getElementById('menu-bar');
         this.currentOpenMenu = null;
         this.buildMenu();
@@ -26,21 +25,26 @@ export class MenuBar {
 
         this.menuContainer.addEventListener('click', (e) => {
             const item = e.target.closest('.menu-item');
-            if (item) this.toggleMenu(item.dataset.menu);
+            if (item) {
+                this.toggleMenu(item.dataset.menu);
+            }
         });
     }
 
     toggleMenu(menuType) {
-        if (this.currentOpenMenu) this.currentOpenMenu.remove();
+        // Always close any currently open menu first
+        if (this.currentOpenMenu) {
+            this.currentOpenMenu.remove();
+            this.currentOpenMenu = null;
+        }
 
         const rect = this.menuContainer.getBoundingClientRect();
         const menuEl = document.createElement('div');
-        
         menuEl.className = 'amiga-dropdown-menu amiga-bevel-raised';
         menuEl.style.position = 'absolute';
         menuEl.style.left = `${rect.left + 8}px`;
         menuEl.style.top = `${rect.bottom + 4}px`;
-        menuEl.style.minWidth = '200px';
+        menuEl.style.minWidth = '210px';
         menuEl.style.zIndex = '1000';
         menuEl.style.padding = '4px 0';
 
@@ -87,6 +91,9 @@ export class MenuBar {
             ];
         } else if (menuType === 'help') {
             items = [
+                { label: 'How to Use Amiga Pad', action: () => this.showHelpContent() },
+                { label: 'FAQs', action: () => this.showFAQs() },
+                { label: '---' },
                 { label: 'About Amiga Pad', action: () => this.dialogManager.showAboutDialog() }
             ];
         }
@@ -102,16 +109,16 @@ export class MenuBar {
             }
 
             const row = document.createElement('div');
-            row.style.padding = '8px 24px';           // Bigger, easier to click
+            row.style.padding = '8px 24px';
             row.style.cursor = 'pointer';
             row.style.fontSize = '15px';
             row.textContent = item.label;
-            
+
             row.addEventListener('click', () => {
                 item.action();
                 if (this.currentOpenMenu) this.currentOpenMenu.remove();
             });
-            
+
             row.addEventListener('mouseover', () => {
                 row.style.background = '#0000aa';
                 row.style.color = '#ffffff';
@@ -120,24 +127,61 @@ export class MenuBar {
                 row.style.background = '';
                 row.style.color = '';
             });
-            
+
             menuEl.appendChild(row);
         });
 
         document.body.appendChild(menuEl);
         this.currentOpenMenu = menuEl;
 
-        // Close menu when clicking outside
+        // Close when clicking anywhere else
         setTimeout(() => {
             document.addEventListener('click', this.closeMenu.bind(this), { once: true });
         }, 10);
     }
 
-    closeMenu() {
+    closeMenu(e) {
         if (this.currentOpenMenu) {
-            this.currentOpenMenu.remove();
-            this.currentOpenMenu = null;
+            // Only close if click is outside the menu and menu bar
+            if (!this.menuContainer.contains(e.target) && !this.currentOpenMenu.contains(e.target)) {
+                this.currentOpenMenu.remove();
+                this.currentOpenMenu = null;
+            }
         }
+    }
+
+    showHelpContent() {
+        const helpText = `
+Amiga Pad Help
+
+• Click File → New or press Ctrl+N to create a new tab
+• Use File → Open to load a .txt file into a new tab
+• Save your work with Ctrl+S or File → Save
+• Use Save Session / Load Session to backup all open tabs
+• Switch between Workbench (draggable window) and Classic mode in View menu
+• Word Wrap can be toggled in Format menu
+
+Tip: The * next to a tab title means the note has unsaved changes.
+        `;
+        alert(helpText);
+    }
+
+    showFAQs() {
+        const faqText = `
+Common Questions:
+
+Q: Why do I have to click the editor sometimes to open another menu?
+A: This is a known quirk in the current menu system. We're working on it.
+
+Q: How do I save my work permanently?
+A: Use Save or Save As. Sessions can also be saved/loaded.
+
+Q: Can I use this on mobile?
+A: Yes — use View → Switch to Classic Mode for best experience.
+
+More FAQs coming soon.
+        `;
+        alert(faqText);
     }
 
     // === File Operations (cleaned up) ===
