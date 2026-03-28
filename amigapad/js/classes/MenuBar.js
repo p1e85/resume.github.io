@@ -91,8 +91,8 @@ export class MenuBar {
             ];
         } else if (menuType === 'help') {
             items = [
-                { label: 'How to Use Amiga Pad', action: () => this.showHelpContent() },
-                { label: 'FAQs', action: () => this.showFAQs() },
+                { label: 'How to Use Amiga Pad', action: () => this.dialogManager.showHelpDialog() },
+                { label: 'FAQs', action: () => this.dialogManager.showFAQsDialog() },
                 { label: '---' },
                 { label: 'About Amiga Pad', action: () => this.dialogManager.showAboutDialog() }
             ];
