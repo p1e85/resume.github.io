@@ -4,7 +4,7 @@ export class DialogManager {
         this.createDialog(
             "About Amiga Pad",
             `
-                <p><strong>Amiga Pad v0.3</strong></p>
+                <p><strong>Amiga Pad v0.4</strong></p>
                 <p>A retro multi-tab notepad inspired by Amiga Workbench 1.3 and Windows Notepad.</p>
                 <p>Coded with Grok by xAI</p>
                 <p style="margin-top: 15px; font-size: 13px;">Enjoy the classic vibes!</p>
@@ -13,67 +13,108 @@ export class DialogManager {
         );
     }
 
+    showHelpDialog() {
+        this.createDialog(
+            "How to Use Amiga Pad",
+            `
+                <strong>Basic Controls:</strong><br><br>
+                • <strong>Ctrl + N</strong> — New tab<br>
+                • <strong>Ctrl + O</strong> — Open .txt file<br>
+                • <strong>Ctrl + S</strong> — Save current tab<br>
+                • <strong>Ctrl + Shift + S</strong> — Save As...<br>
+                • <strong>F5</strong> — Insert current time/date<br><br>
+                
+                <strong>Tabs:</strong><br>
+                • Click the <strong>+</strong> button to add a new tab<br>
+                • The <strong>*</strong> means the tab has unsaved changes<br>
+                • Click × on a tab to close it (you'll be prompted if unsaved)<br><br>
+                
+                <strong>Modes:</strong><br>
+                • <strong>Workbench Mode</strong> — Draggable Amiga window on desktop background<br>
+                • <strong>Classic Mode</strong> — Full screen (better on mobile)<br><br>
+                
+                <strong>Tips:</strong><br>
+                • Use <strong>Save Session</strong> / <strong>Load Session</strong> to backup all your tabs<br>
+                • Auto-save runs every 30 seconds (check console for confirmation)
+            `,
+            "OK"
+        );
+    }
+
+    showFAQsDialog() {
+        this.createDialog(
+            "Amiga Pad - FAQs",
+            `
+                <strong>Common Questions:</strong><br><br>
+                
+                <strong>Q:</strong> Why do menus sometimes not open on first click?<br>
+                <strong>A:</strong> This is a known quirk with the current dropdown system. Clicking in the editor area usually "resets" it.<br><br>
+                
+                <strong>Q:</strong> How do I permanently save my notes?<br>
+                <strong>A:</strong> Use <strong>Save</strong> or <strong>Save As</strong>. You can also save full sessions.<br><br>
+                
+                <strong>Q:</strong> Can I use this on mobile?<br>
+                <strong>A:</strong> Yes! Go to <strong>View → Switch to Classic Mode</strong> for the best experience.<br><br>
+                
+                <strong>Q:</strong> Does it remember my tabs when I reopen the page?<br>
+                <strong>A:</strong> Yes — the last session is automatically restored.
+            `,
+            "OK"
+        );
+    }
+
     showUnsavedDialog(noteTitle, onSave, onDiscard) {
         this.createDialog(
             "Amiga Pad",
-            `
-                <p>Save changes to <strong>${noteTitle}</strong>?</p>
-            `,
+            `<p>Save changes to <strong>${noteTitle}</strong>?</p>`,
             "Yes", "No", "Cancel",
             (choice) => {
-                if (choice === "Yes") onSave();
-                else if (choice === "No") onDiscard();
-                // Cancel does nothing (just closes)
+                if (choice === "Yes") onSave?.();
+                else if (choice === "No") onDiscard?.();
             }
         );
     }
 
+    // Reusable dialog creator
     createDialog(title, contentHTML, ...buttons) {
         const dialog = document.createElement('div');
-        dialog.style.position = 'fixed';
-        dialog.style.top = '50%';
-        dialog.style.left = '50%';
-        dialog.style.transform = 'translate(-50%, -50%)';
-        dialog.style.background = 'var(--amiga-window-bg, #c0c0c0)';
-        dialog.style.border = '4px solid';
-        dialog.style.borderColor = 'var(--bevel-light, #ffffff) var(--bevel-dark, #808080) var(--bevel-dark, #808080) var(--bevel-light, #ffffff)';
-        dialog.style.padding = '20px';
-        dialog.style.width = '380px';
-        dialog.style.maxWidth = '92%';
-        dialog.style.boxShadow = '6px 6px 0 rgba(0,0,0,0.7)';
-        dialog.style.zIndex = '10000';
-        dialog.style.fontFamily = 'monospace';
-        dialog.style.fontSize = '15px';
-        dialog.style.color = 'var(--amiga-text, #000000)';
+        dialog.style.cssText = `
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--amiga-window-bg, #c0c0c0);
+            border: 4px solid;
+            border-color: var(--bevel-light, #ffffff) var(--bevel-dark, #808080) var(--bevel-dark, #808080) var(--bevel-light, #ffffff);
+            padding: 20px; width: 420px; max-width: 92%;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.7); z-index: 10000;
+            font-family: monospace; font-size: 15px; color: var(--amiga-text, #000000);
+        `;
+
+        const buttonHTML = buttons.map(btnText => `
+            <button class="dialog-btn" data-choice="${btnText}" 
+                    style="padding: 8px 24px; margin: 4px; min-width: 90px; font-family: monospace; cursor: pointer;">
+                ${btnText}
+            </button>
+        `).join('');
 
         dialog.innerHTML = `
             <div style="background: var(--amiga-title-active, #0000aa); color: var(--amiga-title-text, #ffffff); 
-                        padding: 6px 10px; margin-bottom: 16px; text-align: center; font-weight: bold;">
+                        padding: 8px 12px; margin-bottom: 18px; text-align: center; font-weight: bold;">
                 ${title}
             </div>
-            <div style="margin-bottom: 24px; line-height: 1.5;">
+            <div style="margin-bottom: 28px; line-height: 1.6;">
                 ${contentHTML}
             </div>
             <div style="text-align: center; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                ${buttons.map((btnText, i) => `
-                    <button class="dialog-btn" data-choice="${btnText}" 
-                            style="padding: 6px 22px; min-width: 80px; font-family: monospace;">
-                        ${btnText}
-                    </button>
-                `).join('')}
+                ${buttonHTML}
             </div>
         `;
 
         const overlay = document.createElement('div');
-        overlay.style.position = 'fixed';
-        overlay.style.inset = '0';
-        overlay.style.background = 'rgba(0,0,0,0.4)';
-        overlay.style.zIndex = '9999';
+        overlay.style.cssText = `position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9999;`;
 
         document.body.appendChild(overlay);
         document.body.appendChild(dialog);
 
-        const close = () => {
+        const closeDialog = () => {
             dialog.remove();
             overlay.remove();
         };
@@ -81,21 +122,21 @@ export class DialogManager {
         dialog.querySelectorAll('.dialog-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const choice = btn.dataset.choice;
-                if (dialog.onChoice) dialog.onChoice(choice);
-                close();
+                const callback = dialog.onChoice;
+                if (callback) callback(choice);
+                closeDialog();
             });
         });
 
-        // Store callback
         dialog.onChoice = buttons.length > 1 ? arguments[3] : null;
 
-        // Escape key support
-        const esc = (e) => {
+        // Escape key
+        const escHandler = (e) => {
             if (e.key === 'Escape') {
-                close();
-                document.removeEventListener('keydown', esc);
+                closeDialog();
+                document.removeEventListener('keydown', escHandler);
             }
         };
-        document.addEventListener('keydown', esc);
+        document.addEventListener('keydown', escHandler);
     }
 }
