@@ -24,18 +24,11 @@ export class DialogManager {
                 • <strong>Ctrl + Shift + S</strong> — Save As...<br>
                 • <strong>F5</strong> — Insert current time/date<br><br>
                 
-                <strong>Tabs:</strong><br>
+                <strong>Tabs &amp; Editor:</strong><br>
                 • Click the <strong>+</strong> button to add a new tab<br>
-                • The <strong>*</strong> means the tab has unsaved changes<br>
-                • Click × on a tab to close it (you'll be prompted if unsaved)<br><br>
-                
-                <strong>Modes:</strong><br>
-                • <strong>Workbench Mode</strong> — Draggable Amiga window on desktop background<br>
-                • <strong>Classic Mode</strong> — Full screen (better on mobile)<br><br>
-                
-                <strong>Tips:</strong><br>
-                • Use <strong>Save Session</strong> / <strong>Load Session</strong> to backup all your tabs<br>
-                • Auto-save runs every 30 seconds (check console for confirmation)
+                • The <strong>*</strong> means unsaved changes<br>
+                • Word Wrap is in Format menu<br>
+                • Auto-save runs every 30 seconds
             `,
             "OK"
         );
@@ -46,19 +39,32 @@ export class DialogManager {
             "Amiga Pad - FAQs",
             `
                 <strong>Common Questions:</strong><br><br>
-                
-                <strong>Q:</strong> Why do menus sometimes not open on first click?<br>
-                <strong>A:</strong> This is a known quirk with the current dropdown system. Clicking in the editor area usually "resets" it.<br><br>
-                
-                <strong>Q:</strong> How do I permanently save my notes?<br>
-                <strong>A:</strong> Use <strong>Save</strong> or <strong>Save As</strong>. You can also save full sessions.<br><br>
-                
-                <strong>Q:</strong> Can I use this on mobile?<br>
-                <strong>A:</strong> Yes! Go to <strong>View → Switch to Classic Mode</strong> for the best experience.<br><br>
-                
-                <strong>Q:</strong> Does it remember my tabs when I reopen the page?<br>
-                <strong>A:</strong> Yes — the last session is automatically restored.
+                <strong>Q:</strong> Menus sometimes don't open on first click?<br>
+                <strong>A:</strong> This is a known quirk. Clicking in the editor usually fixes it.<br><br>
+                <strong>Q:</strong> How do I save permanently?<br>
+                <strong>A:</strong> Use Save / Save As or Save Session.<br><br>
+                <strong>Q:</strong> Works on mobile?<br>
+                <strong>A:</strong> Yes — switch to Classic Mode in View menu.<br><br>
+                <strong>Q:</strong> Tabs remembered on reload?<br>
+                <strong>A:</strong> Yes, last session is restored automatically.
             `,
+            "OK"
+        );
+    }
+
+    showRecentFilesDialog(recentFiles, onSelect) {
+        let content = "<strong>Recent Files</strong><br><br>";
+        if (recentFiles.length === 0) {
+            content += "No recent files yet.";
+        } else {
+            recentFiles.forEach((file, i) => {
+                content += `${i+1}. <span style="cursor:pointer;color:#0000aa;" onclick="window.amigaPad.selectRecentFile('${file}')">${file}</span><br>`;
+            });
+        }
+
+        this.createDialog(
+            "Recent Files",
+            content,
             "OK"
         );
     }
@@ -75,7 +81,6 @@ export class DialogManager {
         );
     }
 
-    // Reusable dialog creator
     createDialog(title, contentHTML, ...buttons) {
         const dialog = document.createElement('div');
         dialog.style.cssText = `
@@ -130,7 +135,6 @@ export class DialogManager {
 
         dialog.onChoice = buttons.length > 1 ? arguments[3] : null;
 
-        // Escape key
         const escHandler = (e) => {
             if (e.key === 'Escape') {
                 closeDialog();
