@@ -1,3 +1,4 @@
+// js/classes/MenuBar.js
 import { StorageManager } from './StorageManager.js';
 import { Note } from './Note.js';
 
@@ -25,14 +26,11 @@ export class MenuBar {
 
         this.menuContainer.addEventListener('click', (e) => {
             const item = e.target.closest('.menu-item');
-            if (item) {
-                this.toggleMenu(item.dataset.menu);
-            }
+            if (item) this.toggleMenu(item.dataset.menu);
         });
     }
 
     toggleMenu(menuType) {
-        // Always close any currently open menu first
         if (this.currentOpenMenu) {
             this.currentOpenMenu.remove();
             this.currentOpenMenu = null;
@@ -79,7 +77,7 @@ export class MenuBar {
                     label: this.tabManager.wordWrap ? '✓ Word Wrap' : 'Word Wrap', 
                     action: () => this.tabManager.toggleWordWrap() 
                 },
-                { label: 'Font...', action: () => alert('Font dialog coming soon') }
+                { label: 'Font...', action: () => this.showFontMenu() }
             ];
         } else if (menuType === 'view') {
             const modeLabel = this.windowManager && this.windowManager.isWorkbenchMode 
@@ -134,57 +132,40 @@ export class MenuBar {
         document.body.appendChild(menuEl);
         this.currentOpenMenu = menuEl;
 
-        // Close when clicking anywhere else
         setTimeout(() => {
             document.addEventListener('click', this.closeMenu.bind(this), { once: true });
         }, 10);
     }
 
-    closeMenu(e) {
+    closeMenu() {
         if (this.currentOpenMenu) {
-            // Only close if click is outside the menu and menu bar
-            if (!this.menuContainer.contains(e.target) && !this.currentOpenMenu.contains(e.target)) {
-                this.currentOpenMenu.remove();
-                this.currentOpenMenu = null;
-            }
+            this.currentOpenMenu.remove();
+            this.currentOpenMenu = null;
         }
     }
 
-    showHelpContent() {
-        const helpText = `
-Amiga Pad Help
-
-• Click File → New or press Ctrl+N to create a new tab
-• Use File → Open to load a .txt file into a new tab
-• Save your work with Ctrl+S or File → Save
-• Use Save Session / Load Session to backup all open tabs
-• Switch between Workbench (draggable window) and Classic mode in View menu
-• Word Wrap can be toggled in Format menu
-
-Tip: The * next to a tab title means the note has unsaved changes.
-        `;
-        alert(helpText);
+    showRecentFiles() {
+        const recent = StorageManager.getRecentFiles();
+        this.dialogManager.showRecentFilesDialog(recent);
     }
 
-    showFAQs() {
-        const faqText = `
-Common Questions:
+    showFontMenu() {
+        const fonts = [
+            { name: "Topaz (Classic Amiga)", value: "'Courier New', monospace" },
+            { name: "Topaz 9 (Bold)", value: "'Lucida Console', monospace" },
+            { name: "Amiga Mono", value: "monospace" },
+            { name: "Modern Retro", value: "'Consolas', monospace" }
+        ];
 
-Q: Why do I have to click the editor sometimes to open another menu?
-A: This is a known quirk in the current menu system. We're working on it.
+        let html = "<strong>Choose Amiga Font:</strong><br><br>";
+        fonts.forEach(font => {
+            html += `<span style="cursor:pointer;color:#0000aa;display:block;margin:4px 0;" onclick="window.amigaPad.changeFont('${font.value}')">${font.name}</span>`;
+        });
 
-Q: How do I save my work permanently?
-A: Use Save or Save As. Sessions can also be saved/loaded.
-
-Q: Can I use this on mobile?
-A: Yes — use View → Switch to Classic Mode for best experience.
-
-More FAQs coming soon.
-        `;
-        alert(faqText);
+        this.dialogManager.createDialog("Font...", html, "Cancel");
     }
 
-    // === File Operations (cleaned up) ===
+    // File operations (unchanged)
     async openFile() {
         const input = document.createElement('input');
         input.type = 'file';
@@ -238,15 +219,6 @@ More FAQs coming soon.
         URL.revokeObjectURL(a.href);
     }
 
-    showRecentFiles() {
-        const recent = StorageManager.getRecentFiles();
-        if (recent.length === 0) {
-            alert("No recent files yet.");
-            return;
-        }
-        alert("Recent Files:\n\n" + recent.map((f, i) => `${i+1}. ${f}`).join('\n'));
-    }
-
     saveSession() {
         const data = this.tabManager.getAllTabsData();
         if (data.length === 0) return;
@@ -282,11 +254,9 @@ More FAQs coming soon.
         if (!activeNote) return;
         const textarea = document.querySelector('#editor-container textarea');
         if (!textarea) return;
-
         const now = new Date().toLocaleString();
         const start = textarea.selectionStart || 0;
         textarea.setRangeText(now, start, start, 'end');
-        
         activeNote.updateContent(textarea.value);
         this.tabManager.renderTabs();
     }
