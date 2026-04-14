@@ -1,1 +1,23 @@
+/* css/style.css */
+@import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
 
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+}
+
+/* Dark theme by default */
+:root {
+  --bg: #0f0f12;
+  --surface: #18181b;
+  --accent: #6366f1;
+}
+
+body {
+  background-color: var(--bg);
+  color: #e2e8f0;
+}
