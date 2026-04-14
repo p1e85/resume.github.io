@@ -1,1 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowBoard - Collaborate in Real Time</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="min-h-screen flex items-center justify-center">
+  <div class="max-w-md w-full p-8">
+    <div class="text-center mb-10">
+      <h1 class="text-5xl font-bold text-indigo-400 mb-2">FlowBoard</h1>
+      <p class="text-gray-400 text-xl">Real-time collaborative boards</p>
+    </div>
 
+    <div id="auth-form" class="glass rounded-3xl p-8 shadow-2xl">
+      <button onclick="googleSignIn()" 
+              class="w-full py-4 bg-white text-black rounded-2xl font-medium flex items-center justify-center gap-3 hover:bg-gray-100">
+        <img src="https://www.google.com/favicon.ico" class="w-5 h-5">
+        Continue with Google
+      </button>
+
+      <div class="my-6 text-center text-gray-500">or</div>
+
+      <input id="email" type="email" placeholder="Email" class="w-full px-5 py-4 bg-zinc-900 rounded-2xl mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      <input id="password" type="password" placeholder="Password" class="w-full px-5 py-4 bg-zinc-900 rounded-2xl mb-6 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+      <button onclick="emailSignUp()" 
+              class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-medium mb-3">
+        Sign Up
+      </button>
+      <button onclick="emailLogin()" 
+              class="w-full py-4 bg-zinc-800 hover:bg-zinc-700 rounded-2xl font-medium">
+        Log In
+      </button>
+
+      <button onclick="guestLogin()" 
+              class="w-full mt-6 text-gray-400 hover:text-white text-sm">
+        Try as Guest →
+      </button>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>
