@@ -1,11 +1,11 @@
 // js/firebase-config.js
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY_HERE",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBilxp63CncuZoVDQ2KcOfHUd_Gr0TCn1A",
+  authDomain: "flowboard-app-1af87.firebaseapp.com",
+  projectId: "flowboard-app-1af87",
+  storageBucket: "flowboard-app-1af87.firebasestorage.app",
+  messagingSenderId: "393290978098",
+  appId: "1:393290978098:web:96af1192bc026074cafd2b"
 };
 
 // Initialize Firebase
