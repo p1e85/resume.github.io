@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowBoard - Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="min-h-screen bg-[#0f0f12] text-slate-200">
+  
+  <!-- Header -->
+  <header class="border-b border-zinc-800 bg-[#18181b]">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <h1 onclick="goHome()" class="text-3xl font-bold text-indigo-400 cursor-pointer">FlowBoard</h1>
+      </div>
+      
+      <div class="flex items-center gap-6">
+        <button onclick="createNewBoard()" 
+                class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-medium flex items-center gap-2">
+          <span class="text-xl leading-none">+</span> New Board
+        </button>
+        
+        <div id="user-info" class="flex items-center gap-3 cursor-pointer" onclick="logout()">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-6 py-10">
+    <h2 class="text-3xl font-semibold mb-8">My Boards</h2>
+    
+    <!-- Boards Grid -->
+    <div id="boards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Populated by JavaScript -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden text-center py-20">
+      <p class="text-6xl mb-6">📋</p>
+      <h3 class="text-2xl font-medium mb-2">No boards yet</h3>
+      <p class="text-gray-400 mb-8">Create your first board to get started</p>
+      <button onclick="createNewBoard()" 
+              class="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-medium">
+        Create First Board
+      </button>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
