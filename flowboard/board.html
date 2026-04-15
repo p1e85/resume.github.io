@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowBoard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .column { min-width: 320px; }
+    .card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+    .dragging { opacity: 0.6; }
+  </style>
+</head>
+<body class="min-h-screen bg-[#0f0f12] text-slate-200">
+  
+  <!-- Top Bar -->
+  <header class="border-b border-zinc-800 bg-[#18181b] sticky top-0 z-50">
+    <div class="max-w-screen-2xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <button onclick="goToDashboard()" class="text-gray-400 hover:text-white">← Back to Dashboard</button>
+        <h1 id="board-title" class="text-2xl font-semibold">Loading...</h1>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <button onclick="addNewColumn()" 
+                class="px-5 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-2xl flex items-center gap-2 text-sm">
+          + New Column
+        </button>
+        <button onclick="showShareModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-2xl text-sm font-medium">
+          Share Board
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Board Area -->
+  <div id="board-container" class="max-w-screen-2xl mx-auto p-6 overflow-x-auto">
+    <div id="columns" class="flex gap-6 pb-8">
+      <!-- Columns populated by JS -->
+    </div>
+  </div>
+
+  <!-- Task Modal -->
+  <div id="task-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div class="bg-zinc-900 w-full max-w-lg mx-4 rounded-3xl p-8">
+      <input id="modal-task-title" class="w-full bg-transparent text-2xl font-semibold focus:outline-none mb-4">
+      <textarea id="modal-task-desc" rows="4" class="w-full bg-zinc-800 rounded-2xl p-4 focus:outline-none" placeholder="Add description..."></textarea>
+      
+      <div class="mt-6 flex justify-end gap-3">
+        <button onclick="closeModal()" class="px-6 py-3 text-gray-400">Cancel</button>
+        <button onclick="saveTaskModal()" class="px-6 py-3 bg-indigo-600 rounded-2xl">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/board.js"></script>
+</body>
+</html>
