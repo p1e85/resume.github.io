@@ -65,10 +65,16 @@ const app = {
         this.haptic('light');
     },
 
-    async handleAuth() {
-        const email = document.getElementById('login-email').value;
-        const pass = document.getElementById('login-password').value;
+async handleAuth() {
+        const emailInput = document.getElementById('login-email');
+        const passInput = document.getElementById('login-password');
+        
+        // Clean up whitespace that often gets accidentally added by mobile autocorrect
+        const email = emailInput.value.trim();
+        const pass = passInput.value;
+
         if (!email || !pass) return alert("Please fill in all fields.");
+
         try {
             if (this.isSignUpMode) {
                 await createUserWithEmailAndPassword(auth, email, pass);
@@ -76,7 +82,23 @@ const app = {
                 await signInWithEmailAndPassword(auth, email, pass);
             }
             this.haptic('success');
-        } catch (err) { alert(err.message); }
+        } catch (err) {
+            console.error("Full Firebase Error Object:", err);
+            
+            // Translate the raw 400 error codes into readable text for you
+            let friendlyMessage = err.message;
+            if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+                friendlyMessage = "Invalid email or password. If you haven't registered this account yet, click 'Create Account' below.";
+            } else if (err.code === 'auth/invalid-email') {
+                friendlyMessage = "Please enter a valid email address.";
+            } else if (err.code === 'auth/weak-password') {
+                friendlyMessage = "Password must be at least 6 characters long.";
+            } else if (err.code === 'auth/email-already-in-use') {
+                friendlyMessage = "This email is already registered. Try signing in instead.";
+            }
+            
+            alert(friendlyMessage);
+        }
     },
 
     async logout() {
