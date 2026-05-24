@@ -243,3 +243,28 @@ input {
         font-size: 0.7rem;
     }
 }
+
+/* --- FORGOT PASSWORD STYLING --- */
+.forgot-pass-wrapper {
+    text-align: right;
+    margin-top: -4px;
+    margin-bottom: 16px;
+    padding-right: 4px;
+}
+
+#forgot-pass-link {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+#forgot-pass-link:active {
+    color: var(--accent);
+}
+
+/* Hide the forgot link dynamically if the user switches to Register mode */
+.register-mode .forgot-pass-wrapper {
+    display: none !important;
+}
