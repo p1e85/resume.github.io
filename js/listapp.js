@@ -1,12 +1,22 @@
 /**
- * Daily Pulse - Core Logic v1.5 (Golden Copy)
+ * Daily Pulse - Core Logic v1.6 (Master Copy)
  * P1 Creations LLC - Patrick DeQuattro
+ * Core Features: Forgot Password Link, Clean Error Handling, Rolling History, & Daily Reset Hooks
  */
 
+// 1. Firebase Core Engine Imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword, 
+    onAuthStateChanged, 
+    signOut,
+    sendPasswordResetEmail 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+// 2. Verified Live Production Project Credentials
 const firebaseConfig = {
     apiKey: "AIzaSyAWmA5H8V9VVIBNFmZFaX8dn4OMe8QujDg",
     authDomain: "daily-pulse-99c89.firebaseapp.com",
@@ -17,13 +27,14 @@ const firebaseConfig = {
     measurementId: "G-3FXFJ3DW5J"
 };
 
+// 3. Service Initialization
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
 
 const app = {
     tasks: [],
-    history: [],
+    history: [], 
     currentUser: null,
     isSignUpMode: false,
     theme: localStorage.getItem('userTheme') || 'theme-cyber',
@@ -33,6 +44,7 @@ const app = {
         this.updateDynamicCalendar();
         this.updateDynamicTitle();
 
+        // Persistent Session Event Loop
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 this.currentUser = user;
@@ -46,9 +58,11 @@ const app = {
             }
         });
 
+        // Background calculation engine for UI updates
         setInterval(() => this.render(), 30000);
     },
 
+    // --- WEARABLE DESKTOP HAPTIC API ---
     haptic(type = 'light') {
         if (!navigator.vibrate) return;
         if (type === 'light') navigator.vibrate(10);
@@ -56,8 +70,13 @@ const app = {
         else if (type === 'warning') navigator.vibrate(50);
     },
 
+    // --- SECURE AUTHENTICATION FLOWS ---
     toggleAuthMode() {
         this.isSignUpMode = !this.isSignUpMode;
+        
+        // Contextually display or completely clip the forgot password wrapper layout
+        document.querySelector('.auth-card').classList.toggle('register-mode', this.isSignUpMode);
+
         document.getElementById('auth-title').innerText = this.isSignUpMode ? "Create Account" : "Sign In";
         document.getElementById('auth-main-btn').innerText = this.isSignUpMode ? "Register" : "Sign In";
         document.getElementById('auth-toggle-link').innerText = this.isSignUpMode ? "Sign In" : "Create Account";
@@ -65,11 +84,10 @@ const app = {
         this.haptic('light');
     },
 
-async handleAuth() {
+    async handleAuth() {
         const emailInput = document.getElementById('login-email');
         const passInput = document.getElementById('login-password');
         
-        // Clean up whitespace that often gets accidentally added by mobile autocorrect
         const email = emailInput.value.trim();
         const pass = passInput.value;
 
@@ -83,21 +101,40 @@ async handleAuth() {
             }
             this.haptic('success');
         } catch (err) {
-            console.error("Full Firebase Error Object:", err);
+            console.error("Firebase Security Handshake Rejected Payload:", err);
             
-            // Translate the raw 400 error codes into readable text for you
             let friendlyMessage = err.message;
             if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
-                friendlyMessage = "Invalid email or password. If you haven't registered this account yet, click 'Create Account' below.";
+                friendlyMessage = "Account credential mismatch. If you are a new user, select 'Create Account' below to initialize.";
             } else if (err.code === 'auth/invalid-email') {
-                friendlyMessage = "Please enter a valid email address.";
+                friendlyMessage = "Malformed email target profile. Correct string layout and retry.";
             } else if (err.code === 'auth/weak-password') {
-                friendlyMessage = "Password must be at least 6 characters long.";
+                friendlyMessage = "Security fault: Minimum password threshold requires 6 alpha characters.";
             } else if (err.code === 'auth/email-already-in-use') {
-                friendlyMessage = "This email is already registered. Try signing in instead.";
+                friendlyMessage = "Target entity registered. Toggle back to Sign In mode.";
             }
-            
             alert(friendlyMessage);
+        }
+    },
+
+    async handleForgotPassword() {
+        const email = document.getElementById('login-email').value.trim();
+        
+        if (!email) {
+            this.haptic('warning');
+            return alert("Please enter your registered email address in the field above first.");
+        }
+
+        try {
+            await sendPasswordResetEmail(auth, email);
+            this.haptic('success');
+            alert(`Password reset link transmitted to ${email}. Check inbox and junk filters.`);
+        } catch (err) {
+            console.error("Recovery Transmit Interrupted:", err);
+            let msg = err.message;
+            if (err.code === 'auth/user-not-found') msg = "No matching core profile detected matching that layout.";
+            else if (err.code === 'auth/invalid-email') msg = "Invalid address structure. Check symbols.";
+            alert(msg);
         }
     },
 
@@ -107,8 +144,10 @@ async handleAuth() {
         location.reload(); 
     },
 
+    // --- REALTIME SYNC ENGINE & CHRONO RESET ROUTINE ---
     listenToCloud() {
         if (!this.currentUser) return;
+        
         onSnapshot(doc(db, "users", this.currentUser.uid), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
@@ -119,14 +158,20 @@ async handleAuth() {
                 const todayDate = new Date().toDateString();
 
                 if (lastCheckDate && lastCheckDate !== todayDate) {
+                    console.log("New Day cycle. Compiling yesterday's metric...");
+                    
                     const done = this.tasks.filter(t => t.completed).length;
                     const lastScore = this.tasks.length === 0 ? 0 : Math.round((done / this.tasks.length) * 100);
+                    
                     const historyEntry = { date: lastCheckDate, score: lastScore };
                     const updatedHistory = [historyEntry, ...this.history].slice(0, 7);
+
                     this.tasks = this.tasks.map(t => ({ ...t, completed: false }));
                     this.save(updatedHistory); 
+                    return; // Allow the snapshot to fire again with newly updated structures
                 }
             } else {
+                // Initial Account Provisioning Seed
                 this.tasks = [{ id: 1, name: 'Welcome to Daily Pulse!', time: '08:00', icon: '👋', completed: false }];
                 this.save([]); 
             }
@@ -136,21 +181,26 @@ async handleAuth() {
 
     async save(updatedHistory = null) {
         if (!this.currentUser) return;
+        
         const dataToSave = {
             email: this.currentUser.email,
             tasks: this.tasks,
             lastSync: new Date(),
             lastCheckDate: new Date().toDateString()
         };
+
         if (updatedHistory) dataToSave.history = updatedHistory;
+
         await setDoc(doc(db, "users", this.currentUser.uid), dataToSave, { merge: true });
     },
 
+    // --- MUTATION DATA OPERATIONS ---
     addCustomTask() {
         const name = document.getElementById('task-name').value;
         const time = document.getElementById('task-time').value;
         const emoji = document.getElementById('task-emoji').value || '📍';
-        if (!name || !time) return alert("Name and time required.");
+        if (!name || !time) return alert("Core definitions absent. Fill inputs.");
+
         this.tasks.push({ id: Date.now(), name, time, icon: emoji, completed: false });
         this.save();
         this.haptic('light');
@@ -172,11 +222,13 @@ async handleAuth() {
         this.save();
     },
 
+    // --- HISTORY RENDERING GRAPH INTERFACE ---
     showHistory() {
         this.haptic('light');
         const chartContainer = document.getElementById('chart-container');
+        
         if (this.history.length === 0) {
-            chartContainer.innerHTML = `<p style="color:var(--muted); padding: 20px;">No history yet. Finish today to see progress!</p>`;
+            chartContainer.innerHTML = `<p style="color:var(--muted); padding: 20px;">No historical footprint recorded. Log a complete sequence to render visualization.</p>`;
         } else {
             chartContainer.innerHTML = [...this.history].reverse().map(entry => {
                 const dayName = entry.date.split(' ')[0]; 
@@ -191,6 +243,7 @@ async handleAuth() {
         this.toggleModal('history-modal', true);
     },
 
+    // --- DYNAMIC RENDERING LAYER ---
     render() {
         const list = document.getElementById('task-list');
         const scoreEl = document.getElementById('score');
