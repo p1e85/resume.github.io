@@ -4,14 +4,14 @@ let isTracking = false;
 let history = [];
 const MAX_HISTORY = 10;
 
-// Upgraded Motion State
+// Motion state
 let motion = {
   inAir: false,
   startTime: 0,
   lastTime: 0,
-  sumAlpha: 0, // Yaw (Shuvits)
-  sumBeta: 0,  // Pitch (Impossibles)
-  sumGamma: 0  // Roll (Kickflips/Heelflips)
+  sumAlpha: 0, // Z-Axis: Spin (Shuvits)
+  sumBeta: 0,  // X-Axis: End-over-end (Flips)
+  sumGamma: 0  // Y-Axis: Side-to-side (Impossibles)
 };
 
 // DOM Elements
@@ -55,7 +55,6 @@ function renderHistory() {
 startBtn.onclick = async () => {
   if (isTracking) return;
 
-  // iOS permission requirement for device motion
   if (typeof DeviceMotionEvent.requestPermission === 'function') {
     try {
       const response = await DeviceMotionEvent.requestPermission();
@@ -77,7 +76,6 @@ startBtn.onclick = async () => {
   output.style.color = 'var(--text-main)';
   output.classList.remove('landed');
 
-  // Reset timing
   motion.lastTime = Date.now();
   window.addEventListener('devicemotion', handleMotion);
 };
@@ -88,21 +86,17 @@ function handleMotion(event) {
   if (!rotationRate || !accelerationIncludingGravity) return;
 
   const now = Date.now();
-  const dt = (now - motion.lastTime) / 1000; // Time delta in seconds
+  const dt = (now - motion.lastTime) / 1000; 
   motion.lastTime = now;
 
-  // Prevent massive jumps if the app lags or goes to the background
   if (dt > 0.1) return; 
 
   const { alpha, beta, gamma } = rotationRate; 
   const { x, y, z } = accelerationIncludingGravity;
 
-  // Calculate total acceleration magnitude (Gravity is ~9.8)
   const accelMag = Math.sqrt(x*x + y*y + z*z);
 
   if (!motion.inAir) {
-    // 1. POP DETECTION
-    // A sudden spike in overall acceleration implies a pop/snap
     if (accelMag > 15) {
       motion.inAir = true;
       motion.startTime = now;
@@ -111,21 +105,15 @@ function handleMotion(event) {
       motion.sumGamma = 0;
     }
   } else {
-    // 2. IN-AIR TRACKING
-    // Accumulate total degrees of rotation on all 3 axes
-    motion.sumAlpha += alpha * dt; // Shuvit axis
-    motion.sumBeta += beta * dt;   // Impossible axis
-    motion.sumGamma += gamma * dt; // Kickflip axis
+    motion.sumAlpha += alpha * dt; 
+    motion.sumBeta += beta * dt;   
+    motion.sumGamma += gamma * dt; 
 
     const timeInAir = now - motion.startTime;
-    
-    // Check total rotation speed to see if the phone has "calmed down" (caught/landed)
     const rotSpeed = Math.sqrt(alpha*alpha + beta*beta + gamma*gamma);
 
-    // 3. LANDING DETECTION
-    // If we've been in the air for at least 200ms, the rotation stops, and gravity returns to normal (~9.8)
     const isCaught = timeInAir > 200 && rotSpeed < 100 && accelMag > 7 && accelMag < 12;
-    const isTimeout = timeInAir > 1000; // Max 1 second trick time
+    const isTimeout = timeInAir > 1000; 
 
     if (isCaught || isTimeout) {
       classifyTrick();
@@ -136,23 +124,23 @@ function handleMotion(event) {
 
 // ===== TRICK CLASSIFICATION LOGIC =====
 function classifyTrick() {
-  const absAlpha = Math.abs(motion.sumAlpha); // Yaw / Shuv
-  const absBeta = Math.abs(motion.sumBeta);   // Pitch / Impossible
-  const absGamma = Math.abs(motion.sumGamma); // Roll / Flip
+  const absAlpha = Math.abs(motion.sumAlpha); // Spin
+  const absBeta = Math.abs(motion.sumBeta);   // End-over-end (Your kickflip axis)
+  const absGamma = Math.abs(motion.sumGamma); // Side-to-side
 
-  let flipCount = 0; // 0 = none, 1 = single, 2 = double
+  let flipCount = 0; 
   let flipDir = '';
-  let shuvCount = 0; // 0 = none, 180, 360
+  let shuvCount = 0; 
   
-  // 1. Evaluate Flips (Gamma Axis)
-  if (absGamma > 130) {
-    flipCount = absGamma > 450 ? 2 : 1;
+  // 1. Evaluate Flips (Beta Axis)
+  if (absBeta > 130) {
+    flipCount = absBeta > 450 ? 2 : 1;
     
-    // Determine Kickflip vs Heelflip based on stance and rotation direction
+    // Match your original code's direction logic
     if (stance === 'regular') {
-      flipDir = motion.sumGamma > 0 ? 'Kickflip' : 'Heelflip';
+      flipDir = motion.sumBeta < 0 ? 'Kickflip' : 'Heelflip';
     } else {
-      flipDir = motion.sumGamma < 0 ? 'Kickflip' : 'Heelflip';
+      flipDir = motion.sumBeta > 0 ? 'Kickflip' : 'Heelflip';
     }
   }
 
@@ -164,7 +152,8 @@ function classifyTrick() {
   // 3. Name the Trick
   let trick = 'Unknown';
 
-  if (absBeta > 250 && flipCount === 0 && shuvCount === 0) {
+  // If you roll it side-to-side, we'll call that an Impossible now
+  if (absGamma > 180 && flipCount === 0 && shuvCount === 0) {
     trick = 'Impossible';
   } else if (shuvCount === 360 && flipCount === 1) {
     trick = flipDir === 'Kickflip' ? 'Tre Flip' : '360 Heelflip';
@@ -176,10 +165,10 @@ function classifyTrick() {
     trick = `Double ${flipDir}`;
   } else if (shuvCount > 0 && flipCount === 0) {
     trick = `${shuvCount} Shuvit`;
-  } else if (absAlpha < 60 && absGamma < 60 && absBeta < 60) {
+  } else if (absAlpha < 80 && absBeta < 80 && absGamma < 80) {
     trick = 'Ollie';
   } else {
-    trick = 'Bailed'; // Too chaotic to classify cleanly
+    trick = 'Bailed'; 
   }
 
   // UI Updates
@@ -190,7 +179,6 @@ function classifyTrick() {
     addToHistory(trick);
   }
 
-  // Reset UI after 2 seconds
   setTimeout(() => {
     if (isTracking) {
       output.classList.remove('landed');
