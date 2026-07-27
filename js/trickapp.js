@@ -95,9 +95,11 @@ function handleMotion(event) {
   const { x, y, z } = accelerationIncludingGravity;
 
   const accelMag = Math.sqrt(x*x + y*y + z*z);
+  const rotRateMag = Math.sqrt(alpha*alpha + beta*beta + gamma*gamma);
 
   if (!motion.inAir) {
-    if (accelMag > 15) {
+    // START TRIGGER: Hard pop (>12.5G) OR rapid scoop/spin (>250 deg/sec)
+    if (accelMag > 12.5 || rotRateMag > 250) {
       motion.inAir = true;
       motion.startTime = now;
       motion.sumAlpha = 0;
@@ -110,9 +112,9 @@ function handleMotion(event) {
     motion.sumGamma += gamma * dt; 
 
     const timeInAir = now - motion.startTime;
-    const rotSpeed = Math.sqrt(alpha*alpha + beta*beta + gamma*gamma);
-
-    const isCaught = timeInAir > 200 && rotSpeed < 100 && accelMag > 7 && accelMag < 12;
+    
+    // LANDING TRIGGER: Rotation slows down and acceleration returns to normal gravity
+    const isCaught = timeInAir > 200 && rotRateMag < 150 && accelMag > 7 && accelMag < 12;
     const isTimeout = timeInAir > 1000; 
 
     if (isCaught || isTimeout) {
@@ -124,19 +126,19 @@ function handleMotion(event) {
 
 // ===== TRICK CLASSIFICATION LOGIC =====
 function classifyTrick() {
-  const absAlpha = Math.abs(motion.sumAlpha); // Spin
-  const absBeta = Math.abs(motion.sumBeta);   // End-over-end (Your kickflip axis)
-  const absGamma = Math.abs(motion.sumGamma); // Side-to-side
+  const absAlpha = Math.abs(motion.sumAlpha); // Z-Axis: Shuvit
+  const absBeta = Math.abs(motion.sumBeta);   // X-Axis: Kickflip/Heelflip
+  const absGamma = Math.abs(motion.sumGamma); // Y-Axis: Impossible
 
   let flipCount = 0; 
   let flipDir = '';
   let shuvCount = 0; 
   
   // 1. Evaluate Flips (Beta Axis)
-  if (absBeta > 130) {
-    flipCount = absBeta > 450 ? 2 : 1;
+  // Lowered threshold to 100 to catch fast flips more reliably
+  if (absBeta > 100) {
+    flipCount = absBeta > 270 ? 2 : 1;
     
-    // Match your original code's direction logic
     if (stance === 'regular') {
       flipDir = motion.sumBeta < 0 ? 'Kickflip' : 'Heelflip';
     } else {
@@ -145,14 +147,14 @@ function classifyTrick() {
   }
 
   // 2. Evaluate Shuvits (Alpha Axis)
-  if (absAlpha > 130) {
-    shuvCount = absAlpha > 260 ? 360 : 180;
+  // Lowered thresholds to 90 (for 180) and 240 (for 360) to account for sensor lag
+  if (absAlpha > 90) {
+    shuvCount = absAlpha > 240 ? 360 : 180;
   }
 
   // 3. Name the Trick
   let trick = 'Unknown';
 
-  // If you roll it side-to-side, we'll call that an Impossible now
   if (absGamma > 180 && flipCount === 0 && shuvCount === 0) {
     trick = 'Impossible';
   } else if (shuvCount === 360 && flipCount === 1) {
