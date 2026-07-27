@@ -2,357 +2,50 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Skate Trick (Phone Style)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Skate Trick Tracker</title>
+  
+  <link rel="stylesheet" href="styles.css" />
 
-  <!-- PWA -->
+  <!-- PWA Manifest -->
   <link rel="manifest" href="data:application/manifest+json,{
-    \"name\":\"Skate Trick (Phone Style)\",\"short_name\":\"Skate Trick\",
-    \"start_url\":\".\",\"display\":\"standalone\",
-    \"background_color\":\"#0a0a0a\",\"theme_color\":\"#4caf50\",
-    \"icons\":[{\"src\":\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🛼%3C/text%3E%3C/svg%3E\",\"sizes\":\"96x96\",\"type\":\"image/svg+xml\"}]
+    &quot;name&quot;:&quot;Skate Trick Tracker&quot;,
+    &quot;short_name&quot;:&quot;Skate Trick&quot;,
+    &quot;start_url&quot;:&quot;.&quot;,
+    &quot;display&quot;:&quot;standalone&quot;,
+    &quot;background_color&quot;:&quot;#111111&quot;,
+    &quot;theme_color&quot;:&quot;#ccff00&quot;,
+    &quot;icons&quot;:[{&quot;src&quot;:&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🛼%3C/text%3E%3C/svg%3E&quot;,&quot;sizes&quot;:&quot;96x96&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;}]
   }">
-
-  <style>
-    :root {
-      --bg: #0a0a0a;
-      --accent: #4caf50;
-      --text: #fff;
-      --card: #1e1e1e;
-      --shadow: rgba(0,0,0,0.5);
-      --success: #4caf50;
-      --error: #f44336;
-    }
-
-    * { margin:0; padding:0; box-sizing:border-box; }
-    html, body { height:100%; background:var(--bg); font-family: 'Arial', sans-serif; color:var(--text); }
-    body { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; }
-
-    /* Phone Frame */
-    .phone-frame {
-      width: 320px;
-      height: 640px;
-      background: linear-gradient(135deg, #333, #111);
-      border-radius: 40px;
-      box-shadow: 0 10px 30px var(--shadow);
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Notch */
-    .notch {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 120px;
-      height: 30px;
-      background: #000;
-      border-bottom-left-radius: 20px;
-      border-bottom-right-radius: 20px;
-    }
-
-    /* App Content */
-    .app-content {
-      flex: 1;
-      padding: 40px 20px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      overflow-y: auto;
-    }
-
-    h1 {
-      font-size: 2rem;
-      color: var(--accent);
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    .stance {
-      display: flex;
-      margin-bottom: 20px;
-    }
-
-    .stance-btn {
-      background: var(--card);
-      color: var(--text);
-      border: 2px solid var(--accent);
-      padding: 10px 20px;
-      margin: 0 10px;
-      border-radius: 20px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .stance-btn.active {
-      background: var(--accent);
-      color: #000;
-    }
-
-    #startBtn {
-      background: var(--accent);
-      color: #000;
-      border: none;
-      padding: 15px 30px;
-      border-radius: 30px;
-      font-size: 1.2rem;
-      font-weight: bold;
-      cursor: pointer;
-      margin-bottom: 20px;
-      transition: all 0.2s;
-      box-shadow: 0 4px 10px rgba(76,175,80,0.3);
-    }
-    #startBtn:disabled {
-      opacity: 0.7;
-    }
-
-    #output {
-      font-size: 1.6rem;
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 20px;
-      min-height: 40px;
-    }
-
-    #history {
-      width: 100%;
-      background: var(--card);
-      border-radius: 15px;
-      padding: 15px;
-      max-height: 200px;
-      overflow-y: auto;
-      font-size: 0.9rem;
-    }
-    .trick {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid #333;
-    }
-    .trick:last-child { border: none; }
-
-    .info {
-      font-size: 0.8rem;
-      color: #888;
-      text-align: center;
-      margin-top: auto;
-      padding-top: 10px;
-    }
-    .install {
-      background: #ffeb3b;
-      color: #000;
-      padding: 8px;
-      border-radius: 10px;
-      margin-top: 10px;
-      font-weight: bold;
-      display: none;
-    }
-  </style>
 </head>
 <body>
 
-  <div class="phone-frame">
-    <div class="notch"></div>
-    <div class="app-content">
-      <h1>Skate Trick (Phone Style)</h1>
+  <main class="app-container">
+    <header>
+      <h1>SKATE TRICK</h1>
+      <p class="subtitle">Motion Tracker</p>
+    </header>
 
-      <div class="stance">
-        <button class="stance-btn active" id="regularBtn">Regular</button>
-        <button class="stance-btn" id="goofyBtn">Goofy</button>
-      </div>
-
-      <button id="startBtn">Start Detecting</button>
-
-      <div id="output">Hold & flip like a trick!</div>
-
-      <div id="history"></div>
-
-      <div class="info">
-        <p>Add to Home Screen for best experience</p>
-        <div id="installPrompt" class="install">Share → Add to Home Screen</div>
-      </div>
+    <div class="stance-container">
+      <button class="stance-btn active" id="regularBtn">Regular</button>
+      <button class="stance-btn" id="goofyBtn">Goofy</button>
     </div>
-  </div>
 
-  <script>
-    // ===== STATE =====
-    let stance = 'regular';
-    let isTracking = false;
-    let history = [];
-    const MAX_HISTORY = 10;
+    <div class="action-area">
+      <button id="startBtn" class="primary-btn">START TRACKING</button>
+      <div id="output" class="trick-display">Hold & flip!</div>
+    </div>
 
-    // Motion state
-    let motion = {
-      active: false,
-      axis: null,
-      startTime: 0,
-      rotSum: 0,
-      pop: false,
-      lastHighRot: 0
-    };
+    <div class="history-section">
+      <h2>Session History</h2>
+      <div id="history" class="history-list"></div>
+    </div>
 
-    // DOM
-    const regularBtn = document.getElementById('regularBtn');
-    const goofyBtn = document.getElementById('goofyBtn');
-    const startBtn = document.getElementById('startBtn');
-    const output = document.getElementById('output');
-    const historyEl = document.getElementById('history');
-    const installPrompt = document.getElementById('installPrompt');
+    <div id="installPrompt" class="install-prompt">
+      <span>Share &rarr; Add to Home Screen</span>
+    </div>
+  </main>
 
-    // ===== STANCE =====
-    regularBtn.onclick = () => { stance = 'regular'; updateStance(); };
-    goofyBtn.onclick = () => { stance = 'goofy'; updateStance(); };
-    function updateStance() {
-      regularBtn.classList.toggle('active', stance === 'regular');
-      goofyBtn.classList.toggle('active', stance === 'goofy');
-    }
-
-    // ===== HISTORY =====
-    function addToHistory(trick) {
-      const time = new Date().toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      history.unshift({ trick, time });
-      if (history.length > MAX_HISTORY) history.pop();
-      renderHistory();
-    }
-    function renderHistory() {
-      historyEl.innerHTML = history.map(h => `
-        <div class="trick">
-          <span>${h.trick}</span>
-          <span>${h.time}</span>
-        </div>
-      `).join('');
-    }
-
-    // ===== START TRACKING =====
-    startBtn.onclick = async () => {
-      if (isTracking) return;
-
-      // iOS permission
-      if (typeof DeviceMotionEvent.requestPermission === 'function') {
-        const response = await DeviceMotionEvent.requestPermission();
-        if (response !== 'granted') {
-          output.textContent = 'Permission denied';
-          output.style.color = 'var(--error)';
-          return;
-        }
-      }
-
-      isTracking = true;
-      startBtn.textContent = 'Detecting...';
-      startBtn.disabled = true;
-      output.textContent = 'Ready! Perform a trick';
-      output.style.color = 'var(--text)';
-
-      if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-        installPrompt.style.display = 'block';
-      }
-
-      window.addEventListener('devicemotion', handleMotion);
-    };
-
-    // ===== MOTION HANDLER =====
-    function handleMotion(event) {
-      const { rotationRate, accelerationIncludingGravity } = event;
-      if (!rotationRate) return;
-
-      const now = Date.now();
-      const alpha = rotationRate.alpha || 0;
-      const beta = rotationRate.beta || 0;
-
-      // Pop detection
-      if (accelerationIncludingGravity && accelerationIncludingGravity.z > 12) {
-        motion.pop = true;
-      }
-
-      const absAlpha = Math.abs(alpha);
-      const absBeta = Math.abs(beta);
-
-      let dominantAxis = null;
-      if (absBeta > 90) dominantAxis = 'beta';  // flip
-      else if (absAlpha > 90) dominantAxis = 'alpha'; // shuv
-
-      // Start new motion
-      if (dominantAxis && !motion.active) {
-        motion.active = true;
-        motion.axis = dominantAxis;
-        motion.startTime = now;
-        motion.rotSum = 0;
-        motion.pop = false;
-        motion.lastHighRot = now;
-        return;
-      }
-
-      // Accumulate
-      if (dominantAxis === motion.axis) {
-        const rate = motion.axis === 'beta' ? beta : alpha;
-        const dt = now - motion.lastHighRot;
-        motion.rotSum += rate * (dt / 1000);
-        motion.lastHighRot = now;
-      }
-
-      // End after 350ms quiet
-      if (motion.active && (now - motion.lastHighRot > 350)) {
-        classifyTrick();
-      }
-    }
-
-    // ===== CLASSIFY =====
-    function classifyTrick() {
-      if (!motion.active) return;
-
-      const totalDeg = Math.abs(motion.rotSum);
-      const direction = motion.rotSum > 0 ? 1 : -1;
-      const full = totalDeg > 320;
-      const threeQ = totalDeg > 240;
-      const half = totalDeg > 150;
-      const quarter = totalDeg > 80;
-
-      let trick = 'Unknown';
-
-      if (motion.axis === 'beta') {
-        if (full) {
-          const isKickflip = (stance === 'regular' && direction < 0) || (stance === 'goofy' && direction > 0);
-          trick = isKickflip ? 'Kickflip' : 'Heelflip';
-        } else if (threeQ) {
-          const isKickflip = (stance === 'regular' && direction < 0) || (stance === 'goofy' && direction > 0);
-          trick = isKickflip ? 'Varial Kickflip' : 'Varial Heelflip';
-        } else if (half) {
-          trick = 'Half-Flip';
-        } else if (motion.pop) {
-          trick = 'Impossible';
-        }
-      } else if (motion.axis === 'alpha') {
-        if (full) {
-          trick = motion.pop ? '360 Flip' : '360 Shuvit';
-        } else if (half) {
-          trick = '180 Shuvit';
-        } else if (quarter) {
-          trick = 'Shuvit';
-        }
-      }
-
-      if (motion.pop && totalDeg < 100) trick = 'Ollie';
-
-      output.textContent = trick + '!';
-      output.style.color = 'var(--success)';
-      addToHistory(trick);
-
-      setTimeout(() => {
-        if (isTracking) {
-          output.textContent = 'Ready...';
-          output.style.color = 'var(--text)';
-        }
-      }, 2000);
-
-      motion = { active: false, axis: null, startTime: 0, rotSum: 0, pop: false, lastHighRot: 0 };
-    }
-
-    // Init
-    updateStance();
-    renderHistory();
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
